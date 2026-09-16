@@ -1,0 +1,48 @@
+{
+  "name": "liquid-glass-slides-v1",
+  "language": "zh-CN",
+  "canvas": {
+    "fit": "one viewport per slide",
+    "ratio": "16:9 (responsive, fits any viewport)",
+    "output": "single self-contained HTML file"
+  },
+  "background": {
+    "base": "linear-gradient(160deg, #eef2f8, #f6f7fb)",
+    "blobs": [
+      "rgba(10,132,255,0.20)",
+      "rgba(255,55,95,0.14)",
+      "rgba(48,209,88,0.12)"
+    ],
+    "rule": "vivid, blurred, colorful — glass must refract it"
+  },
+  "glass": {
+    "fill": "rgba(255,255,255,0.55)",
+    "blur": "blur(30px) saturate(200%)",
+    "border_radius": "28px",
+    "border": "1px solid rgba(255,255,255,0.6)",
+    "shadow": "0 10px 40px rgba(0,0,0,0.10)",
+    "specular": "inset 0 1px 1px rgba(255,255,255,0.85)",
+    "edge_light": "linear-gradient(135deg, rgba(255,255,255,.9), rgba(255,255,255,.1) 40%, rgba(120,180,255,.25) 72%, rgba(255,255,255,.6))",
+    "hover_lift": "translateY(-4px)"
+  },
+  "typography": {
+    "font_stack": "-apple-system, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif",
+    "heading_weight": "600-700",
+    "heading_letter_spacing": "-0.02em",
+    "ink": "#1D1D1F",
+    "body_color": "#515158"
+  },
+  "accent": {
+    "default": "#0A84FF",
+    "note": "use a single accent across the whole deck"
+  },
+  "avoid": [
+    "flat or opaque background behind glass",
+    "over-applying glass",
+    "purple-on-white startup templates",
+    "long bullet walls",
+    "tiny type",
+    "scrollbars inside a slide",
+    "baking text into images"
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "title": "液态玻璃演示 · 示例 Deck",
+  "glyphs": [
+    "✦",
+    "❋",
+    "✧"
+  ],
+  "lang": "zh-CN",
+  "theme": {
+    "name": "tech",
+    "colors": [
+      "#0A84FF",
+      "#64D2FF",
+      "#30D158"
+    ],
+    "accent": "#0A84FF"
+  },
+  "slides": [
+    {
+      "layout": "cover",
+      "eyebrow": "LIQUID GLASS · DEMO",
+      "title": "液态玻璃演示系统",
+      "subtitle": "由 outline.json 一键生成的自包含 HTML 幻灯片。",
+      "three": {
+        "scene": "field"
+      }
+    },
+    {
+      "layout": "toc",
+      "eyebrow": "AGENDA",
+      "title": "本场大纲",
+      "items": [
+        {
+          "label": "设计哲学",
+          "desc": "为什么用液态玻璃"
+        },
+        {
+          "label": "版式库",
+          "desc": "14 种单页布局"
+        },
+        {
+          "label": "图片原则",
+          "desc": "悬浮 vs 装框"
+        },
+        {
+          "label": "一键生成",
+          "desc": "outline → HTML"
+        }
+      ]
+    },
+    {
+      "layout": "section-divider",
+      "num": "01",
+      "title": "设计哲学",
+      "subtitle": "玻璃之后，必须有彩色与虚化，才能折射出层次。"
+    },
+    {
+      "layout": "bullets",
+      "eyebrow": "PRINCIPLES",
+      "title": "三条铁律",
+      "items": [
+        {
+          "text": "每屏一页，永不内滚",
+          "desc": "100dvh 视口锁定，杜绝滚动条。"
+        },
+        {
+          "text": "毛玻璃需有底色",
+          "desc": "玻璃背后必须有彩色 blob 可折射。"
+        },
+        {
+          "text": "图片二选一",
+          "desc": "透明图悬浮，背景图装框。"
+        }
+      ]
+    },
+    {
+      "layout": "two-column",
+      "eyebrow": "COMPOSE",
+      "title": "左文右卡",
+      "left": "<p style='color:var(--ink);font-size:var(--h3-size);line-height:1.6'>把要点放在左侧，右侧用玻璃卡承载补充信息或图示。</p><p style='margin-top:.6em'>适合「论点 + 说明」的对照结构。</p>",
+      "right": "<h3>玻璃卡内容</h3><p>这里可以放任何 HTML：列表、图表、引用。build.py 会原样注入。</p>"
+    },
+    {
+      "layout": "grid-cards",
+      "eyebrow": "LIBRARY",
+      "title": "版式组件库",
+      "items": [
+        {
+          "num": "01",
+          "title": "封面",
+          "desc": "标题 + 副标题 + 可选悬浮主图"
+        },
+        {
+          "num": "02",
+          "title": "目录",
+          "desc": "带描述的条目列表"
+        },
+        {
+          "num": "03",
+          "title": "卡片网格",
+          "desc": "2/3/4 列自动适配"
+        },
+        {
+          "num": "04",
+          "title": "时间线",
+          "desc": "生长式节点动画"
+        }
+      ]
+    },
+    {
+      "layout": "stat-highlight",
+      "eyebrow": "BY THE NUMBERS",
+      "num": "14",
+      "unit": " 种",
+      "title": "单页布局",
+      "desc": "覆盖封面、分栏、统计、对比、结束页等常见结构。"
+    },
+    {
+      "layout": "kpi-grid",
+      "eyebrow": "METRICS",
+      "title": "关键指标",
+      "items": [
+        {
+          "num": "36",
+          "label": "主题(竞品参考)"
+        },
+        {
+          "num": "0",
+          "label": "外部依赖"
+        },
+        {
+          "num": "1",
+          "label": "自包含文件"
+        }
+      ]
+    },
+    {
+      "layout": "timeline",
+      "eyebrow": "EVOLUTION",
+      "title": "演进历程",
+      "items": [
+        {
+          "year": "v1",
+          "head": "单文件模板",
+          "desc": "手写母版，灵活但不可复现。"
+        },
+        {
+          "year": "v2",
+          "desc": "组件化 + 同心圆角",
+          "head": "图片规范"
+        },
+        {
+          "year": "v3",
+          "desc": "outline 驱动生成",
+          "head": "一键可复现"
+        }
+      ]
+    },
+    {
+      "layout": "comparison",
+      "eyebrow": "VS",
+      "title": "悬浮 vs 装框",
+      "left_title": "透明对象",
+      "left_items": [
+        {
+          "text": "logo / 产品 / 抠好主图"
+        },
+        {
+          "text": "无框、无圆角、drop-shadow 浮起"
+        },
+        {
+          "text": "像浮在页面上"
+        }
+      ],
+      "right_title": "背景照片",
+      "right_items": [
+        {
+          "text": "复杂背景的照片类"
+        },
+        {
+          "text": "同心圆角玻璃相框包裹"
+        },
+        {
+          "text": "绝不无框悬浮"
+        }
+      ]
+    },
+    {
+      "layout": "big-quote",
+      "quote": "整体，不等于各部分之和。",
+      "by": "格式塔心理学 · 1912"
+    },
+    {
+      "layout": "image-frame",
+      "eyebrow": "PHOTO",
+      "title": "照片装框（同心圆角）",
+      "alt": "示例图",
+      "caption": "带背景的图片走玻璃相框，内图圆角 = 外框圆角 − 内边距。",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='%23cfe3ff'/><circle cx='200' cy='150' r='90' fill='%230A84FF'/><text x='200' y='158' font-size='28' fill='white' text-anchor='middle' font-family='sans-serif'>PHOTO</text></svg>"
+    },
+    {
+      "layout": "object-float",
+      "eyebrow": "OBJECT",
+      "title": "透明对象悬浮",
+      "subtitle": "背景透明的对象用 .hero-orb 无框浮起。",
+      "alt": "示例对象",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><circle cx='110' cy='110' r='100' fill='%230A84FF' opacity='0.85'/><text x='110' y='120' font-size='26' fill='white' text-anchor='middle' font-family='sans-serif'>OB</text></svg>"
+    },
+    {
+      "layout": "closing",
+      "eyebrow": "THANK YOU",
+      "title": "谢谢观看",
+      "subtitle": "把这份 outline 改一改，就是你的下一页演示。",
+      "contacts": [
+        {
+          "icon": "✉",
+          "text": "you@email.com"
+        },
+        {
+          "icon": "🌐",
+          "text": "your-site.com"
+        }
+      ]
+    }
+  ]
+}

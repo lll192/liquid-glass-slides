@@ -1,0 +1,15 @@
+<section class="slide" data-layout="timeline">
+  <div class="slide-content">
+    <div class="wrap" style="max-width:min(92vw,880px)">
+      <div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>
+      <h2 class="reveal" style="--i:1">{{title}}</h2>
+      <div class="glass reveal" style="--i:2;padding:clamp(1rem,2.4vw,1.8rem)">
+        <div class="tline">
+          {{#items}}
+          <div class="titem" style="--i:{{i}}"><span>{{item.year}}</span><b>{{item.head}}</b> —— {{item.desc}}</div>
+          {{/items}}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+<section class="slide" data-layout="comparison">
+  <div class="slide-content">
+    <div class="wrap" style="max-width:min(94vw,1000px)">
+      <div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>
+      <h2 class="reveal" style="--i:1">{{title}}</h2>
+      <div class="compare" style="margin-top:1rem">
+        <div class="glass reveal" style="--i:2;padding:clamp(1rem,2.2vw,1.6rem)">
+          <h3 class="accent" style="margin-bottom:.6em">{{left_title}}</h3>
+          <ul class="bullets">
+            {{#left_items}}
+            <li style="padding-left:1.4em;position:relative;margin-bottom:.8em;color:var(--ink)">{{item.text}}</li>
+            {{/left_items}}
+          </ul>
+        </div>
+        <div class="vs">VS</div>
+        <div class="glass reveal" style="--i:3;padding:clamp(1rem,2.2vw,1.6rem)">
+          <h3 class="accent" style="margin-bottom:.6em">{{right_title}}</h3>
+          <ul class="bullets">
+            {{#right_items}}
+            <li style="padding-left:1.4em;position:relative;margin-bottom:.8em;color:var(--ink)">{{item.text}}</li>
+            {{/right_items}}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

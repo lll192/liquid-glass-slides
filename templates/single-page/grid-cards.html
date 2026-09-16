@@ -1,0 +1,17 @@
+<section class="slide" data-layout="grid-cards">
+  <div class="slide-content">
+    <div class="wrap" style="max-width:min(94vw,1080px)">
+      <div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>
+      <h2 class="reveal" style="--i:1">{{title}}</h2>
+      <div class="{{cols}}" style="margin-top:1rem">
+        {{#items}}
+        <div class="glass tilt reveal" style="--i:{{i}}">
+          <div class="num">{{item.num}}</div>
+          <h3>{{item.title}}</h3>
+          <p>{{item.desc}}</p>
+        </div>
+        {{/items}}
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+<section class="slide closing" data-layout="closing">
+  <div class="orb o1"></div><div class="orb o2"></div>
+  <div class="halo"></div>
+  <div class="slide-content">
+    <div class="wrap" style="max-width:min(92vw,900px);text-align:center">
+      <div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>
+      <h1 class="closing-title reveal" style="--i:1">{{title}}</h1>
+      <p class="lead reveal" style="--i:2;margin:0 auto">{{subtitle}}</p>
+      <div class="contacts reveal" style="--i:3">
+        {{#contacts}}
+        <span class="contact"><span class="ico">{{item.icon}}</span>{{item.text}}</span>
+        {{/contacts}}
+      </div>
+    </div>
+  </div>
+</section>

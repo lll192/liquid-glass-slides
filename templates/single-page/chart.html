@@ -1,0 +1,15 @@
+<section class="slide" data-layout="chart">
+  <div class="slide-content">
+    <div class="wrap chart-split">
+      <div class="chart-side-text">
+        {{#eyebrow}}<div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>{{/eyebrow}}
+        {{#title}}<h2 class="reveal" style="--i:1">{{title}}</h2>{{/title}}
+        <div class="chart-takeaway glass reveal" style="--i:3">{{#note}}<p class="ct-note">{{note}}</p>{{/note}}{{#takeaway}}<p class="ct-main">{{takeaway}}</p>{{/takeaway}}</div>
+        {{#caption}}<p class="footnote reveal" style="--i:4">{{caption}}</p>{{/caption}}
+      </div>
+      <div class="chart-card glass reveal" style="--i:2">
+        <div class="echart" id="{{chart_id}}" style="width:100%;height:{{chart_height}}"></div>
+      </div>
+    </div>
+  </div>
+</section>

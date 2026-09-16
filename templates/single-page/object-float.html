@@ -1,0 +1,15 @@
+<section class="slide" data-layout="object-float">
+  <div class="orb o1"></div><div class="orb o2"></div>
+  <div class="slide-content">
+    <div class="wrap" style="max-width:min(94vw,980px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,4vw,3rem);align-items:center">
+      <div>
+        <div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>
+        <h2 class="reveal" style="--i:1">{{title}}</h2>
+        <p class="lead reveal" style="--i:2;margin-top:.5em">{{subtitle}}</p>
+      </div>
+      <div class="reveal" style="--i:3;text-align:center">
+        {{#image}}<img class="hero-orb" src="{{image}}" alt="{{alt}}">{{/image}}
+      </div>
+    </div>
+  </div>
+</section>

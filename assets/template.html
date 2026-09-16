@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liquid Glass Slides · 模板 v2</title>
+<style>
+/* ============================================================
+   MANDATORY VIEWPORT-FIT BASE
+   ============================================================ */
+html, body { height: 100%; margin: 0; overflow: hidden; }
+.deck { height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.deck::-webkit-scrollbar { width: 0; height: 0; }
+.slide { width: 100vw; height: 100dvh; overflow: hidden; scroll-snap-align: start;
+  display: flex; flex-direction: column; position: relative; }
+.slide-content { flex: 1; display: flex; flex-direction: column; justify-content: center;
+  max-height: 100%; overflow: hidden;
+  padding: clamp(2.6rem, 7vh, 4.5rem) clamp(1.2rem, 5vw, 5rem); }
+.wrap { margin: 0 auto; width: 100%; }
+:root {
+  --title-size: clamp(1.7rem, 4.4vw, 3.6rem);
+  --h2-size: clamp(1.25rem, 3vw, 2.2rem);
+  --h3-size: clamp(.95rem, 2vw, 1.3rem);
+  --body-size: clamp(.82rem, 1.45vw, 1.05rem);
+  --small-size: clamp(.68rem, .95vw, .85rem);
+  --content-gap: clamp(.55rem, 1.6vh, 1.4rem);
+  --ink:#1D1D1F; --muted:#515158; --accent:#0A84FF;
+  --glass-fill: rgba(255,255,255,0.52);
+  --glass-border: rgba(255,255,255,0.6);
+  --glass-shadow: 0 10px 40px rgba(0,0,0,0.10);
+  --glass-specular: inset 0 1px 1px rgba(255,255,255,0.85);
+  --glass-blur: blur(30px) saturate(200%);
+  --glass-radius: 24px;
+}
+img { max-width: 100%; max-height: min(52vh, 460px); object-fit: contain; }
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .2s !important; }
+  html { scroll-behavior: auto; }
+}
+body{ background:linear-gradient(160deg,#eef2f8,#f6f7fb); color:var(--ink);
+  font-family:-apple-system,"SF Pro Display","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased; }
+
+/* ============================================================
+   BACKDROP: blobs + floating glyphs（液态玻璃后面必须有彩色/虚化内容）
+   ============================================================ */
+.bg{ position:fixed; inset:0; z-index:0; overflow:hidden;
+  background:
+    radial-gradient(38% 48% at 18% 22%, rgba(10,132,255,0.20), transparent 70%),
+    radial-gradient(42% 52% at 86% 26%, rgba(255,55,95,0.15), transparent 70%),
+    radial-gradient(48% 60% at 52% 92%, rgba(48,209,88,0.13), transparent 70%),
+    linear-gradient(160deg,#eef2f8,#f6f7fb); }
+.bg .blob{ position:absolute; border-radius:50%; filter:blur(60px); opacity:.5;
+  mix-blend-mode:multiply; animation:drift 26s ease-in-out infinite; will-change:transform; }
+.bg .b1{ width:42vw; height:42vw; left:-6vw; top:-8vw; background:rgba(10,132,255,0.32); }
+.bg .b2{ width:36vw; height:36vw; right:-6vw; top:8vh; background:rgba(255,55,95,0.26); animation-delay:-9s; }
+.bg .b3{ width:46vw; height:46vw; left:30vw; bottom:-16vw; background:rgba(120,170,255,0.28); animation-delay:-17s; }
+@keyframes drift{ 0%,100%{ transform:translate(0,0) } 50%{ transform:translate(3vw,-3vh) } }
+.glyphs{ position:fixed; inset:0; z-index:0; pointer-events:none;
+  font-family:Georgia,"Times New Roman",serif; font-style:italic; }
+.glyphs span{ position:absolute; color:rgba(10,90,200,.08); font-weight:700; user-select:none;
+  animation:floaty 14s ease-in-out infinite; will-change:transform; }
+.glyphs .g1{ font-size:clamp(6rem,18vw,15rem); left:4vw; top:8vh; }
+.glyphs .g2{ font-size:clamp(5rem,14vw,12rem); right:6vw; top:52vh; animation-delay:-4s; }
+.glyphs .g3{ font-size:clamp(4rem,11vw,9rem); left:42vw; top:70vh; animation-delay:-8s; }
+@keyframes floaty{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-2.5vh) } }
+
+.deck{ position:relative; z-index:1; }
+.slide-content{ position:relative; z-index:2; }
+
+/* ============ TYPE ============ */
+.eyebrow{ font-size:var(--small-size); letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+h1{ font-weight:700; letter-spacing:-.02em; line-height:1.06; font-size:var(--title-size); margin:.3em 0 .25em; }
+h2{ font-weight:600; letter-spacing:-.02em; line-height:1.12; font-size:var(--h2-size); margin:0 0 var(--content-gap); }
+h3{ font-weight:600; font-size:var(--h3-size); margin:0 0 .35em; }
+p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:0; }
+.lead{ color:var(--ink); max-width:54ch; }
+.accent{ color:var(--accent); }
+.footnote{ font-size:var(--small-size); color:#9aa0aa; margin-top:calc(var(--content-gap)*.6); }
+
+/* ============ GLASS PANEL（光带扫过 + 渐变描边）============ */
+.glass{ position:relative; overflow:hidden; background:var(--glass-fill);
+  -webkit-backdrop-filter:var(--glass-blur); backdrop-filter:var(--glass-blur);
+  border:1px solid var(--glass-border); border-radius:var(--glass-radius);
+  box-shadow:var(--glass-shadow), var(--glass-specular);
+  padding:clamp(.9rem,1.8vw,1.5rem);
+  transition:transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease; }
+.glass::before{ content:""; position:absolute; inset:0; border-radius:inherit; padding:1px;
+  background:linear-gradient(135deg, rgba(255,255,255,.9), rgba(255,255,255,.1) 40%, rgba(120,180,255,.28) 72%, rgba(255,255,255,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
+.glass::after{ content:""; position:absolute; top:-60%; bottom:-60%; width:36%; left:-50%;
+  background:linear-gradient(105deg, transparent, rgba(255,255,255,.55), transparent);
+  transform:skewX(-18deg); animation:sheen 7s ease-in-out infinite; pointer-events:none; }
+@keyframes sheen{ 0%,55%{ left:-50% } 85%,100%{ left:130% } }
+.glass:hover{ transform:translateY(-4px);
+  box-shadow:0 18px 60px rgba(0,0,0,0.14), inset 0 1px 1px rgba(255,255,255,0.9); }
+
+/* ============ 3D TILT ============ */
+.tilt{ transform-style:preserve-3d; will-change:transform; }
+
+/* ============ 玻璃圆球 ============ */
+.orb{ position:absolute; border-radius:50%; z-index:1; pointer-events:none;
+  background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.9), rgba(255,255,255,.25) 42%, rgba(255,255,255,.08) 70%);
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:0 14px 40px rgba(30,60,140,.14), inset 0 1px 2px rgba(255,255,255,.95);
+  -webkit-backdrop-filter:blur(8px) saturate(180%); backdrop-filter:blur(8px) saturate(180%);
+  animation:orbFloat 10s ease-in-out infinite; will-change:transform; }
+@keyframes orbFloat{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-2.2vh) } }
+.orb.o1{ width:clamp(60px,9vw,120px); height:clamp(60px,9vw,120px); right:6vw; top:12vh; animation-delay:-2s; }
+.orb.o2{ width:clamp(36px,5vw,64px); height:clamp(36px,5vw,64px); right:16vw; bottom:16vh; animation-delay:-5s; }
+.orb .sym{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:Georgia,serif; font-style:italic; font-weight:700;
+  font-size:clamp(1.4rem,3.2vw,2.6rem); color:rgba(10,90,200,.35); }
+
+/* ============================================================
+   EXPLICIT GRIDS（不要用 auto-fit！窄面板会退化成单列导致溢出）
+   ============================================================ */
+.g2{ display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(.7rem,1.5vw,1.3rem); }
+.g3{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(.7rem,1.5vw,1.3rem); }
+.g4{ display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(.7rem,1.4vw,1.2rem); }
+@media (max-width:760px){ .g3,.g4{ grid-template-columns:repeat(2,1fr); } .g2{ grid-template-columns:1fr; } }
+@media (max-width:480px){ .g3,.g4{ grid-template-columns:1fr; } }
+
+.num{ font-variant-numeric:tabular-nums; font-weight:700; color:var(--accent);
+  font-size:clamp(1.3rem,2.6vw,2rem); line-height:1; margin-bottom:.35em; }
+.chips{ display:flex; flex-wrap:wrap; gap:.5rem; }
+.chip{ font-size:var(--small-size); padding:.4em 1em; border-radius:999px;
+  background:rgba(10,132,255,.10); color:var(--accent); border:1px solid rgba(10,132,255,.22);
+  font-weight:600; position:relative; overflow:hidden; }
+.chip::after{ content:""; position:absolute; top:-80%; bottom:-80%; width:40%; left:-60%;
+  background:linear-gradient(105deg, transparent, rgba(255,255,255,.7), transparent);
+  transform:skewX(-18deg); animation:sheen 6s ease-in-out infinite; animation-delay:1.2s; }
+
+/* ============ 玻璃时间线（生长动画）============ */
+.tline{ position:relative; padding-left:clamp(1.6rem,3vw,2.6rem); }
+.tline::before{ content:""; position:absolute; left:.55rem; top:.4rem; bottom:.4rem; width:3px;
+  border-radius:2px; background:linear-gradient(180deg, var(--accent), rgba(10,132,255,.15));
+  transform-origin:top; transform:scaleY(0); transition:transform 1.4s cubic-bezier(.2,.7,.2,1) .2s; }
+.slide.active .tline::before{ transform:scaleY(1); }
+.titem{ position:relative; padding:0 0 clamp(.55rem,1.4vh,1.1rem); }
+.titem:last-child{ padding-bottom:0; }
+.titem::before{ content:""; position:absolute; left:calc(-1 * clamp(1.6rem,3vw,2.6rem) + .17rem); top:.42em;
+  width:.72rem; height:.72rem; border-radius:50%; background:#fff;
+  border:3px solid var(--accent); box-shadow:0 0 12px rgba(10,132,255,.55);
+  transform:scale(0); transition:transform .45s cubic-bezier(.34,1.56,.64,1);
+  transition-delay:calc(.3s + var(--i,0) * .18s); }
+.slide.active .titem::before{ transform:scale(1); }
+.titem b{ color:var(--ink); }
+.titem span{ color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; margin-right:.5em; }
+
+/* ============ SVG 环形图（r=45 → dasharray 283）============ */
+.rings{ display:flex; justify-content:center; gap:clamp(1rem,4vw,3.5rem); flex-wrap:wrap; }
+.ring{ text-align:center; }
+.ring svg{ width:clamp(96px,13vw,170px); height:auto; transform:rotate(-90deg); }
+.ring .track{ fill:none; stroke:rgba(10,132,255,.12); stroke-width:10; }
+.ring .val{ fill:none; stroke:url(#rg); stroke-width:10; stroke-linecap:round;
+  stroke-dasharray:283; stroke-dashoffset:283;
+  transition:stroke-dashoffset 1.6s cubic-bezier(.2,.7,.2,1) .5s; }
+.slide.active .ring .val{ stroke-dashoffset:var(--off,283); }
+.ring-label{ margin-top:.45em; font-weight:600; color:var(--ink); font-size:var(--body-size); }
+.ring-sub{ font-size:var(--small-size); color:var(--muted); }
+
+/* ============ 步骤流 ============ */
+.flow{ display:flex; align-items:stretch; gap:clamp(.4rem,1vw,.9rem); }
+.flow .step{ flex:1; text-align:center; padding:clamp(.7rem,1.6vw,1.2rem) .5rem; }
+.flow .arrow{ align-self:center; color:var(--accent); font-size:clamp(1rem,2.4vw,1.8rem);
+  animation:nudge 1.6s ease-in-out infinite; }
+@keyframes nudge{ 0%,100%{ transform:translateX(0); opacity:.5 } 50%{ transform:translateX(.35em); opacity:1 } }
+.flow h3{ font-size:var(--body-size); }
+.flow p{ font-size:var(--small-size); }
+
+/* ============ 脉冲徽标 ============ */
+.qbadge{ display:inline-flex; align-items:center; justify-content:center;
+  width:clamp(2rem,4vw,2.8rem); height:clamp(2rem,4vw,2.8rem); border-radius:50%;
+  background:rgba(10,132,255,.12); border:1px solid rgba(10,132,255,.3);
+  color:var(--accent); font-weight:700; font-size:var(--h3-size); margin-bottom:.5em;
+  animation:pulse 2.6s ease-in-out infinite; }
+@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(10,132,255,.25) } 50%{ box-shadow:0 0 0 10px rgba(10,132,255,0) } }
+
+/* ============ 双栏对比 + VS 徽章 ============ */
+.compare{ position:relative; display:grid; grid-template-columns:1fr 1fr; gap:clamp(.8rem,2vw,1.6rem); }
+@media (max-width:640px){ .compare{ grid-template-columns:1fr; } }
+.vs{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:3;
+  width:clamp(2.6rem,5vw,3.6rem); height:clamp(2.6rem,5vw,3.6rem); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.75); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.8); box-shadow:0 8px 28px rgba(30,60,140,.18);
+  font-weight:700; color:var(--accent); font-size:var(--h3-size); }
+
+.bullets{ list-style:none; padding:0; margin:0; }
+.bullets li::before{ content:""; position:absolute; left:0; top:.55em; width:.5em; height:.5em;
+  border-radius:50%; background:var(--accent); box-shadow:0 0 10px rgba(10,132,255,.5); }
+
+/* ============ chrome ============ */
+/* NOTE: no brand watermark and no nav-hint text by default — user feedback: these fixed texts are visual clutter. */
+.progress{ position:fixed; top:0; left:0; height:3px; width:0; z-index:6; background:var(--accent);
+  box-shadow:0 0 12px rgba(10,132,255,.6); transition:width .4s ease; }
+.dots{ position:fixed; right:clamp(.6rem,1.6vw,1.4rem); top:50%; transform:translateY(-50%); z-index:6;
+  display:flex; flex-direction:column; gap:.6rem; }
+.dot{ width:8px; height:8px; border-radius:50%; border:1px solid rgba(10,132,255,.5); background:transparent; cursor:pointer; padding:0; transition:.3s; }
+.dot.on{ background:var(--accent); border-color:var(--accent); transform:scale(1.3); box-shadow:0 0 10px rgba(10,132,255,.6); }
+.counter{ position:fixed; bottom:clamp(.8rem,2.5vw,1.6rem); right:clamp(1.2rem,5vw,5rem); z-index:5;
+  font-size:var(--small-size); color:var(--muted); font-variant-numeric:tabular-nums; }
+@media (max-height:560px){ .dots{ display:none; } }
+
+/* ============ floating hero (transparent PNG) ============ */
+/* Cover hero should be a transparent-background PNG so it floats on the page without a frame.
+   Workflow: request ImageGen on white/transparent bg, then convert white->alpha
+   (alpha = 255 - min(r,g,b), unblend color = (res-(255-a))/a), embed base64, use drop-shadow. */
+.hero-orb{ width:min(40vw,340px); height:auto; max-height:none; display:block; margin:0 auto;
+  filter:drop-shadow(0 22px 44px rgba(30,60,140,.20));
+  animation:heroFloat 7s ease-in-out infinite; will-change:transform; }
+@keyframes heroFloat{ 0%,100%{ transform:translateY(0) rotate(0deg) } 50%{ transform:translateY(-1.8vh) rotate(1.2deg) } }
+@media (prefers-reduced-motion: reduce){ .hero-orb{ animation:none; } }
+
+/* ============ 照片接入组件（glass photo frame · 同心圆角）============ */
+/* 用法见 references/image-handling.md。规则：内图圆角 = 外框圆角 − 内边距（同心）。
+   照片类（复杂背景）禁止抠底悬浮；透明对象才用 .hero-orb。 */
+.photo-frame{ --r:clamp(20px,2.6vw,28px);
+  border-radius:var(--r); padding:calc(var(--r)*.36);
+  background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.75);
+  -webkit-backdrop-filter:blur(18px) saturate(160%); backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:0 24px 60px rgba(40,60,120,.18), inset 0 1px 0 rgba(255,255,255,.9);
+  position:relative; overflow:hidden; }
+.photo-frame::after{ content:""; position:absolute; inset:0;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.5) 48%,transparent 62%);
+  transform:translateX(-120%); animation:photoSheen 6.5s ease-in-out 1.2s infinite; }
+@keyframes photoSheen{ 0%{ transform:translateX(-120%) } 55%,100%{ transform:translateX(120%) } }
+/* 铁律：img 元素框必须与照片本体重合，圆角才能切到照片。
+   width:auto 贴合（无裁切）或 object-fit:cover 填满（轻微裁切）。
+   禁止 contain+max-height 组合与 border-radius 同用——照片会在框内 letterbox，圆角落进留白，照片看起来仍是直角。 */
+.photo-frame img{ display:block; width:auto; max-width:100%; margin:0 auto;
+  height:min(52vh,460px); object-fit:cover; border-radius:calc(var(--r)*.64); }
+.photo-frame figcaption{ text-align:center; font-size:var(--small-size); color:var(--muted);
+  padding:.55rem .2rem .15rem; }
+/* 悬浮照片卡（变体）：无玻璃框，但必须有圆角+柔影，本质是"卡" */
+.float-card{ border-radius:18px; filter:drop-shadow(0 26px 48px rgba(40,60,120,.24)); }
+
+/* ============ CLOSING（结束页 A · 大字排版型）============ */
+.closing .halo{ position:absolute; width:clamp(320px,52vw,680px); height:clamp(320px,52vw,680px);
+  border-radius:50%; border:1px solid rgba(255,255,255,.7); z-index:0; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(255,255,255,.35), transparent 65%);
+  -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+.closing .closing-title{ font-weight:800; letter-spacing:-.025em; line-height:1.05;
+  font-size:clamp(2.6rem,7.5vw,5.6rem); margin:.25em 0 .3em;
+  background:linear-gradient(100deg,#1D1D1F 28%, #0A84FF 72%, #5AC8FA);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.closing .contacts{ display:flex; gap:clamp(.6rem,1.4vw,1.1rem); margin-top:clamp(1.6rem,4.5vh,3rem); flex-wrap:wrap; justify-content:center; }
+.closing .contact{ display:flex; align-items:center; gap:.55em; font-size:clamp(.82rem,1.4vw,1.05rem);
+  padding:.65em 1.4em; border-radius:999px; color:var(--ink); font-weight:600;
+  background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 8px 26px rgba(30,60,140,.10), inset 0 1px 1px rgba(255,255,255,.85);
+  -webkit-backdrop-filter:blur(18px) saturate(180%); backdrop-filter:blur(18px) saturate(180%);
+  transition:transform .35s ease, box-shadow .35s ease; }
+.closing .contact:hover{ transform:translateY(-3px); box-shadow:0 14px 38px rgba(30,60,140,.16), inset 0 1px 1px rgba(255,255,255,.9); }
+.closing .contact .ico{ width:1.7em; height:1.7em; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg, rgba(10,132,255,.18), rgba(90,200,250,.18)); color:var(--accent); font-size:.9em; }
+
+/* ============ reveal ============ */
+.reveal{ opacity:0; transform:translateY(18px);
+  transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+  transition-delay:calc(var(--i,0) * 90ms); }
+.slide.active .reveal{ opacity:1; transform:none; }
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="glyphs" aria-hidden="true"><span class="g1">π</span><span class="g2">∑</span><span class="g3">∫</span></div>
+<div class="progress"></div>
+<nav class="dots" aria-label="导航"></nav>
+<div class="counter">01 / 05</div>
+
+<main class="deck">
+
+  <!-- ARCHETYPE: COVER -->
+  <section class="slide" id="s1">
+    <div class="orb o1"></div><div class="orb o2"></div>
+    <div class="slide-content">
+      <div class="wrap" style="max-width:min(92vw,960px);text-align:center">
+        <div class="eyebrow reveal" style="--i:0">EYEBROW · 小标签</div>
+        <h1 class="reveal" style="--i:1">演讲标题</h1>
+        <p class="lead reveal" style="--i:2;margin:.35em auto 0">一句话副标题，说明这场演讲的核心。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHETYPE: GRID-CARDS（显式 g2/g3/g4）-->
+  <section class="slide" id="s2">
+    <div class="slide-content">
+      <div class="wrap" style="max-width:min(94vw,1080px)">
+        <div class="eyebrow reveal" style="--i:0">SECTION</div>
+        <h2 class="reveal" style="--i:1">小节标题</h2>
+        <div class="g4">
+          <div class="glass tilt reveal" style="--i:2"><div class="num">01</div><h3>卡片一</h3><p>简短说明，最多两句。</p></div>
+          <div class="glass tilt reveal" style="--i:3"><div class="num">02</div><h3>卡片二</h3><p>简短说明，最多两句。</p></div>
+          <div class="glass tilt reveal" style="--i:4"><div class="num">03</div><h3>卡片三</h3><p>简短说明，最多两句。</p></div>
+          <div class="glass tilt reveal" style="--i:5"><div class="num">04</div><h3>卡片四</h3><p>简短说明，最多两句。</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHETYPE: TIMELINE（玻璃时间线生长动画）-->
+  <section class="slide" id="s3">
+    <div class="slide-content">
+      <div class="wrap" style="max-width:min(92vw,880px)">
+        <div class="eyebrow reveal" style="--i:0">Timeline</div>
+        <h2 class="reveal" style="--i:1">演进历程</h2>
+        <div class="glass reveal" style="--i:2;padding:clamp(1rem,2.4vw,1.8rem)">
+          <div class="tline">
+            <div class="titem" style="--i:0"><span>20X1</span><b>事件一</b> —— 简短说明。</div>
+            <div class="titem" style="--i:1"><span>20X2</span><b>事件二</b> —— 简短说明。</div>
+            <div class="titem" style="--i:2"><span>20X3</span><b>事件三</b> —— 简短说明。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHETYPE: SPLIT（左文右装饰球）-->
+  <section class="slide" id="s4">
+    <div class="slide-content">
+      <div class="wrap" style="max-width:min(94vw,1040px)">
+        <div class="eyebrow reveal" style="--i:0">Split</div>
+        <h2 class="reveal" style="--i:1">左文右图</h2>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(1rem,3vw,2.5rem);align-items:center">
+          <ul class="bullets">
+            <li class="reveal" style="--i:2;padding-left:1.5em;position:relative;margin-bottom:.9em"><b>要点一</b> —— 说明文字。</li>
+            <li class="reveal" style="--i:3;padding-left:1.5em;position:relative;margin-bottom:.9em"><b>要点二</b> —— 说明文字。</li>
+            <li class="reveal" style="--i:4;padding-left:1.5em;position:relative"><b>要点三</b> —— 说明文字。</li>
+          </ul>
+          <div class="reveal" style="--i:5;position:relative;height:min(38vh,300px)">
+            <div class="orb" style="width:clamp(80px,11vw,140px);height:clamp(80px,11vw,140px);left:12%;top:6%"><span class="sym">◆</span></div>
+            <div class="orb" style="width:clamp(56px,8vw,96px);height:clamp(56px,8vw,96px);right:8%;top:36%;animation-delay:-4s"><span class="sym">✦</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHETYPE: QUOTE + CLOSING -->
+  <section class="slide" id="s5">
+    <div class="slide-content">
+      <div class="wrap" style="max-width:min(90vw,880px);text-align:center">
+        <div class="glass reveal" style="--i:0;padding:clamp(1.4rem,3.6vw,2.8rem)">
+          <blockquote style="font-size:clamp(1.25rem,3vw,2.2rem);line-height:1.35;margin:0;color:var(--ink);font-weight:600">"一句有力的引用。"</blockquote>
+          <div style="margin-top:1em;font-size:var(--small-size);letter-spacing:.16em;color:var(--muted);text-transform:uppercase">— 出处</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHETYPE: CLOSING（结束页 A · 大字排版型）-->
+  <section class="slide closing" id="s6">
+    <div class="orb o1"></div><div class="orb o2"></div>
+    <div class="halo"></div>
+    <div class="slide-content">
+      <div class="wrap" style="max-width:min(92vw,900px);text-align:center">
+        <div class="eyebrow reveal" style="--i:0">Thank You</div>
+        <h1 class="closing-title reveal" style="--i:1">谢谢观看</h1>
+        <p class="lead reveal" style="--i:2;margin:0 auto">一句话收尾金句，给听众留下记忆点。</p>
+        <div class="contacts reveal" style="--i:3">
+          <span class="contact"><span class="ico">✉</span>your@email.com</span>
+          <span class="contact"><span class="ico">🌐</span>your-site.com</span>
+          <span class="contact"><span class="ico">◎</span>你的名字 · 团队</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  const deck = document.querySelector('.deck');
+  const slides = Array.from(deck.querySelectorAll('.slide'));
+  const dotsWrap = document.querySelector('.dots');
+  const progress = document.querySelector('.progress');
+  const counter = document.querySelector('.counter');
+  let current = 0, wheelLock = false;
+
+  slides.forEach((s, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.setAttribute('aria-label', '第 ' + (i+1) + ' 页');
+    d.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function goTo(i){
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    slides[i].scrollIntoView({ behavior: 'smooth' });
+  }
+
+  deck.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (wheelLock || Math.abs(e.deltaY) < 8) return;
+    wheelLock = true;
+    goTo(current + (e.deltaY > 0 ? 1 : -1));
+    setTimeout(() => wheelLock = false, 750);
+  }, { passive: false });
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
+    else if (['ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); goTo(current - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    else if (e.key === 'End') { e.preventDefault(); goTo(slides.length - 1); }
+  });
+
+  let touchY = null;
+  deck.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
+  deck.addEventListener('touchmove', (e) => {
+    if (touchY === null) return;
+    const dy = touchY - e.touches[0].clientY;
+    if (Math.abs(dy) > 42) { goTo(current + (dy > 0 ? 1 : -1)); touchY = null; }
+  }, { passive: true });
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting && en.intersectionRatio >= 0.55) {
+        const idx = slides.indexOf(en.target);
+        current = idx;
+        slides.forEach((s) => s.classList.remove('active'));
+        en.target.classList.add('active');
+        dots.forEach((d, i) => d.classList.toggle('on', i === idx));
+        progress.style.width = ((idx + 1) / slides.length * 100) + '%';
+        counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+      }
+    });
+  }, { root: deck, threshold: [0.55] });
+
+  slides.forEach((s) => io.observe(s));
+  slides[0].classList.add('active');
+
+  /* 鼠标视差 */
+  const px = document.querySelectorAll('.bg .blob, .glyphs span, .orb');
+  let raf = null;
+  window.addEventListener('mousemove', (e) => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      const dx = (e.clientX / window.innerWidth - .5);
+      const dy = (e.clientY / window.innerHeight - .5);
+      px.forEach((el, i) => {
+        const depth = (i % 3 + 1) * 6;
+        el.style.marginLeft = (dx * depth) + 'px';
+        el.style.marginTop = (dy * depth) + 'px';
+      });
+      raf = null;
+    });
+  });
+
+  /* 3D 悬浮倾斜 */
+  if (window.matchMedia('(hover:hover)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.tilt').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const rx = ((e.clientY - r.top) / r.height - .5) * -6;
+        const ry = ((e.clientX - r.left) / r.width - .5) * 6;
+        card.style.transform = 'perspective(800px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) translateY(-3px)';
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
+  }
+})();
+</script>
+</body>
+</html>
