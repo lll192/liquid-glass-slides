@@ -12,6 +12,16 @@
 > 用 PPT skill 时，AI 自动扫描每页、判断该加哪种场景、写进 outline、一键构建，
 > 用户零代码、零复制。
 
+## 0. 核心约束：粒子风暴仅限封面
+
+**密集粒子云（预设 `field` / `nebula`）就是用户说的「粒子风暴」——上千个漂浮光点铺满整页，在内容页上显得杂乱。** 因此硬性规则：
+
+- `field` / `nebula` **只能出现在封面（layout = `cover`）**；
+- 任何**非封面**页面若写了 `field` / `nebula`，`build.py` 会自动改成像 `orbs` 这类安静预设，不会真的渲染粒子风暴；
+- 封面若完全没有 `three` 字段，`build.py` 会自动补上 `field`，保证首页一定带粒子风暴。
+
+非封面页想要背景动效时，请改用语义更安静、更克制的预设：`orbs`（玻璃气泡）/ `petals`（花瓣飘落）/ `waves`（正弦波）/ `object`（线框实体）/ `network`（关系网，仅限内容本身是关系/网络时）。它们就是「别的动画」，配合全局已有的光斑漂移与字形浮动，足够让非封面页不呆板。
+
 ## 1. 实现机制（为什么可靠）
 
 - **全局唯一画布**：所有 3D 渲染在 `#lg-three` 这一个 `<canvas>` 上，固定定位在
@@ -26,21 +36,21 @@
 ## 2. 何时加（扫描每一页后判断）
 
 **应该加（信号）**
-- 封面（cover）：需要第一眼的「空间纵深感」与品牌氛围。
-- 章节分隔（section-divider）：每个大章节开头，用粒子场铺垫进入新主题的仪式感。
-- 关键概念页 / 收尾页（closing）：主题升华处，用玻璃实体或星云强化记忆点。
+- 封面（cover）：第一眼的「空间纵深感」与品牌氛围——**这是唯一允许使用粒子风暴（`field` / `nebula`）的地方**。
+- 章节分隔（section-divider）/ 关键概念页 / 收尾页（closing）：主题升华处，用**安静**预设铺垫仪式感——`orbs`（玻璃气泡）/ `petals`（花瓣）/ `waves`（正弦波）/ `object`（线框实体）；**绝不用 `field` / `nebula`**。
 
 **不应该加（信号）**
 - 纯信息页：bullets / grid-cards / kpi-grid / comparison / two-column / timeline /
   stat-highlight / chart —— 内容本身已清晰，加 3D 只会增加噪声、拖慢性能。
 - 一页已有大图（hero）又要在同一处加实体 → 二选一，避免视觉打架。
+- **非封面页绝不使用 `field` / `nebula`（粒子风暴）**——这是硬约束，`build.py` 会自动把这类误用改成像 `orbs` 的安静预设，但请从源头就选对。
 
 ## 3. 场景类型速查（build.py 内置预设，共 7 种）
 
 | 预设 `scene` | 效果 | 适用 | 主题气质 |
 |---|---|---|---|
-| `field` | 缓慢漂浮的彩色柔光点（bokeh，低透明度） | 封面 / 章节分隔 / 氛围背景，最通用、最安全 | 中性 |
-| `nebula` | 更密、更快的粒子星云，冲击更强 | 规模 / 增长 / 生态类主题，需要「哇」一下时 | 科技 / 数据 |
+| `field` | **粒子风暴**：缓慢漂浮的彩色柔光点（bokeh，低透明度） | **仅封面**（首页唯一允许的风暴） | 中性 |
+| `nebula` | **粒子风暴**：更密、更快的粒子星云，冲击更强 | **仅封面**（需要「哇」一下时） | 科技 / 数据 |
 | `object` | 缓慢自转的半透明线框多面体 + 实体层，默认偏右 | 结构 / 机制 / 核心概念页 | **偏理工**——人文/文学/历史主题慎用 |
 | `network` | 节点 + 连线的关系网（缓慢自转） | **仅限内容本身就是关系/网络/生态**的页；不要压在普通文字页上（散点会像污渍） | 科技 / 数据 |
 | `petals` | 拉长柔光「花瓣」缓缓下落 + 横向摆动 | 文学 / 历史 / 人文 / 自然 / 抒情氛围页 | 人文 / 诗意 |
@@ -53,8 +63,8 @@
 
 - **人文 / 文学 / 历史 / 艺术**（如《红楼梦》、诗词、美学）：首选 `petals`、`orbs`、`waves`；
   慎用 `object`（线框几何有强烈「数学/科技」暗示）与 `network`（散点易像噪点）。
-- **科技 / 数据 / 工程**：`field`、`nebula`、`object`、`network` 均可。
-- **拿不准时**：`field` 最安全。
+- **科技 / 数据 / 工程**：封面可用 `field` / `nebula`（粒子风暴）；非封面页用 `object` / `network` / `orbs` / `petals` / `waves`。
+- **拿不准时**：非封面页用 `orbs` 最安全（安静、通用、不抢戏）。
 - 同一 deck 内 3D 预设不宜超过 3 种，保持视觉语言统一。
 
 ### 3.2 `object` 形状可选
@@ -76,11 +86,11 @@
 ## 5. outline 写法（AI 参照，用户无需关心）
 
 ```json
-{ "layout": "cover", "title": "Lean 形式化证明", "three": { "scene": "field" } }
-{ "layout": "section-divider", "num": "01", "title": "什么是 Lean", "three": { "scene": "field" } }
+{ "layout": "cover", "title": "Lean 形式化证明", "three": { "scene": "field" } }          # 粒子风暴仅封面
+{ "layout": "section-divider", "num": "01", "title": "什么是 Lean", "three": { "scene": "orbs" } }
 { "layout": "section-divider", "num": "02", "title": "核心机制", "three": { "scene": "object" } }
-{ "layout": "stat-highlight", "num": "100", "unit": "万行", "title": "Mathlib 代码体量", "three": { "scene": "nebula" } }
-{ "layout": "closing", "title": "让机器成为你的证明搭档", "three": { "scene": "nebula" } }
+{ "layout": "stat-highlight", "num": "100", "unit": "万行", "title": "Mathlib 代码体量", "three": { "scene": "orbs" } }
+{ "layout": "closing", "title": "让机器成为你的证明搭档", "three": { "scene": "petals" } }
 ```
 
 - `scene` 取值：`field` | `nebula` | `object[:形状]` | `network` | `petals` | `orbs` | `waves`。
@@ -103,7 +113,8 @@
 ## 6. 自检清单
 
 - [ ] 该页是否真的属于「氛围 / 关键概念」类，而非纯信息页？（否 → 不加）
-- [ ] 选的场景是否与页面分量匹配？（普通分隔用 field；升华点用 nebula/object）
+- [ ] **粒子风暴（`field` / `nebula`）是否只出现在封面？** 非封面页一律用 `orbs` / `petals` / `waves` / `object` / `network`。
+- [ ] 选的场景是否与页面分量匹配？（封面可用 field/nebula；非封面用 orbs/petals 等安静预设）
 - [ ] `object` 是否避开了居中文字？是否留足留白？
 - [ ] 全 deck 3D 页是否「克制」（不是每页都加）？
 - [ ] 重建后 `grep -c 'lg-three'` ≥ 2（canvas 元素 + 初始化），且 `three.min.js` 仅在用到时内联。

@@ -344,6 +344,14 @@ if(typeof THREE!=='undefined'){ (function(){
 '''
 
 
+# Particle-storm presets (dense drifting point clouds: field / nebula) read as
+# "busy" and clutter content pages. They are reserved for the COVER slide only;
+# on every other slide build.py remaps them to a calm preset so the deck stays
+# clean. The cover is guaranteed to carry the storm (auto-added if missing).
+PARTICLE_STORM = {'field', 'nebula'}
+COVER_STORM = 'field'
+CALM_FALLBACK = 'orbs'
+
 def render_scalar(text, data):
     def repl(m):
         val = data
@@ -429,12 +437,22 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         # Collect 3D scene declarations: a slide carrying a "three" field gets its
         # preset name stamped onto <section data-three="...">; the shared canvas
         # swaps to it when the slide becomes visible.
+        # Rule: particle storms (field / nebula) are COVER-ONLY. On any other
+        # slide they are remapped to a calm preset; the cover is auto-given the
+        # storm when it declares no 3D scene at all.
         three_scene = None
         if 'three' in slide and isinstance(slide.get('three'), dict):
             sc = slide['three'].get('scene')
             if sc:
-                three_scene = sc
-                three_scenes.append(sc)
+                base = sc.split(':')[0]
+                if base in PARTICLE_STORM:
+                    three_scene = COVER_STORM if layout == 'cover' else CALM_FALLBACK
+                else:
+                    three_scene = sc
+        elif layout == 'cover':
+            three_scene = COVER_STORM
+        if three_scene:
+            three_scenes.append(three_scene)
         rendered = render(tmpl, data)
         rendered = re.sub(r'(<section\b)', r'\1 data-idx="%d"' % idx, rendered, count=1)
         if three_scene:
