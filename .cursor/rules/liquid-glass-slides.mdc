@@ -1,0 +1,15 @@
+---
+description: Build Apple iOS 26 Liquid Glass style HTML slide decks via scripts/build.py
+globs: ["**/*.json"]
+alwaysApply: false
+---
+
+# liquid-glass-slides
+
+When the user wants to build a PPT / 幻灯片 / 演示 / pitch deck / keynote with a translucent "liquid glass" aesthetic:
+
+1. **Read `references/INSTRUCTIONS.md` and follow it exactly.**
+2. Entry point (zero dependencies, no network):
+   `python scripts/build.py --outline <outline.json> --out <deck.html>`
+3. Output is one self-contained `.html` file (engine + ECharts + Three.js inlined). Not for editable PPTX.
+4. Compose an `outline.json` (see `references/outline-schema.md`); let the operator decide imagery, charts, 3D, and theme automatically per the instructions — the user never writes code.

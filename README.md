@@ -31,6 +31,24 @@
 
 从 `assets/template.html` 或 `templates/deck.html` 起步，克隆 `<section class="slide">` 块，填充真实 HTML 文本。完整工作流见 `SKILL.md`。
 
+## 跨平台使用（Claude Code / Codex / Gemini / Cursor）
+
+本仓库的**核心正文**统一放在 [`references/INSTRUCTIONS.md`](references/INSTRUCTIONS.md)，与各 AI 平台无关。各平台只需放置一个极薄的"指针文件"即可加载：
+
+| 平台 | 加载文件 | 说明 |
+|---|---|---|
+| **WorkBuddy** | `SKILL.md` | 技能本体（含 frontmatter） |
+| **Claude Code** | `CLAUDE.md` | 打开仓库时自动注入上下文；亦可复制到 `.claude/skills/liquid-glass-slides/SKILL.md` 作为斜杠命令 |
+| **OpenAI Codex / ChatGPT** | `AGENTS.md` | 事实上的通用智能体说明书（`/init` 生成规范） |
+| **Gemini CLI** | `GEMINI.md` | 同上 |
+| **Cursor** | `.cursor/rules/liquid-glass-slides.mdc` | 命中 `.json` 时触发 |
+
+所有平台统一的入口命令（零依赖、无需联网）：
+
+```bash
+python scripts/build.py --outline my-talk.json --out my-talk.html
+```
+
 ## 目录结构
 
 ```
