@@ -34,6 +34,7 @@ Load only the references needed for the current task:
 - `references/ai-imagery.md` — **when/what/where to add AI images**: per-layout guidance, prompt shape, the transparent-background trap + flood-fill cutout, and save+embed flow. Read this whenever you decide to generate imagery.
 - `references/echarts-charts.md` — **when/what/where to add ECharts charts**: per-page decision rule (only where real quantitative data exists), chart-type selection, placement, and the auto-applied liquid-glass theme. Read this whenever a slide could benefit from a data visualization.
 - `references/three-3d.md` — **when/what/where to add Three.js 3D scenes**: per-page decision rule (only "atmosphere / key-concept" slides benefit), scene presets (`field` / `nebula` / `object`), placement behind content, single-shared-canvas mechanics, and style consistency. Read this whenever a slide could benefit from 3D depth.
+- `references/ripple-textures.md` — **when/what/where to add ripple material**: water caustics, concentric rings, and cast-acrylic flow textures with protected reading zones. Read this only when water, propagation, resonance, flow, or transparent-material cues serve the topic.
 - `references/theme-palettes.md` — **topic → color theme**: curated 3-color palettes by mood (tech / academic / finance / health / nature / creative / energetic / luxury / calm), the rule that the 3 background blobs and the Three.js particles share the theme, and that body text stays near-black. Read this whenever choosing a deck's color theme.
 - `references/outline-schema.md` — the `outline.json` field spec for the one-click build path (`scripts/build.py`): every layout, its fields, and the `{{field}}` / `{{#items}}` placeholder contract.
 
@@ -91,6 +92,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
        d. Layouts auto-handle repetition: pass a list under `items` and the snippet repeats it with staggered reveal; `grid-cards` / `kpi-grid` auto-pick `g2`/`g3`/`g4` by item count. `image-frame` and `object-float` take an image `src` (base64 or local path — build.py inlines it) and apply the concentric-rounded / floating rules above.
        e. **Add ECharts charts where the data earns it**: for any slide carrying a `"chart": { "option": {...} }` field (use layout `chart`), `build.py` inlines `assets/echarts.min.js` automatically and applies the liquid-glass theme (transparent canvas, iOS palette, frosted tooltip). Per `references/echarts-charts.md`, add a chart **only** where the page has real, comparable, quantitative data — never fabricate numbers, and never chart a page that is already text-only or visually complete (timeline, bullets, dividers). The `option` must be pure JSON (no JS functions).
        f. To iterate, edit the JSON and re-run — identical outline always yields an identical deck.
+       g. **Use ripple material selectively**: sparse atmosphere pages may add `surface:{"kind":"ripple",...}` for `rings`, `flow`, or `caustic`. Keep dense reading pages calm and follow `references/ripple-textures.md`.
 
 7. **Verify**
    - Read `references/output-quality.md`.

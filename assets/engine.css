@@ -71,6 +71,90 @@ body{ background:linear-gradient(160deg,#eef2f8,#f6f7fb); color:var(--ink);
 .deck{ position:relative; z-index:2; }
 .slide-content{ position:relative; z-index:2; }
 
+/* ============ RIPPLE MATERIAL（静态回退 + 动态场景的低成本底纹）============ */
+/*
+   The ripple layer belongs to the material, never to the readable content.
+   build.py inserts one layer only on slides that opt into surface.kind=ripple.
+   Masks keep the high-frequency texture out of the primary reading zone.
+*/
+.ripple-surface{ position:absolute; inset:0; z-index:1; pointer-events:none;
+  overflow:hidden; opacity:var(--ripple-opacity,.16); mix-blend-mode:multiply;
+  transform:translateZ(0); will-change:transform,background-position; }
+.ripple-subtle{ --ripple-opacity:.12; }
+.ripple-hero{ --ripple-opacity:.24; }
+.ripple-dynamic{ --ripple-opacity:.09; }
+.ripple-static .ripple-surface{ animation:none !important; transform:none !important; }
+/* Ripple is already the hero material. Hide template orbs only on these pages
+   so ordinary Liquid Glass decks keep their existing decorative vocabulary. */
+.slide.ripple-material > .orb{ display:none; }
+
+.ripple-rings .ripple-surface{
+  background:
+    repeating-radial-gradient(circle at 78% 76%, transparent 0 18px,
+      rgba(var(--accent-rgb),.34) 20px 22px, transparent 25px 36px),
+    repeating-radial-gradient(circle at 20% 18%, transparent 0 14px,
+      rgba(var(--accent2-rgb),.20) 16px 18px, transparent 21px 31px),
+    repeating-radial-gradient(circle at 48% 62%, transparent 0 25px,
+      rgba(255,255,255,.72) 27px 29px, transparent 32px 44px);
+  background-size:110% 110%, 86% 86%, 130% 130%;
+  animation:rippleRings 18s ease-in-out infinite alternate;
+}
+.ripple-flow .ripple-surface{
+  background:
+    repeating-radial-gradient(ellipse at 48% 116%, transparent 0 16px,
+      rgba(255,255,255,.72) 18px 21px,
+      rgba(var(--accent-rgb),.26) 23px 25px, transparent 28px 42px),
+    linear-gradient(180deg, transparent 28%, rgba(var(--accent2-rgb),.08) 62%, rgba(var(--accent-rgb),.22));
+  background-size:118% 116%, 100% 100%;
+  animation:rippleFlow 22s ease-in-out infinite alternate;
+}
+.ripple-caustic .ripple-surface{
+  background:
+    repeating-radial-gradient(ellipse at 12% 36%, transparent 0 18px,
+      rgba(255,255,255,.76) 20px 22px, transparent 25px 38px),
+    repeating-radial-gradient(ellipse at 74% 72%, transparent 0 22px,
+      rgba(var(--accent-rgb),.24) 24px 27px, transparent 30px 45px),
+    repeating-radial-gradient(ellipse at 48% 18%, transparent 0 13px,
+      rgba(var(--accent2-rgb),.18) 15px 17px, transparent 20px 34px);
+  background-size:84% 72%, 104% 88%, 68% 64%;
+  filter:blur(.35px) saturate(125%);
+  animation:rippleCaustic 24s ease-in-out infinite alternate;
+}
+
+.ripple-zone-bottom .ripple-surface{
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0 38%,rgba(0,0,0,.18) 55%,#000 76%);
+  mask-image:linear-gradient(to bottom,transparent 0 38%,rgba(0,0,0,.18) 55%,#000 76%);
+}
+.ripple-zone-bottom-right .ripple-surface{
+  -webkit-mask-image:radial-gradient(circle at 82% 78%,#000 0 20%,rgba(0,0,0,.7) 38%,transparent 72%);
+  mask-image:radial-gradient(circle at 82% 78%,#000 0 20%,rgba(0,0,0,.7) 38%,transparent 72%);
+}
+.ripple-zone-edge .ripple-surface{
+  -webkit-mask-image:radial-gradient(ellipse at center,transparent 0 34%,rgba(0,0,0,.18) 57%,#000 92%);
+  mask-image:radial-gradient(ellipse at center,transparent 0 34%,rgba(0,0,0,.18) 57%,#000 92%);
+}
+.ripple-zone-full .ripple-surface{ opacity:calc(var(--ripple-opacity,.16) * .72); }
+
+@keyframes rippleRings{
+  from{ background-position:0 0, 0 0, 0 0; transform:scale(1.01); }
+  to{ background-position:2.5vw -1.5vh, -2vw 1.5vh, 1vw -2vh; transform:scale(1.035); }
+}
+@keyframes rippleFlow{
+  from{ background-position:50% 0, 0 0; transform:translateY(0) scale(1.02); }
+  to{ background-position:53% -2vh, 0 0; transform:translateY(-1.1vh) scale(1.035); }
+}
+@keyframes rippleCaustic{
+  from{ background-position:0 0, 0 0, 0 0; transform:scale(1.02) rotate(-.15deg); }
+  to{ background-position:2vw 1.4vh, -1.8vw -1vh, 1vw -1.5vh; transform:scale(1.045) rotate(.15deg); }
+}
+@media (max-width:760px){
+  .ripple-hero{ --ripple-opacity:.18; }
+  .ripple-surface{ background-size:92% 92%, 100% 100%, 112% 112%; }
+}
+@media (prefers-reduced-motion:reduce){
+  .ripple-surface{ animation:none !important; transform:none !important; }
+}
+
 /* ============ TYPE ============ */
 .eyebrow{ font-size:var(--small-size); letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; }
 h1{ font-weight:700; letter-spacing:-.02em; line-height:1.06; font-size:var(--title-size); margin:.3em 0 .25em; }

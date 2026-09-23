@@ -216,7 +216,7 @@ if(typeof THREE!=='undefined'){ (function(){
       torus:function(r){ return new THREE.TorusGeometry(r*0.9,r*0.32,18,44); },
       sphere:function(r){ return new THREE.SphereGeometry(r,32,24); }
     };
-    var mk=makers[o.shape]||makers.icosaahedron;
+    var mk=makers[o.shape]||makers.icosahedron;
     var geo=mk(o.r||2.2);
     var mat=new THREE.MeshStandardMaterial({color:PALETTE[0],transparent:true,opacity:0.22,roughness:0.35,metalness:0.1});
     var mesh=new THREE.Mesh(geo,mat);
@@ -312,17 +312,86 @@ if(typeof THREE!=='undefined'){ (function(){
     scene.add(lines);
     return {scene:scene,camera:cam,update:function(t){ scene.rotation.y=t*0.12; }};
   }
+  // Procedural water material. It renders a transparent light field behind the
+  // slide content; the DOM ripple layer remains as the static/print fallback.
+  // Arguments are encoded in the scene name for deterministic builds:
+  // ripple:<rings|flow|caustic>:<bottom|bottom-right|edge|full>:<subtle|hero>:<seed>
+  function rippleScene(pattern,zone,intensity,seed){
+    var scene=new THREE.Scene();
+    var cam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+    var patternMap={rings:0,flow:1,caustic:2};
+    var zoneMap={bottom:0,'bottom-right':1,edge:2,full:3};
+    var strength=intensity==='hero'?0.68:0.38;
+    var mat=new THREE.ShaderMaterial({
+      transparent:true,depthWrite:false,depthTest:false,
+      uniforms:{
+        uTime:{value:0},uResolution:{value:new THREE.Vector2(1,1)},
+        uPattern:{value:patternMap[pattern]===undefined?0:patternMap[pattern]},
+        uZone:{value:zoneMap[zone]===undefined?0:zoneMap[zone]},
+        uIntensity:{value:strength},uSeed:{value:parseFloat(seed)||0},
+        uColorA:{value:new THREE.Color(PALETTE[0])},
+        uColorB:{value:new THREE.Color(PALETTE[1]||PALETTE[0])}
+      },
+      vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}',
+      fragmentShader:[
+        'precision highp float;',
+        'varying vec2 vUv;',
+        'uniform float uTime,uPattern,uZone,uIntensity,uSeed;',
+        'uniform vec2 uResolution;',
+        'uniform vec3 uColorA,uColorB;',
+        'float ringAt(vec2 uv,vec2 c,float phase){',
+        '  float aspect=uResolution.x/max(uResolution.y,1.0);',
+        '  vec2 p=(uv-c)*vec2(aspect,1.0);',
+        '  float w=.5+.5*sin(length(p)*74.0-phase);',
+        '  return pow(max(w,0.0),12.0);',
+        '}',
+        'float zoneMask(vec2 uv){',
+        '  if(uZone<.5) return smoothstep(.28,.82,1.0-uv.y);',
+        '  if(uZone<1.5) return 1.0-smoothstep(.16,.78,distance(uv,vec2(.82,.20)));',
+        '  if(uZone<2.5) return smoothstep(.32,.72,length((uv-.5)*vec2(1.18,1.0)));',
+        '  return 1.0;',
+        '}',
+        'void main(){',
+        '  vec2 uv=vUv;float t=uTime*.34+uSeed*.173;float v=0.0;',
+        '  if(uPattern<.5){',
+        '    v=ringAt(uv,vec2(.78,.24),t*2.0);',
+        '    v+=.72*ringAt(uv,vec2(.24,.72),t*1.65+2.1);',
+        '    v+=.48*ringAt(uv,vec2(.52,.42),t*1.3+4.2);',
+        '  }else if(uPattern<1.5){',
+        '    float y=uv.y+sin(uv.x*8.0+t)*.028+sin(uv.x*17.0-t*.7)*.012;',
+        '    float bands=.5+.5*sin(y*76.0-t*2.2);',
+        '    v=pow(max(bands,0.0),13.0)+.35*pow(.5+.5*sin(y*38.0+t),10.0);',
+        '  }else{',
+        '    vec2 q=uv*vec2(12.0,9.0);',
+        '    float a=sin(q.x+sin(q.y*1.21+t)+uSeed);',
+        '    float b=sin(q.y*1.37+sin(q.x*.83-t*.8));',
+        '    float c=sin((q.x+q.y)*.74+sin(q.x-q.y+t*.6));',
+        '    v=pow(clamp(abs((a+b+c)/3.0),0.0,1.0),7.0)*1.65;',
+        '  }',
+        '  float mask=zoneMask(uv);',
+        '  vec3 col=mix(uColorA,uColorB,clamp(uv.x+v*.18,0.0,1.0));',
+        '  col=mix(col,vec3(1.0),clamp(v*.72,0.0,.82));',
+        '  float alpha=clamp(v,0.0,1.0)*mask*uIntensity*.42;',
+        '  gl_FragColor=vec4(col,alpha);',
+        '}'
+      ].join('')
+    });
+    var quad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),mat); scene.add(quad);
+    return {scene:scene,camera:cam,update:function(t){mat.uniforms.uTime.value=t;},
+      resize:function(w,h){mat.uniforms.uResolution.value.set(w,h);}};
+  }
   var FACTORY={'field':function(){return particleScene({count:1100,spread:80,size:0.95,opacity:0.9,speed:1,camZ:72});},
               'nebula':function(){return particleScene({count:1700,spread:54,size:1.15,opacity:0.95,speed:1.7,camZ:62});},
               'object':function(arg){return objectScene({shape:arg});},
               'network':function(){return networkScene({count:30,spread:15});},
               'petals':function(){return petalsScene({});},
               'orbs':function(){return orbsScene({});},
-              'waves':function(){return wavesScene({});}};
+              'waves':function(){return wavesScene({});},
+              'ripple':function(pattern,zone,intensity,seed){return rippleScene(pattern,zone,intensity,seed);}};
   // Scene name may carry an argument: "object:torusKnot" -> FACTORY.object('torusKnot')
   var built={}; function get(n){ if(!n||built[n]) return built[n];
     var parts=n.split(':'); var f=FACTORY[parts[0]];
-    if(f) built[n]=f(parts[1]);
+    if(f) built[n]=f.apply(null,parts.slice(1));
     return built[n]; }
   var used = window.__LG_THREE_USED__||[]; used.forEach(get);
   var slides=Array.prototype.slice.call(document.querySelectorAll('.slide'));
@@ -336,7 +405,8 @@ if(typeof THREE!=='undefined'){ (function(){
     var dt=(last===null||et<last)?0.016:Math.min(et-last,0.05); last=et;
     var a=get(active); if(a){ a.update(et,dt); renderer.render(a.scene,a.camera); } else renderer.clear(); }
   function resize(){ var w=window.innerWidth,h=window.innerHeight; renderer.setSize(w,h,false);
-    Object.keys(built).forEach(function(k){ var s=built[k]; if(s.camera.isPerspectiveCamera){ s.camera.aspect=w/h; s.camera.updateProjectionMatrix(); } }); }
+    Object.keys(built).forEach(function(k){ var s=built[k]; if(s.camera.isPerspectiveCamera){ s.camera.aspect=w/h; s.camera.updateProjectionMatrix(); }
+      if(s.resize) s.resize(w,h); }); }
   window.addEventListener('resize',resize); resize();
   if(reduce){ var a=get(active)||get(used[0]); if(a) renderer.render(a.scene,a.camera); return; }
   frame();
@@ -351,6 +421,44 @@ if(typeof THREE!=='undefined'){ (function(){
 PARTICLE_STORM = {'field', 'nebula'}
 COVER_STORM = 'field'
 CALM_FALLBACK = 'orbs'
+RIPPLE_PATTERNS = {'rings', 'flow', 'caustic'}
+RIPPLE_ZONES = {'bottom', 'bottom-right', 'edge', 'full'}
+RIPPLE_INTENSITIES = {'subtle', 'hero'}
+RIPPLE_MOTIONS = {'static', 'drift', 'pulse'}
+
+
+def normalize_ripple(surface, slide_number):
+    """Validate an optional surface.kind=ripple declaration.
+
+    The normalized values are encoded in CSS classes and (when dynamic) in the
+    Three.js scene key. Keeping the seed in the outline makes repeated builds
+    byte-for-byte deterministic.
+    """
+    if not isinstance(surface, dict) or surface.get('kind') != 'ripple':
+        return None
+
+    def choice(key, allowed, default):
+        value = str(surface.get(key, default))
+        if value not in allowed:
+            sys.stderr.write('[warn] ripple.%s "%s" invalid on slide %d -> %s\n' %
+                             (key, value, slide_number, default))
+            return default
+        return value
+
+    seed = surface.get('seed', slide_number)
+    try:
+        seed = int(seed)
+    except (TypeError, ValueError):
+        sys.stderr.write('[warn] ripple.seed "%s" invalid on slide %d -> %d\n' %
+                         (seed, slide_number, slide_number))
+        seed = slide_number
+    return {
+        'pattern': choice('pattern', RIPPLE_PATTERNS, 'rings'),
+        'zone': choice('zone', RIPPLE_ZONES, 'bottom'),
+        'intensity': choice('intensity', RIPPLE_INTENSITIES, 'subtle'),
+        'motion': choice('motion', RIPPLE_MOTIONS, 'drift'),
+        'seed': seed,
+    }
 
 def render_scalar(text, data):
     def repl(m):
@@ -434,6 +542,12 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             data['chart_id'] = cid
             data['chart_height'] = slide['chart'].get('height', 'min(50vh,440px)')
             charts.append({'id': cid, 'option': slide['chart'].get('option', {})})
+        # Optional material layer. It always gets a CSS fallback; when no explicit
+        # Three.js scene competes for the shared canvas, a dynamic shader scene is
+        # selected as well.
+        ripple = normalize_ripple(slide.get('surface'), idx + 1)
+        ripple_dynamic = bool(ripple and ripple['motion'] != 'static')
+
         # Collect 3D scene declarations: a slide carrying a "three" field gets its
         # preset name stamped onto <section data-three="...">; the shared canvas
         # swaps to it when the slide becomes visible.
@@ -444,20 +558,43 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         if 'three' in slide and isinstance(slide.get('three'), dict):
             sc = slide['three'].get('scene')
             if sc:
+                if ripple_dynamic:
+                    sys.stderr.write('[warn] slide %d has both three and dynamic ripple; '
+                                     'using three + static ripple fallback\n' % (idx + 1))
+                    ripple_dynamic = False
                 base = sc.split(':')[0]
                 if base in PARTICLE_STORM:
                     three_scene = COVER_STORM if layout == 'cover' else CALM_FALLBACK
                 else:
                     three_scene = sc
-        elif layout == 'cover':
+        elif ripple_dynamic:
+            three_scene = 'ripple:%s:%s:%s:%s' % (
+                ripple['pattern'], ripple['zone'], ripple['intensity'], ripple['seed'])
+        elif layout == 'cover' and not ripple:
             three_scene = COVER_STORM
         if three_scene:
             three_scenes.append(three_scene)
         rendered = render(tmpl, data)
         rendered = re.sub(r'(<section\b)', r'\1 data-idx="%d"' % idx, rendered, count=1)
+        if ripple:
+            ripple_classes = ' '.join([
+                'ripple-material',
+                'ripple-' + ripple['pattern'],
+                'ripple-zone-' + ripple['zone'],
+                'ripple-' + ripple['intensity'],
+                'ripple-dynamic' if ripple_dynamic else 'ripple-static',
+            ])
+            rendered = re.sub(
+                r'(<section\b[^>]*class=")([^"]*)(")',
+                lambda m: m.group(1) + m.group(2) + ' ' + ripple_classes + m.group(3),
+                rendered, count=1)
         if three_scene:
             rendered = re.sub(r'(<section\b[^>]*>)',
                               lambda m: m.group(1).rstrip('>') + ' data-three="%s">' % three_scene,
+                              rendered, count=1)
+        if ripple:
+            rendered = re.sub(r'(<section\b[^>]*>)',
+                              r'\1\n  <div class="ripple-surface" aria-hidden="true"></div>',
                               rendered, count=1)
         slides_out.append(rendered)
 
@@ -561,7 +698,7 @@ def main():
     with open(out_path, 'w', encoding='utf-8') as f:
         f.write(html)
 
-    n_slides = html.count('class="slide"')
+    n_slides = len(re.findall(r'<section\b[^>]*class="[^"]*\bslide\b', html))
     print('OK  ->  %s  (%d slides, %d KB)' % (out_path, n_slides, len(html.encode('utf-8')) // 1024))
 
 

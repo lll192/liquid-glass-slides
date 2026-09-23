@@ -143,6 +143,32 @@ unavailable, the slide silently falls back to the static light gradient — no e
   (`bullets`, `grid-cards`, `comparison`, `timeline`) — the motion distracts from reading.
 - Style is auto-tuned to the light liquid-glass theme (soft bokeh, iOS palette, low opacity) — no skinning needed.
 
+### `surface` (optional ripple material per slide)
+
+Add an opt-in water/acrylic material layer without changing the slide layout:
+
+```json
+"surface": {
+  "kind": "ripple",
+  "pattern": "flow",
+  "zone": "bottom",
+  "intensity": "hero",
+  "motion": "drift",
+  "seed": 11
+}
+```
+
+- `pattern`: `rings` | `flow` | `caustic`.
+- `zone`: `bottom` | `bottom-right` | `edge` | `full`; use a localized zone to protect text.
+- `intensity`: `subtle` | `hero`.
+- `motion`: `static` | `drift` | `pulse`.
+- `seed`: integer stored in the outline for deterministic output.
+
+All modes receive a CSS fallback. Dynamic modes use the existing shared Three.js canvas and
+therefore trigger Three.js inlining. If the same slide also declares `three`, the explicit
+3D scene wins and the ripple remains static. See `references/ripple-textures.md` for selection
+rules, allowed host layouts, and verification.
+
 ## Image rule (critical)
 
 Decide placement **before** you have the image:

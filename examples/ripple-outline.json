@@ -1,0 +1,74 @@
+{
+  "lang": "zh-CN",
+  "title": "Ripple Material · 涟漪材质原型",
+  "theme": {
+    "name": "water-optics",
+    "colors": ["#0A84FF", "#64D2FF", "#30D5C8"],
+    "accent": "#006FC9"
+  },
+  "slides": [
+    {
+      "layout": "cover",
+      "eyebrow": "RIPPLE MATERIAL SYSTEM",
+      "title": "让玻璃内部产生水的记忆",
+      "subtitle": "静区承载文字，动区承载折射、焦散与涟漪。",
+      "surface": {
+        "kind": "ripple",
+        "pattern": "flow",
+        "zone": "bottom",
+        "intensity": "hero",
+        "motion": "drift",
+        "seed": 11
+      }
+    },
+    {
+      "layout": "section-divider",
+      "num": "01",
+      "title": "同心波：影响从一点扩散",
+      "subtitle": "多个波源轻微干涉，但中央文字区保持平静。",
+      "surface": {
+        "kind": "ripple",
+        "pattern": "rings",
+        "zone": "bottom-right",
+        "intensity": "hero",
+        "motion": "pulse",
+        "seed": 23
+      }
+    },
+    {
+      "layout": "stat-highlight",
+      "eyebrow": "OPTICAL DEPTH",
+      "num": "3",
+      "unit": "层",
+      "title": "纹理、折射、焦散共同构成材质深度",
+      "desc": "水纹不是背景贴图，而是被限制在边缘的光学层。",
+      "surface": {
+        "kind": "ripple",
+        "pattern": "caustic",
+        "zone": "edge",
+        "intensity": "subtle",
+        "motion": "drift",
+        "seed": 37
+      }
+    },
+    {
+      "layout": "closing",
+      "eyebrow": "MATERIAL, NOT EFFECT",
+      "title": "让水纹成为材料，而不是特效",
+      "subtitle": "克制、分区、可复现。",
+      "contacts": [
+        {"icon": "◌", "text": "Rings"},
+        {"icon": "≈", "text": "Flow"},
+        {"icon": "✦", "text": "Caustic"}
+      ],
+      "surface": {
+        "kind": "ripple",
+        "pattern": "rings",
+        "zone": "full",
+        "intensity": "subtle",
+        "motion": "static",
+        "seed": 41
+      }
+    }
+  ]
+}
