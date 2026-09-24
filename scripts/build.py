@@ -425,6 +425,11 @@ RIPPLE_PATTERNS = {'rings', 'flow', 'caustic'}
 RIPPLE_ZONES = {'bottom', 'bottom-right', 'edge', 'full'}
 RIPPLE_INTENSITIES = {'subtle', 'hero'}
 RIPPLE_MOTIONS = {'static', 'drift', 'pulse'}
+AUTO_RIPPLE_DENSE_LAYOUTS = {
+    'bullets', 'grid-cards', 'kpi-grid', 'comparison', 'two-column',
+    'timeline', 'toc',
+}
+IMAGE_FIELDS = {'hero', 'image'}
 
 
 def normalize_ripple(surface, slide_number):
@@ -458,6 +463,44 @@ def normalize_ripple(surface, slide_number):
         'intensity': choice('intensity', RIPPLE_INTENSITIES, 'subtle'),
         'motion': choice('motion', RIPPLE_MOTIONS, 'drift'),
         'seed': seed,
+    }
+
+
+def slide_has_image(slide):
+    """Return True when a slide already carries image-based visual content."""
+    for key in IMAGE_FIELDS:
+        value = slide.get(key)
+        if isinstance(value, str) and value.strip():
+            return True
+
+    def contains_img(value):
+        if isinstance(value, str):
+            return bool(re.search(r'<img\b', value, re.I))
+        if isinstance(value, dict):
+            return any(contains_img(v) for v in value.values())
+        if isinstance(value, list):
+            return any(contains_img(v) for v in value)
+        return False
+
+    return contains_img(slide)
+
+
+def auto_ripple_surface(slide, slide_number):
+    """Create a deterministic, reading-safe ripple fallback.
+
+    Dense layouts receive a subtle static texture localized away from the main
+    reading zone. Sparse layouts may drift gently. Explicit surface settings
+    always win.
+    """
+    layout = slide.get('layout', '')
+    even = slide_number % 2 == 0
+    return {
+        'kind': 'ripple',
+        'pattern': 'rings' if even else 'flow',
+        'zone': 'bottom-right' if even else 'bottom',
+        'intensity': 'subtle',
+        'motion': 'static' if layout in AUTO_RIPPLE_DENSE_LAYOUTS else 'drift',
+        'seed': 1000 + slide_number * 97,
     }
 
 def render_scalar(text, data):
@@ -520,6 +563,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     charts = []
     chart_counter = 0
     three_scenes = []
+    auto_ripple_enabled = outline.get('auto_ripple', True) is not False
     for idx, slide in enumerate(outline.get('slides', [])):
         layout = slide.get('layout')
         snippet_path = os.path.join(sp_dir, layout + '.html')
@@ -542,10 +586,21 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             data['chart_id'] = cid
             data['chart_height'] = slide['chart'].get('height', 'min(50vh,440px)')
             charts.append({'id': cid, 'option': slide['chart'].get('option', {})})
-        # Optional material layer. It always gets a CSS fallback; when no explicit
-        # Three.js scene competes for the shared canvas, a dynamic shader scene is
-        # selected as well.
-        ripple = normalize_ripple(slide.get('surface'), idx + 1)
+        # Material layer. Explicit surface settings always win. Otherwise, a
+        # slide with no Three.js, ECharts, or image receives a restrained ripple
+        # fallback so information pages do not collapse into a flat background.
+        surface = slide.get('surface')
+        auto_ripple = False
+        has_chart = isinstance(slide.get('chart'), dict)
+        three_cfg = slide.get('three')
+        has_three = isinstance(three_cfg, dict) and bool(three_cfg.get('scene'))
+        has_image = slide_has_image(slide)
+        if (surface is None and auto_ripple_enabled
+                and slide.get('auto_ripple', True) is not False
+                and not has_chart and not has_three and not has_image):
+            surface = auto_ripple_surface(slide, idx + 1)
+            auto_ripple = True
+        ripple = normalize_ripple(surface, idx + 1)
         ripple_dynamic = bool(ripple and ripple['motion'] != 'static')
 
         # Collect 3D scene declarations: a slide carrying a "three" field gets its
@@ -579,6 +634,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         if ripple:
             ripple_classes = ' '.join([
                 'ripple-material',
+                'ripple-auto' if auto_ripple else 'ripple-explicit',
                 'ripple-' + ripple['pattern'],
                 'ripple-zone-' + ripple['zone'],
                 'ripple-' + ripple['intensity'],

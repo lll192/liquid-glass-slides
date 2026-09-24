@@ -1,15 +1,16 @@
 <section class="slide" data-layout="cover">
-  <div class="orb o1"></div><div class="orb o2"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(92vw,960px);text-align:center">
+    <div class="wrap cover-layout">
+      <div class="cover-copy">
+        <div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>
+        <h1 class="reveal" style="--i:1">{{title}}</h1>
+        <p class="lead reveal" style="--i:2">{{subtitle}}</p>
+      </div>
       {{#hero}}
-      <figure class="photo-frame reveal" style="--i:0;margin:0 auto 1.2rem;max-width:min(92vw,640px)">
-        <img src="{{hero}}" alt="{{hero_alt}}" style="height:min(26vh,240px)">
+      <figure class="photo-frame cover-hero reveal" style="--i:0">
+        <img src="{{hero}}" alt="{{hero_alt}}">
       </figure>
       {{/hero}}
-      <div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>
-      <h1 class="reveal" style="--i:1">{{title}}</h1>
-      <p class="lead reveal" style="--i:2;margin:.35em auto 0">{{subtitle}}</p>
     </div>
   </div>
 </section>

@@ -1,18 +1,19 @@
 # Liquid Glass Slides · 液态玻璃幻灯片
 
-> 一个 WorkBuddy 技能（Skill）：把文章、大纲、笔记、Markdown 或零散想法，一键生成 **Apple iOS 26 液态玻璃（Liquid Glass）风格** 的动画 HTML 幻灯片。
+> 一个面向多种 AI 编程与智能体环境的演示文稿生成 Skill：把文章、大纲、笔记、Markdown 或零散想法，一键生成 **Apple iOS 26 液态玻璃（Liquid Glass）风格** 的动画 HTML 幻灯片。
 
 [English version below ↓](#english)
 
 ## 这是什么
 
-`liquid-glass-slides` 是一个面向 WorkBuddy 的演示文稿生成技能。它把任意素材转化为**单文件、可全屏播放**的 HTML 幻灯片，具备：
+`liquid-glass-slides` 是一个模型无关、可移植的演示文稿生成技能。它既可安装到 WorkBuddy 或支持 `SKILL.md` 的智能体环境，也可通过仓库内置适配文件在 OpenAI Codex、Claude Code、Gemini CLI 与 Cursor 中直接使用。任何能够读取 Markdown 并运行 Python 的 AI Agent，也可以遵循 `references/INSTRUCTIONS.md` 完成同样的构建流程。
 
 - **液态玻璃质感**：半透明磨砂面板、背景虚化与折射、边缘高光、层次景深，忠实还原 Apple 的 Liquid Glass 设计语言（纯 CSS 实现，无原生 Apple API）。
 - **真实中文文字**：所有可读文字都是真正的 HTML 文本，绝不乱码、可直接编辑。
 - **零依赖单文件输出**：内联 CSS/JS，浏览器直接全屏播放，支持键盘 / 滚轮 / 触摸翻页与入场动画。
 - **ECharts 数据图表**：仅在页面确有真实可比数据时自动加入（趋势、对比、占比、雷达），并自动套用液态玻璃主题。
 - **Three.js 3D 背景**：在封面 / 章节页 / 关键概念页自动加入粒子、星云、玻璃实体等 3D 场景（单共享画布，按可见页切换）。
+- **自动涟漪兜底**：页面没有 Three.js、ECharts 或图片时，构建器自动加入克制的涟漪材质；信息密集页使用静态低对比纹理，稀疏页面可使用轻微动态。
 - **主题色自动系统**：根据主题自动派生 3 个背景晕染色 + 粒子色 + 1 个强调色，正文保持近黑以保证可读性。
 - **可选 AI 配图**：封面 / 章节分隔可自动生成透明背景的装饰插画（仅用于装饰，文字绝不进图）。
 
@@ -31,17 +32,18 @@
 
 从 `assets/template.html` 或 `templates/deck.html` 起步，克隆 `<section class="slide">` 块，填充真实 HTML 文本。完整工作流见 `SKILL.md`。
 
-## 跨平台使用（Claude Code / Codex / Gemini / Cursor）
+## 多 AI / 跨平台使用
 
-本仓库的**核心正文**统一放在 [`references/INSTRUCTIONS.md`](references/INSTRUCTIONS.md)，与各 AI 平台无关。各平台只需放置一个极薄的"指针文件"即可加载：
+本仓库的模型无关工作流统一放在 [`references/INSTRUCTIONS.md`](references/INSTRUCTIONS.md)。`SKILL.md` 提供可安装的 Skill 入口，其余平台通过各自的仓库级适配文件加载相同规则：
 
 | 平台 | 加载文件 | 说明 |
 |---|---|---|
-| **WorkBuddy** | `SKILL.md` | 技能本体（含 frontmatter） |
-| **Claude Code** | `CLAUDE.md` | 打开仓库时自动注入上下文；亦可复制到 `.claude/skills/liquid-glass-slides/SKILL.md` 作为斜杠命令 |
-| **OpenAI Codex / ChatGPT** | `AGENTS.md` | 事实上的通用智能体说明书（`/init` 生成规范） |
+| **WorkBuddy / Skill-compatible agents** | `SKILL.md` | 可安装 Skill 入口（含 frontmatter） |
+| **OpenAI Codex** | `AGENTS.md` | 仓库级指令；安装为个人 Skill 时同样可使用 `SKILL.md` |
+| **Claude Code** | `CLAUDE.md` | 打开仓库时加载；也可复制为 Claude Skill |
 | **Gemini CLI** | `GEMINI.md` | 同上 |
 | **Cursor** | `.cursor/rules/liquid-glass-slides.mdc` | 命中 `.json` 时触发 |
+| **其他 AI Agent** | `references/INSTRUCTIONS.md` | 读取模型无关说明，并调用同一个 Python 构建器 |
 
 所有平台统一的入口命令（零依赖、无需联网）：
 
@@ -81,7 +83,7 @@ liquid-glass-slides/
 <a id="english"></a>
 # Liquid Glass Slides (English)
 
-A WorkBuddy **Skill** that turns articles, outlines, notes, Markdown, or rough ideas into **Apple iOS 26 Liquid Glass style** animated HTML slide decks.
+A model-agnostic presentation-generation **Skill** that turns articles, outlines, notes, Markdown, or rough ideas into **Apple iOS 26 Liquid Glass style** animated HTML slide decks. It works as an installable skill in compatible agent environments and includes repository adapters for OpenAI Codex, Claude Code, Gemini CLI, and Cursor.
 
 ## Highlights
 
@@ -90,6 +92,7 @@ A WorkBuddy **Skill** that turns articles, outlines, notes, Markdown, or rough i
 - **Zero-dependency single file** — inlined CSS/JS, fullscreen playback, keyboard/wheel/touch navigation with reveal animations.
 - **ECharts charts** — auto-added only where real quantitative data exists, themed to match the deck.
 - **Three.js 3D backgrounds** — particles / nebula / glass solids on cover, dividers and key-concept slides (one shared canvas, swapped by visible slide).
+- **Automatic ripple fallback** — slides without Three.js, ECharts, or imagery receive a restrained ripple material automatically; dense layouts use a quiet static treatment.
 - **Auto color theme** — 3 background blobs + particle colors + 1 accent derived from the topic; body text stays near-black.
 - **Optional AI imagery** — transparent decorative hero/motif illustrations (text never baked into images).
 
@@ -102,6 +105,17 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.
 
 **Path A — hand-write:** start from `assets/template.html` or `templates/deck.html`, clone `<section class="slide">` blocks, fill real HTML. See `SKILL.md` for the full workflow.
+
+## AI platform adapters
+
+| Environment | Entry file |
+|---|---|
+| WorkBuddy / skill-compatible agents | `SKILL.md` |
+| OpenAI Codex | `AGENTS.md` |
+| Claude Code | `CLAUDE.md` |
+| Gemini CLI | `GEMINI.md` |
+| Cursor | `.cursor/rules/liquid-glass-slides.mdc` |
+| Other agents | `references/INSTRUCTIONS.md` |
 
 ## License
 

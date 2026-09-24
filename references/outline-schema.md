@@ -15,6 +15,7 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 | `lang` | string | no | HTML `lang` attr. Default `zh-CN`. |
 | `title` | string | no | Browser tab title. Default `Liquid Glass Deck`. |
 | `theme` | object | no | Topic color theme — see below. `build.py` derives the 3 background blobs, the Three.js particle palette, the accent text color, and every glow/shadow from it. **Fully automatic: the AI picks the palette from the topic; the user never sets colors.** |
+| `auto_ripple` | boolean | no | Default `true`. Automatically adds a restrained ripple surface to slides that have no Three.js, ECharts, image, or explicit `surface`. |
 | `slides` | array | **yes** | Ordered list of slide objects. Each needs a `layout`. |
 
 ## Theme (auto color system)
@@ -168,6 +169,12 @@ All modes receive a CSS fallback. Dynamic modes use the existing shared Three.js
 therefore trigger Three.js inlining. If the same slide also declares `three`, the explicit
 3D scene wins and the ripple remains static. See `references/ripple-textures.md` for selection
 rules, allowed host layouts, and verification.
+
+If `surface` is omitted, `build.py` automatically supplies a subtle deterministic ripple
+when the slide also has no `three`, `chart`, `hero`, `image`, or inline `<img>`.
+Dense layouts use a static localized texture; sparse layouts may use gentle drift.
+Set `"auto_ripple": false` at the top level or on an individual slide to opt out.
+An explicit `surface` declaration always takes precedence.
 
 ## Image rule (critical)
 

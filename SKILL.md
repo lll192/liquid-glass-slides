@@ -2,7 +2,7 @@
 name: liquid-glass-slides
 description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (presentations) from articles, outlines, notes, Markdown, or rough ideas. Use when the user asks to make a PPT / 幻灯片 / 演示 / 演讲 / 路演 / pitch deck / 课件 / keynote with a liquid-glass / 液态玻璃 / frosted-glass / 玻璃质感 aesthetic (translucent material, backdrop blur and refraction, specular highlights, light-reactive depth), optionally with AI-generated hero or cover illustrations. Produces a single self-contained HTML file that plays fullscreen in a browser with keyboard/wheel/touch navigation and reveal animations. Not for editable PPTX or hand-drawn raster images.
 agent_created: true
-version: 1.0.0
+version: 1.1.0
 author: lll192
 license: MIT
 homepage: https://github.com/lll192/liquid-glass-slides
@@ -92,7 +92,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
        d. Layouts auto-handle repetition: pass a list under `items` and the snippet repeats it with staggered reveal; `grid-cards` / `kpi-grid` auto-pick `g2`/`g3`/`g4` by item count. `image-frame` and `object-float` take an image `src` (base64 or local path — build.py inlines it) and apply the concentric-rounded / floating rules above.
        e. **Add ECharts charts where the data earns it**: for any slide carrying a `"chart": { "option": {...} }` field (use layout `chart`), `build.py` inlines `assets/echarts.min.js` automatically and applies the liquid-glass theme (transparent canvas, iOS palette, frosted tooltip). Per `references/echarts-charts.md`, add a chart **only** where the page has real, comparable, quantitative data — never fabricate numbers, and never chart a page that is already text-only or visually complete (timeline, bullets, dividers). The `option` must be pure JSON (no JS functions).
        f. To iterate, edit the JSON and re-run — identical outline always yields an identical deck.
-       g. **Use ripple material selectively**: sparse atmosphere pages may add `surface:{"kind":"ripple",...}` for `rings`, `flow`, or `caustic`. Keep dense reading pages calm and follow `references/ripple-textures.md`.
+       g. **Ripple fallback is automatic**: when a slide has no Three.js scene, ECharts chart, image, or explicit `surface`, `build.py` adds a deterministic, reading-safe ripple layer. Dense pages receive a subtle static texture; sparse pages may drift gently. Set top-level `"auto_ripple": false` to disable the deck-wide default, or `"auto_ripple": false` on one slide to opt that slide out. Explicit `surface` settings always win. See `references/ripple-textures.md`.
 
 7. **Verify**
    - Read `references/output-quality.md`.
@@ -109,6 +109,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 - Audience: general or professionally curious; avoid expert-only jargon unless requested.
 - Deck length: 8–12 slides for a talk, 12–20 for a course module, 5–8 for a short idea.
 - Output: single self-contained `.html` file.
+- Visual fallback: slides without Three.js, ECharts, images, or an explicit surface automatically receive a restrained ripple background; disable with `auto_ripple:false` globally or per slide.
 - Aesthetic: Apple iOS 26 Liquid Glass — translucent frosted panels with backdrop blur/refraction, specular edge highlights, and light-reactive depth over a vivid blurred backdrop.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).

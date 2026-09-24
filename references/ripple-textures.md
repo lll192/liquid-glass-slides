@@ -22,9 +22,23 @@ Never place high-contrast ripples directly behind dense text.
 
 Good hosts: `cover`, `section-divider`, `stat-highlight`, `big-quote`, `closing`.
 
-Avoid by default: `bullets`, `grid-cards`, `comparison`, `timeline`, `chart`, and
-other dense reading layouts. A normal 8–14 slide deck should use ripple material
-on about 2–4 slides and no more than two patterns.
+For explicit hero treatments, avoid `bullets`, `grid-cards`, `comparison`, `timeline`,
+`chart`, and other dense reading layouts. A normal 8–14 slide deck should use strong
+ripple material on about 2–4 slides and no more than two patterns.
+
+## Automatic fallback
+
+`build.py` automatically adds a ripple surface when a slide has none of the following:
+
+- an explicit `three` scene;
+- an ECharts `chart`;
+- an image field (`hero` or `image`) or inline `<img>`;
+- an explicit `surface`.
+
+This fallback is deliberately quieter than an authored hero treatment. Dense layouts receive
+`subtle` + `static` ripples in a protected bottom or bottom-right zone; sparse layouts may
+use gentle drift. The pattern and seed are deterministic. Disable the behavior with top-level
+`"auto_ripple": false`, or set the same field on one slide. Explicit `surface` settings win.
 
 ## Outline interface
 
@@ -69,8 +83,8 @@ hero motion systems on one page.
 6. Do not use ripple motion merely to fill empty space; the material must reinforce the page meaning.
 7. Omit large background `glyphs` by default on ripple slides. The water field already supplies rhythm;
    if a deck identity truly needs a symbol, use at most one restrained geometric mark such as `◌` or `≈`.
-8. Template glass orbs are hidden on ripple slides. Ripple and caustic light already provide depth;
-   ordinary non-ripple slides retain their existing orbs.
+8. Template glass orbs are not required. Ripple and caustic light already provide depth; current
+   cover, divider, and closing templates omit decorative orbs.
 
 ## Verification
 

@@ -156,7 +156,11 @@ body{ background:linear-gradient(160deg,#eef2f8,#f6f7fb); color:var(--ink);
 }
 
 /* ============ TYPE ============ */
-.eyebrow{ font-size:var(--small-size); letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+.eyebrow{ display:block; width:100%; box-sizing:border-box; margin-left:0; padding-left:0;
+  text-indent:0; justify-self:start; text-align:inherit;
+  font-size:var(--small-size); letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+.eyebrow + h1, .eyebrow + h2{ margin-left:0; padding-left:0; }
+.eyebrow + h2{ margin-top:clamp(.35rem,.8vh,.6rem); }
 h1{ font-weight:700; letter-spacing:-.02em; line-height:1.06; font-size:var(--title-size); margin:.3em 0 .25em; }
 h2{ font-weight:600; letter-spacing:-.02em; line-height:1.12; font-size:var(--h2-size); margin:0 0 var(--content-gap); }
 h3{ font-weight:600; font-size:var(--h3-size); margin:0 0 .35em; }
@@ -322,6 +326,23 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .photo-frame figcaption{ text-align:center; font-size:var(--small-size); color:var(--muted);
   padding:.55rem .2rem .15rem; }
 .float-card{ border-radius:18px; filter:drop-shadow(0 26px 48px rgba(40,60,120,.24)); }
+
+/* Cover with a real hero image: text and image share one clean baseline.
+   Without a hero, the same layout falls back to the original centered cover. */
+.cover-layout{ max-width:min(92vw,1040px); text-align:center; }
+.cover-layout .cover-copy .lead{ margin:.35em auto 0; }
+.cover-layout:has(.cover-hero){ max-width:min(92vw,1120px); display:grid;
+  grid-template-columns:minmax(0,.9fr) minmax(320px,1.1fr);
+  gap:clamp(1.6rem,4vw,4rem); align-items:center; text-align:left; }
+.cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.35em 0 0; }
+.cover-hero{ margin:0; max-width:min(48vw,620px); justify-self:end; }
+.cover-hero img{ width:100%; height:auto; max-height:min(58vh,520px); object-fit:cover; aspect-ratio:16/9; }
+@media (max-width:800px){
+  .cover-layout:has(.cover-hero){ grid-template-columns:1fr; gap:clamp(.9rem,2.5vh,1.4rem); text-align:center; }
+  .cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.35em auto 0; }
+  .cover-hero{ grid-row:1; max-width:min(88vw,620px); justify-self:center; }
+  .cover-hero img{ max-height:min(30vh,240px); }
+}
 
 /* ============ ECharts 图表卡（液态玻璃风）============ */
 /* CHART（图表页 · 左文右图分栏，文字有独立栏位，绝不被挤到边缘）*/
