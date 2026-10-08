@@ -477,6 +477,10 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .composition-constructivist .g3 .toc-card:nth-child(3n),
 .composition-constructivist .g3 .construct-grid-item:nth-child(3n),
 .composition-constructivist .g4 .construct-grid-item:nth-child(4n){ border-right:0; }
+@media (min-width:641px){
+  .composition-constructivist .toc-grid.g2 .toc-card:nth-last-child(-n+2),
+  .composition-constructivist .toc-grid.g3 .toc-card:nth-last-child(-n+3){ border-bottom:0; }
+}
 .composition-constructivist .toc-card h3,
 .composition-constructivist .construct-grid-item h3{ max-width:18ch; }
 .composition-constructivist .toc-num,
@@ -588,6 +592,8 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   .composition-constructivist .construct-grid{ grid-template-columns:1fr; }
   .composition-constructivist .toc-card,
   .composition-constructivist .construct-grid-item{ border-right:0 !important; }
+  .composition-constructivist .toc-grid .toc-card{ border-bottom:1px solid var(--construct-rule); }
+  .composition-constructivist .toc-grid .toc-card:last-child{ border-bottom:0; }
   .composition-constructivist .compare{ grid-template-columns:1fr; }
   .composition-constructivist .compare-side:first-child{ border-right:0; border-bottom:1px solid var(--construct-rule); }
   .composition-constructivist .vs{ left:auto; right:clamp(.8rem,2vw,1.2rem); top:50%; transform:translateY(-50%); }
