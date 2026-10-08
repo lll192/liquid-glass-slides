@@ -782,3 +782,83 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   .typography-editorial .slide.title-size-xlong h1{ font-size:clamp(1.65rem,8.5vw,2.8rem); max-width:16ch; }
   .typography-editorial .slide.title-size-xlong h2{ font-size:clamp(1.2rem,6vw,1.8rem); max-width:20ch; }
 }
+
+/* ============ VISUAL INTELLIGENCE（图片比例 / 图表语义）============ */
+.composition-constructivist .media-landscape .image-composition{
+  grid-template-columns:minmax(220px,4fr) minmax(0,8fr);
+}
+.composition-constructivist .media-square .image-composition{
+  grid-template-columns:minmax(220px,5fr) minmax(0,7fr);
+}
+.composition-constructivist .media-portrait .image-composition{
+  grid-template-columns:minmax(0,7fr) minmax(220px,5fr);
+}
+.composition-constructivist .media-portrait .image-field{ justify-self:end; width:min(100%,440px); }
+.composition-constructivist .media-portrait .image-field img{ object-fit:contain; height:min(62vh,600px); }
+.composition-constructivist .media-landscape .image-field img{ aspect-ratio:16/9; object-fit:cover; }
+.composition-constructivist .media-square .image-field img{ aspect-ratio:1; object-fit:cover; }
+.composition-constructivist .image-field figcaption{ text-align:left; padding-left:.25rem; }
+
+.composition-constructivist .media-landscape .cover-layout{
+  grid-template-columns:minmax(220px,5fr) minmax(0,7fr);
+}
+.composition-constructivist .media-portrait .cover-layout{
+  grid-template-columns:minmax(0,7fr) minmax(240px,5fr);
+}
+.composition-constructivist .media-portrait .cover-hero{ max-width:410px; }
+.composition-constructivist .media-portrait .section-hero{ max-width:min(34vw,420px); }
+
+.composition-constructivist .chart-proportion .chart-split,
+.composition-constructivist .chart-radar .chart-split{
+  grid-template-columns:minmax(250px,5fr) minmax(0,7fr);
+}
+.composition-constructivist .chart-data-dense .chart-split{
+  grid-template-columns:minmax(220px,3.5fr) minmax(0,8.5fr);
+}
+.composition-constructivist .chart-takeaway:not(:empty){
+  border-left:3px solid var(--accent); border-radius:0 var(--glass-radius) var(--glass-radius) 0;
+}
+.composition-constructivist .chart-card{ padding:clamp(.75rem,1.5vw,1.2rem); }
+
+/* Combined orientation rules come after the generic visual-left variant. */
+.composition-constructivist .media-landscape.variant-visual-left .image-composition{
+  grid-template-columns:minmax(0,8fr) minmax(220px,4fr);
+}
+.composition-constructivist .media-square.variant-visual-left .image-composition{
+  grid-template-columns:minmax(0,7fr) minmax(220px,5fr);
+}
+.composition-constructivist .media-portrait.variant-visual-left .image-composition{
+  grid-template-columns:minmax(240px,5fr) minmax(0,7fr);
+}
+.composition-constructivist .media-portrait.variant-visual-left .image-field{ justify-self:start; }
+.composition-constructivist .chart-proportion.variant-visual-left .chart-split,
+.composition-constructivist .chart-radar.variant-visual-left .chart-split{
+  grid-template-columns:minmax(0,7fr) minmax(250px,5fr);
+}
+.composition-constructivist .chart-data-dense.variant-visual-left .chart-split{
+  grid-template-columns:minmax(0,8.5fr) minmax(220px,3.5fr);
+}
+
+@media (max-width:800px){
+  .composition-constructivist .media-landscape .image-composition,
+  .composition-constructivist .media-square .image-composition,
+  .composition-constructivist .media-portrait .image-composition,
+  .composition-constructivist .media-landscape.variant-visual-left .image-composition,
+  .composition-constructivist .media-square.variant-visual-left .image-composition,
+  .composition-constructivist .media-portrait.variant-visual-left .image-composition{
+    grid-template-columns:1fr;
+  }
+  .composition-constructivist .media-portrait .image-field,
+  .composition-constructivist .media-portrait.variant-visual-left .image-field{
+    justify-self:start; width:min(78vw,390px);
+  }
+  .composition-constructivist .media-portrait .section-hero{ max-width:min(76vw,390px); }
+  .composition-constructivist .chart-proportion .chart-split,
+  .composition-constructivist .chart-radar .chart-split,
+  .composition-constructivist .chart-data-dense .chart-split,
+  .composition-constructivist .chart-proportion.variant-visual-left .chart-split,
+  .composition-constructivist .chart-radar.variant-visual-left .chart-split,
+  .composition-constructivist .chart-data-dense.variant-visual-left .chart-split{
+    grid-template-columns:1fr; grid-template-areas:"copy" "visual";
+  }
+}

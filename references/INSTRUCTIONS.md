@@ -52,6 +52,7 @@ Load only the references needed for the current task:
 - `references/composition-system.md` — default constructivist-minimal layout system: asymmetric grid, edge alignment, quiet space, shared planes, and anti-dashboard rules.
 - `references/layout-intelligence.md` — automatic composition variants, density classes, long-title handling, and overfull-warning response.
 - `references/typography-system.md` — editorial Chinese/Latin/mixed-script hierarchy, semantic title length, line breaking, and long-title response.
+- `references/visual-intelligence.md` — image orientation and chart-semantic profiling, adaptive visual ratios, alt-text checks, and chart takeaway rules.
 - `references/output-quality.md` — verification gates for the final deck.
 - `references/prompt-patterns.md` — ImageGen prompt templates for liquid-glass hero/cover/concept images.
 - `references/image-handling.md` — image intake & processing rules for BOTH AI-generated and user-provided images (transparency normalization, base64 embedding, sizing, placement patterns, optimization).
@@ -144,6 +145,7 @@ progress bar, dots, page index, reduced-motion). Clone its
        f. To iterate, edit the JSON and re-run — identical outline always yields an identical deck.
        g. **Ripple fallback is automatic**: when a slide has no Three.js scene, ECharts chart, image, or explicit `surface`, `build.py` adds a deterministic ripple layer. Dense reading pages receive a subtle static texture localized away from text; sparse pages may drift gently. Use top-level or per-slide `"auto_ripple": false` to opt out. Explicit `surface` settings always win. See `references/ripple-textures.md`.
        h. **Layout intelligence is automatic**: content shape selects split direction, list rhythm, grid hierarchy, and media side; density classes tune spacing within safe limits. `overfull` requires copy revision or a slide split, not unlimited font shrinking.
+       i. **Visual intelligence is automatic**: image dimensions and ECharts series semantics adjust visual ratios and chart height. Resolve missing-asset, alt-text, and chart-takeaway warnings before delivery.
 
 8. **Verify**
    - Read `references/output-quality.md`.
@@ -168,6 +170,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 - Composition: constructivist minimalism by default — asymmetric 12-column logic, strict edge alignment, decisive scale contrast, restrained geometry, and fewer independent cards. Preserve the topic palette; never force Soviet red/black or propaganda clichés.
 - Layout intelligence: enabled by default; use automatic variants and resolve every `overfull` warning before delivery.
 - Typography: editorial by default; the builder adds title-length and script classes, while the operator preserves semantic phrase boundaries and concise headings.
+- Visual intelligence: enabled by default; orientation-aware image placement and semantic chart sizing remain subordinate to narrative order and factual accuracy.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the operator does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**

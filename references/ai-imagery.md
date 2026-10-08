@@ -82,6 +82,9 @@ hollow shell of fragments — a known failure). Requirements for a usable cutout
 
 ## 4. Save + embed (Path B — build.py handles embedding)
 
+Path B also profiles image orientation and adjusts the frame ratio automatically; see
+`visual-intelligence.md` for the placement rules and explicit override behavior.
+
 1. Generate → save the file under `images/` (e.g. `images/lean-cover.png`).
 2. In `outline.json`, reference the **local path**: `"hero": "images/lean-cover.png"`.
 3. `build.py` automatically reads the file and inlines it as a `data:image/...;base64,...`

@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "1.5.0"
+  version: "1.6.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -35,6 +35,7 @@ Load only the references needed for the current task:
 - `references/composition-system.md` — default constructivist-minimal composition system: asymmetric grid, edge alignment, negative space, shared planes, and anti-dashboard rules.
 - `references/layout-intelligence.md` — automatic per-slide composition variants, density classes, long-title handling, and the required response to overfull warnings.
 - `references/typography-system.md` — editorial Chinese/Latin/mixed-script hierarchy, semantic title length, line breaking, and long-title response.
+- `references/visual-intelligence.md` — image-orientation and chart-semantic profiling, adaptive visual ratios, accessibility warnings, and chart takeaway rules.
 - `references/output-quality.md` — verification gates for the final deck.
 - `references/prompt-patterns.md` — ImageGen prompt templates for liquid-glass hero/cover/concept images.
 - `references/image-handling.md` — image intake & processing rules for BOTH AI-generated and user-provided images (transparency normalization, base64 embedding, sizing, placement patterns, optimization).
@@ -113,6 +114,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
        f. To iterate, edit the JSON and re-run — identical outline always yields an identical deck.
        g. **Ripple fallback is automatic**: when a slide has no Three.js scene, ECharts chart, image, or explicit `surface`, `build.py` adds a deterministic, reading-safe ripple layer. Dense pages receive a subtle static texture; sparse pages may drift gently. Set top-level `"auto_ripple": false` to disable the deck-wide default, or `"auto_ripple": false` on one slide to opt that slide out. Explicit `surface` settings always win. See `references/ripple-textures.md`.
        h. **Layout intelligence is automatic**: `build.py` chooses content-aware variants (7:5 / 5:7 splits, feature-first grids, mosaic grids, visual-left / visual-right media) and assigns `sparse` / `standard` / `dense` / `overfull`. Treat an `overfull` warning as a prompt to revise or split content. See `references/layout-intelligence.md`.
+       i. **Visual intelligence is automatic**: local/data-URI images are profiled as landscape / portrait / square, while ECharts options are profiled as trend / comparison / proportion / radar / distribution plus normal/dense. The builder adjusts ratios and bounded chart height, and warns about missing image alt text or chart takeaways. See `references/visual-intelligence.md`.
 
 8. **Verify**
    - Read `references/output-quality.md`.
@@ -137,6 +139,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 - Composition: constructivist minimalism by default — asymmetric 12-column logic, strict edge alignment, decisive scale contrast, restrained geometry, and fewer independent cards. Preserve the topic palette; never force Soviet red/black or decorative propaganda clichés.
 - Layout intelligence: enabled by default. Let the builder vary composition from content shape and page rhythm; use explicit variants only when the narrative needs a fixed reading order.
 - Typography: editorial mode by default — automatic visual-length classes, strict CJK line breaking, balanced headings, readable line measure, script-aware tracking, and tabular figures.
+- Visual intelligence: enabled by default — orientation-aware image fields, semantic chart profiles, data-density sizing, accessible alt-text checks, and factual takeaway checks.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the AI does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**

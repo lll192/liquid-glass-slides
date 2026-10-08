@@ -50,11 +50,13 @@ Snippet placeholders:
 """
 import argparse
 import base64
+import binascii
 import html
 import json
 import os
 import re
 import sys
+from urllib.parse import unquote_to_bytes
 
 # ---------- tiny template engine ----------
 BLOCK_RE = re.compile(r'\{\{#(\w+)\}\}(.*?)\{\{/\1\}\}', re.S)
@@ -486,6 +488,113 @@ def slide_has_image(slide):
     return contains_img(slide)
 
 
+def slide_image_source(slide):
+    """Return the primary image source declared by a stock layout."""
+    for key in ('hero', 'image'):
+        value = slide.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip(), key
+    return None, None
+
+
+def _local_or_data_bytes(src, src_dir):
+    if not src:
+        return None, 'none'
+    if src.startswith('data:'):
+        try:
+            header, payload = src.split(',', 1)
+            if ';base64' in header:
+                return base64.b64decode(payload), 'data'
+            return unquote_to_bytes(payload), 'data'
+        except (ValueError, binascii.Error):
+            return None, 'invalid'
+    if src.startswith(('http://', 'https://')):
+        return None, 'external'
+    path = os.path.normpath(os.path.join(src_dir, src))
+    if not os.path.exists(path):
+        return None, 'missing'
+    with open(path, 'rb') as fh:
+        return fh.read(512 * 1024), 'local'
+
+
+def image_profile(src, src_dir):
+    """Return (shape, status, width, height) using only standard-library parsing."""
+    data, status = _local_or_data_bytes(src, src_dir)
+    if not data:
+        return 'unknown', status, None, None
+    width = height = None
+    if data.startswith(b'\x89PNG\r\n\x1a\n') and len(data) >= 24:
+        width = int.from_bytes(data[16:20], 'big')
+        height = int.from_bytes(data[20:24], 'big')
+    elif data[:6] in (b'GIF87a', b'GIF89a') and len(data) >= 10:
+        width = int.from_bytes(data[6:8], 'little')
+        height = int.from_bytes(data[8:10], 'little')
+    elif data.startswith(b'\xff\xd8'):
+        i = 2
+        sof = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+        while i + 8 < len(data):
+            if data[i] != 0xFF:
+                i += 1
+                continue
+            marker = data[i + 1]
+            i += 2
+            if marker in (0xD8, 0xD9):
+                continue
+            if i + 2 > len(data):
+                break
+            length = int.from_bytes(data[i:i + 2], 'big')
+            if marker in sof and i + 7 < len(data):
+                height = int.from_bytes(data[i + 3:i + 5], 'big')
+                width = int.from_bytes(data[i + 5:i + 7], 'big')
+                break
+            i += max(2, length)
+    elif data.startswith(b'RIFF') and data[8:12] == b'WEBP' and data[12:16] == b'VP8X' and len(data) >= 30:
+        width = 1 + int.from_bytes(data[24:27], 'little')
+        height = 1 + int.from_bytes(data[27:30], 'little')
+    elif b'<svg' in data[:4096].lower():
+        head = data[:4096].decode('utf-8', errors='ignore')
+        viewbox = re.search(r'viewBox=["\']\s*[\d.-]+\s+[\d.-]+\s+([\d.]+)\s+([\d.]+)', head, re.I)
+        if viewbox:
+            width, height = float(viewbox.group(1)), float(viewbox.group(2))
+        else:
+            width_match = re.search(r'\bwidth=["\']\s*([\d.]+)', head, re.I)
+            height_match = re.search(r'\bheight=["\']\s*([\d.]+)', head, re.I)
+            if width_match and height_match:
+                width, height = float(width_match.group(1)), float(height_match.group(1))
+    if not width or not height:
+        return 'unknown', status, width, height
+    ratio = float(width) / float(height)
+    shape = 'landscape' if ratio >= 1.3 else ('portrait' if ratio <= .78 else 'square')
+    return shape, status, width, height
+
+
+def chart_profile(chart):
+    """Return (semantic chart family, data density) from a pure-JSON option."""
+    if not isinstance(chart, dict):
+        return 'none', 'normal'
+    option = chart.get('option') if isinstance(chart.get('option'), dict) else {}
+    series = option.get('series') if isinstance(option.get('series'), list) else []
+    types = {str(s.get('type', '')).lower() for s in series if isinstance(s, dict)}
+    if 'pie' in types:
+        family = 'proportion'
+    elif 'radar' in types:
+        family = 'radar'
+    elif 'scatter' in types or 'effectscatter' in types:
+        family = 'distribution'
+    elif 'line' in types:
+        family = 'trend'
+    elif 'bar' in types:
+        family = 'comparison'
+    else:
+        family = 'generic'
+    points = 0
+    for series_item in series:
+        if isinstance(series_item, dict) and isinstance(series_item.get('data'), list):
+            points += len(series_item['data'])
+    density = 'dense' if len(series) >= 4 or points >= 28 else 'normal'
+    return family, density
+
+
 def auto_ripple_surface(slide, slide_number):
     """Create a deterministic, reading-safe ripple fallback.
 
@@ -640,7 +749,7 @@ def slide_density(slide):
     return 'standard', score
 
 
-def resolve_variant(slide, slide_index):
+def resolve_variant(slide, slide_index, media_shape='unknown', chart_family='none'):
     """Choose a deterministic composition variant from content shape."""
     layout = slide.get('layout', '')
     allowed = _LAYOUT_VARIANTS.get(layout)
@@ -680,6 +789,10 @@ def resolve_variant(slide, slide_index):
         return 'compare-balanced'
     if layout == 'stat-highlight':
         return 'number-left' if slide_index % 2 == 0 else 'number-right'
+    if layout == 'image-frame' and media_shape == 'portrait':
+        return 'visual-right'
+    if layout == 'chart' and chart_family in ('proportion', 'radar'):
+        return 'visual-right'
     if layout in ('image-frame', 'chart'):
         return 'visual-left' if slide_index % 2 == 0 else 'visual-right'
     return 'default'
@@ -689,6 +802,7 @@ def resolve_variant(slide, slide_index):
 def build(outline_path, out_path, assets_dir, templates_dir):
     with open(outline_path, encoding='utf-8') as f:
         outline = json.load(f)
+    src_dir = os.path.dirname(os.path.abspath(outline_path))
 
     with open(os.path.join(assets_dir, 'engine.css'), encoding='utf-8') as f:
         css = f.read()
@@ -706,6 +820,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         sys.stderr.write('[warn] typography "%s" is invalid; using editorial\n' % typography)
         typography = 'editorial'
     layout_intelligence = outline.get('layout_intelligence', True) is not False
+    visual_intelligence = outline.get('visual_intelligence', True) is not False
 
     sp_dir = os.path.join(templates_dir, 'single-page')
     slides_out = []
@@ -722,8 +837,18 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         with open(snippet_path, encoding='utf-8') as f:
             tmpl = f.read()
         data = dict(slide)
+        image_src, image_field = slide_image_source(slide)
+        media_shape, media_status, _media_width, _media_height = (
+            image_profile(image_src, src_dir) if visual_intelligence and image_src
+            else ('none', 'none', None, None)
+        )
+        chart_family, chart_data_density = (
+            chart_profile(slide.get('chart')) if visual_intelligence
+            else ('none', 'normal')
+        )
         density, density_score = slide_density(slide) if layout_intelligence else ('standard', 0)
-        variant = resolve_variant(slide, idx) if layout_intelligence else 'default'
+        variant = (resolve_variant(slide, idx, media_shape, chart_family)
+                   if layout_intelligence else 'default')
         title_size, title_script, title_units = title_profile(slide.get('title'))
         title_long = title_size in ('long', 'xlong')
         if title_size == 'xlong':
@@ -733,6 +858,17 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         if density == 'overfull':
             sys.stderr.write('[layout] slide %d (%s) is overfull (score=%d); '
                              'shorten copy or split the slide\n' % (idx + 1, layout, density_score))
+        if visual_intelligence and image_src:
+            alt_key = 'hero_alt' if image_field == 'hero' else 'alt'
+            if not str(slide.get(alt_key, '')).strip():
+                sys.stderr.write('[visual] slide %d (%s) is missing %s text\n'
+                                 % (idx + 1, layout, alt_key))
+            if media_status == 'missing':
+                sys.stderr.write('[visual] slide %d image not found: %s\n' % (idx + 1, image_src))
+        if visual_intelligence and chart_family != 'none' and not (
+                str(slide.get('takeaway', '')).strip() or str(slide.get('note', '')).strip()):
+            sys.stderr.write('[visual] slide %d chart has no takeaway; add one factual sentence\n'
+                             % (idx + 1))
         if layout in ('grid-cards', 'kpi-grid'):
             data['cols'] = choose_cols(len(data.get('items', [])))
         elif layout == 'toc':
@@ -744,7 +880,10 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             cid = 'echart-%d' % chart_counter
             chart_counter += 1
             data['chart_id'] = cid
-            data['chart_height'] = slide['chart'].get('height', 'min(50vh,440px)')
+            default_chart_height = ('min(55vh,500px)' if chart_data_density == 'dense'
+                                    else ('min(48vh,420px)' if chart_family in ('proportion', 'radar')
+                                          else 'min(52vh,460px)'))
+            data['chart_height'] = slide['chart'].get('height', default_chart_height)
             charts.append({'id': cid, 'option': slide['chart'].get('option', {})})
         # Material layer. Explicit surface settings always win. Otherwise, a
         # slide with no Three.js, ECharts, or image receives a restrained ripple
@@ -795,6 +934,10 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             'variant-' + variant, 'density-' + density,
             'title-size-' + title_size, 'script-' + title_script,
         ]
+        if media_shape != 'none':
+            intelligence_classes.append('media-' + media_shape)
+        if chart_family != 'none':
+            intelligence_classes.extend(['chart-' + chart_family, 'chart-data-' + chart_data_density])
         if title_long:
             intelligence_classes.append('title-long')
         rendered = re.sub(
@@ -803,8 +946,9 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             rendered, count=1)
         rendered = re.sub(
             r'(<section\b[^>]*>)',
-            lambda m: m.group(1).rstrip('>') + ' data-variant="%s" data-density="%s">'
-            % (variant, density),
+            lambda m: m.group(1).rstrip('>') +
+            ' data-variant="%s" data-density="%s" data-media="%s" data-chart-profile="%s">'
+            % (variant, density, media_shape, chart_family),
             rendered, count=1)
         if ripple:
             ripple_classes = ' '.join([
@@ -853,7 +997,6 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     # Auto-embed: any local relative image path (e.g. images/foo.png) is read and
     # inlined as a base64 data URI, keeping the output a self-contained single file
     # while the original file still lives on disk for the user.
-    src_dir = os.path.dirname(os.path.abspath(outline_path))
     mime_map = {'png': 'image/png', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
                 'webp': 'image/webp', 'gif': 'image/gif', 'svg': 'image/svg+xml'}
 
