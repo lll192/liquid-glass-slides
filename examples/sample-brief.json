@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "topic": "常见心理疾病介绍",
+  "objective": "帮助大学生建立基础识别意识，并知道何时寻求专业帮助",
+  "audience": "大学一年级学生",
+  "scenario": "teaching",
+  "language": "zh-CN",
+  "slide_count": 12,
+  "duration_minutes": 10,
+  "content": {
+    "mode": "agent-led",
+    "source_files": [],
+    "must_include": [
+      "常见类型",
+      "典型表现",
+      "求助渠道"
+    ],
+    "avoid": [
+      "污名化表达",
+      "替代专业诊断的自测结论"
+    ]
+  },
+  "visual": {
+    "direction": "warm",
+    "palette_preference": "低饱和蓝绿色",
+    "density": "balanced",
+    "motion": "subtle",
+    "media_intensity": "balanced"
+  },
+  "delivery": {
+    "format": "html",
+    "aspect_ratio": "16:9"
+  },
+  "assumptions": [
+    "未提供完整文案，由 Agent 策划初稿并标记需核验的医学表述"
+  ],
+  "open_questions": [],
+  "confirmed": true
+}

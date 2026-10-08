@@ -42,7 +42,8 @@ user explicitly needs an editable `.pptx`, suggest a dedicated PPTX tool instead
 
 Load only the references needed for the current task:
 
-- `references/intake.md` — input types, gap diagnosis, clarification rules.
+- `references/intake.md` — adaptive pre-generation form, gap diagnosis, and confirmation rules.
+- `references/design-brief.md` — the stable `brief.json` contract between intake and slide planning.
 - `references/narrative-planning.md` — deck-type selection and story structures.
 - `references/slide-archetypes.md` — semantic mapping from content to slide layouts.
 - `references/visual-dna.md` — Apple iOS 26 Liquid Glass visual system (CSS technique) and cross-page style-lock constants.
@@ -82,10 +83,12 @@ progress bar, dots, page index, reduced-motion). Clone its
    - Read the provided content or attached file (`.md`, `.txt`, `.docx`, `.pdf`, pasted text, or a rough idea).
    - For `.docx` / `.pdf`, extract text only; do not edit or package those files inside this package.
 
-2. **Run intake and gap diagnosis**
-   - Read `references/intake.md`.
-   - Determine topic, audience, scenario, target length, and which accent variant to use.
-   - Ask at most 1–3 questions only when missing information materially changes the deck. Otherwise proceed with sensible defaults.
+2. **Pass the Brief Gate**
+   - Read `references/intake.md` and inventory information already present before asking anything.
+   - If the request is usable, take the fast path: create `brief.json`, show one compact confirmation card, state non-obvious assumptions, and continue without forcing another reply.
+   - If several consequential fields are missing, send the six-field compact form once. If only one decision blocks planning, ask only that focused question. Never ask the user to select ECharts, Three.js, or ripple technology.
+   - Read `references/design-brief.md`, save the structured brief beside the future outline, and run `python scripts/validate_brief.py brief.json`.
+   - Pause for explicit confirmation only when an unresolved choice materially changes claims, audience, brand, confidentiality, cost, or output scope. A completed form or “直接生成” instruction confirms the supplied fields.
 
 3. **Plan the deck narrative**
    - Read `references/narrative-planning.md`.
@@ -132,12 +135,14 @@ progress bar, dots, page index, reduced-motion). Clone its
    - Because text is real HTML, Chinese rendering is reliable; still confirm fonts fall back to PingFang SC / Microsoft YaHei on the user's machine.
 
 8. **Deliver**
-   - Report the HTML file path, slide count, deck type, any assumptions, and verification performed.
+   - Report the HTML file path, companion brief path, slide count, deck type, any assumptions, and verification performed.
    - Remind the user the deck is editable: text lives in the HTML, and the theme can be retuned by editing the `:root` variables.
 
 ## Defaults
 
 - Language: Simplified Chinese (unless the user asks otherwise).
+- Intake: adaptive Brief Gate; never repeat questions already answered in the request or source material.
+- Brief: save a validated `brief.json` before outline planning; keep assumptions and unresolved factual dependencies explicit.
 - Audience: general or professionally curious; avoid expert-only jargon unless requested.
 - Deck length: 8–12 slides for a talk, 12–20 for a course module, 5–8 for a short idea.
 - Output: single self-contained `.html` file.
@@ -155,6 +160,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 When finished, report:
 
 - The created HTML file path.
+- The validated brief path when production created one.
 - Page count and deck type.
 - Any important assumptions.
 - Verification performed and any remaining risks.

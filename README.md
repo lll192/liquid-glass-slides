@@ -16,13 +16,20 @@
 - **自动涟漪兜底**：页面没有 Three.js、ECharts 或图片时，构建器自动加入克制的涟漪材质；信息密集页使用静态低对比纹理，稀疏页面可使用轻微动态。
 - **主题色自动系统**：根据主题自动派生 3 个背景晕染色 + 粒子色 + 1 个强调色，正文保持近黑以保证可读性。
 - **可选 AI 配图**：封面 / 章节分隔可自动生成透明背景的装饰插画（仅用于装饰，文字绝不进图）。
+- **生成前 Brief Gate**：先盘点用户已经提供的信息；信息不足时一次性显示 6 项简洁表单，信息充分时直接生成结构化简报，避免重复追问。
+- **可复用设计简报**：把主题、目标、受众、内容归属、视觉偏好和约束固化为可校验的 `brief.json`，再进入故事板与渲染。
 
 ## 快速开始
 
 ### 路径 B：一键生成（推荐，可复现）
 
-1. 编写 `outline.json`（字段规范见 `references/outline-schema.md` 与 `examples/sample-outline.json`）。
-2. 运行：
+1. 根据 `references/intake.md` 完成生成前 Brief Gate，生成 `brief.json`（示例见 `examples/sample-brief.json`）。
+2. 校验简报：
+   ```bash
+   python scripts/validate_brief.py brief.json
+   ```
+3. 根据简报编写 `outline.json`（字段规范见 `references/outline-schema.md` 与 `examples/sample-outline.json`）。
+4. 运行：
    ```bash
    python scripts/build.py --outline my-talk.json --out my-talk.html
    ```
@@ -69,6 +76,7 @@ liquid-glass-slides/
 │   ├── deck.html            # 构建骨架
 │   └── single-page/         # 15 个布局片段（cover/toc/bullets/chart/...）
 ├── scripts/
+│   ├── validate_brief.py    # 设计简报校验器（仅标准库）
 │   └── build.py             # 一键构建器（仅标准库）
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
@@ -95,11 +103,14 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Automatic ripple fallback** — slides without Three.js, ECharts, or imagery receive a restrained ripple material automatically; dense layouts use a quiet static treatment.
 - **Auto color theme** — 3 background blobs + particle colors + 1 accent derived from the topic; body text stays near-black.
 - **Optional AI imagery** — transparent decorative hero/motif illustrations (text never baked into images).
+- **Adaptive Brief Gate** — inventories what the user already supplied, asks one compact six-field form only when needed, and avoids redundant questions.
+- **Reusable design brief** — captures intent, audience, content ownership, visual preferences, and constraints in a validated `brief.json` before storyboarding.
 
 ## Quick start
 
 **Path B — one-click build (reproducible):**
 ```bash
+python scripts/validate_brief.py brief.json
 python scripts/build.py --outline my-talk.json --out my-talk.html
 ```
 Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.
