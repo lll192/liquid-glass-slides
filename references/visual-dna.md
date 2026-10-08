@@ -10,11 +10,16 @@ Glass must sit over a vivid, blurred, colorful backdrop. Flat or opaque backgrou
 - 2–3 blurred circles drifting slowly (subtle, ~20–30s loop) for life.
 - Keep overall light; do not go dark unless the user asks.
 
-## Glass panel (apply to every card / nav chrome)
+## Glass plane (apply selectively to organizing surfaces / nav chrome)
 - `background: rgba(255,255,255,0.55);`
 - `backdrop-filter: blur(30px) saturate(200%);` plus the `-webkit-` prefix.
-- `border-radius: 26–30px;` (large, organic).
+- Default constructivist mode: `border-radius: 12–18px;` so the material stays soft
+  while the composition remains precise. Classic mode may use `24–30px`.
 - Top specular highlight: `box-shadow: inset 0 1px 1px rgba(255,255,255,0.85), 0 10px 40px rgba(0,0,0,0.10);`
+
+Use one shared plane to organize related items. Internal rows/cells use hairline
+separators instead of becoming independent floating cards. See
+`composition-system.md` for layout rules.
 
 ## Edge light (chromatic rim)
 Use a gradient border via a masked pseudo-element so the rim catches light:

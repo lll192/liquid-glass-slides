@@ -388,3 +388,208 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
   transition-delay:calc(var(--i,0) * 90ms); }
 .slide.active .reveal{ opacity:1; transform:none; }
+
+/* ============================================================
+   CONSTRUCTIVIST COMPOSITION
+   Material remains Liquid Glass; hierarchy comes from an asymmetric
+   editorial grid, shared planes, hard alignments and deliberate quiet space.
+   ============================================================ */
+.composition-shell{ max-width:min(88vw,1120px); }
+.construct-plane{ padding:clamp(1rem,2.4vw,1.8rem); }
+.construct-split{ display:grid; grid-template-columns:minmax(0,7fr) minmax(240px,5fr);
+  gap:clamp(1.2rem,4vw,4.2rem); align-items:center; }
+.construct-anchor{ padding:clamp(1.1rem,2.5vw,2rem); }
+.quote-composition blockquote{ font-size:clamp(1.3rem,3.2vw,2.4rem); line-height:1.32;
+  margin:0; color:var(--ink); font-weight:650; }
+.quote-by{ margin-top:1em; font-size:var(--small-size); letter-spacing:.16em;
+  color:var(--muted); text-transform:uppercase; }
+.stat-composition{ display:grid; grid-template-columns:minmax(0,5fr) minmax(260px,7fr);
+  gap:clamp(1.5rem,5vw,5rem); align-items:end; }
+.stat-anchor{ font-weight:800; letter-spacing:-.055em; line-height:.82; color:var(--accent);
+  font-size:clamp(4rem,12vw,9.5rem); font-variant-numeric:tabular-nums; }
+.stat-anchor span{ font-size:.27em; letter-spacing:-.02em; color:var(--muted); }
+.section-hero{ margin:0 0 1rem; max-width:min(72vw,600px); }
+.image-field{ margin:1rem auto 0; max-width:min(92vw,860px); }
+
+.composition-constructivist{
+  --frame-x:clamp(1.35rem,6.4vw,7rem);
+  --frame-y:clamp(2.8rem,7.2vh,5rem);
+  --construct-rule:rgba(29,29,31,.16);
+  --glass-radius:clamp(12px,1.4vw,18px);
+}
+.composition-constructivist .slide-content{
+  padding:var(--frame-y) var(--frame-x);
+  justify-content:center;
+}
+.composition-constructivist .slide-content::before{
+  content:""; position:absolute; left:var(--frame-x); top:clamp(1.1rem,3.5vh,2.25rem);
+  width:clamp(34px,5.5vw,78px); height:3px;
+  background:linear-gradient(90deg,var(--accent) 0 68%,rgba(var(--accent-rgb),.18) 68%);
+}
+.composition-constructivist .wrap{ margin-left:0; margin-right:auto; }
+.composition-constructivist .composition-shell{ max-width:min(86vw,1160px); }
+.composition-constructivist .eyebrow{
+  display:flex; align-items:center; gap:clamp(.65rem,1.2vw,1rem);
+  letter-spacing:.2em; text-align:left;
+}
+.composition-constructivist .eyebrow::after{
+  content:""; width:clamp(2.2rem,5vw,5.2rem); height:1px;
+  background:linear-gradient(90deg,rgba(var(--accent-rgb),.62),transparent);
+}
+.composition-constructivist h1,
+.composition-constructivist h2{ max-width:15ch; text-wrap:balance; }
+.composition-constructivist h2{ font-size:clamp(1.55rem,3.5vw,2.8rem); margin-bottom:clamp(.8rem,2.1vh,1.5rem); }
+.composition-constructivist .lead{ max-width:48ch; }
+.composition-constructivist .glass{
+  border-color:rgba(255,255,255,.56);
+  box-shadow:0 15px 48px rgba(24,42,90,.09),inset 0 1px 1px rgba(255,255,255,.78);
+}
+.composition-constructivist .glass:hover{ transform:none; }
+.composition-constructivist .slide > .orb{ display:none; }
+
+/* Cover: left seven columns remain the typographic anchor; the right side is
+   either a large visual field or intentional negative space. */
+.composition-constructivist .cover-layout{
+  max-width:min(86vw,1160px); text-align:left; display:grid;
+  grid-template-columns:minmax(0,7fr) minmax(160px,5fr); gap:clamp(1.4rem,4vw,4.5rem);
+  align-items:center;
+}
+.composition-constructivist .cover-layout .cover-copy{ grid-column:1; }
+.composition-constructivist .cover-layout .cover-copy .lead,
+.composition-constructivist .cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.55em 0 0; }
+.composition-constructivist .cover-layout h1{ font-size:clamp(2.4rem,6.2vw,5.6rem); max-width:10ch; }
+.composition-constructivist .cover-layout:has(.cover-hero){ max-width:min(86vw,1160px);
+  grid-template-columns:minmax(0,7fr) minmax(280px,5fr); text-align:left; }
+.composition-constructivist .cover-hero{ width:100%; max-width:520px; justify-self:end; }
+
+/* Contents / lists: one plane, multiple coordinates. */
+.composition-constructivist .toc-grid,
+.composition-constructivist .construct-grid{
+  gap:0; overflow:hidden;
+}
+.composition-constructivist .toc-card,
+.composition-constructivist .construct-grid-item{
+  position:relative; min-width:0; padding:clamp(.9rem,2.1vw,1.55rem);
+  border-right:1px solid var(--construct-rule); border-bottom:1px solid var(--construct-rule);
+}
+.composition-constructivist .toc-card:nth-child(2n),
+.composition-constructivist .g2 .construct-grid-item:nth-child(2n){ border-right:0; }
+.composition-constructivist .g3 .toc-card:nth-child(3n),
+.composition-constructivist .g3 .construct-grid-item:nth-child(3n),
+.composition-constructivist .g4 .construct-grid-item:nth-child(4n){ border-right:0; }
+.composition-constructivist .toc-card h3,
+.composition-constructivist .construct-grid-item h3{ max-width:18ch; }
+.composition-constructivist .toc-num,
+.composition-constructivist .construct-grid-item .num{
+  font-size:clamp(1.6rem,3.8vw,3.2rem); letter-spacing:-.05em;
+}
+.composition-constructivist .lrows{ gap:0; padding-top:.15rem; padding-bottom:.15rem; }
+.composition-constructivist .lrow{
+  display:grid; grid-template-columns:clamp(1.2rem,2vw,2rem) minmax(0,1fr);
+  gap:clamp(.85rem,1.8vw,1.4rem); align-items:start;
+  padding:clamp(.78rem,1.7vh,1.2rem) clamp(.35rem,1.2vw,.9rem);
+  border-bottom:1px solid var(--construct-rule);
+}
+.composition-constructivist .lrow:last-child{ border-bottom:0; }
+.composition-constructivist .lrow-dot{
+  width:100%; height:2px; margin-top:.72em; border-radius:0; box-shadow:none;
+}
+
+/* Asymmetric content and editorial anchors. */
+.composition-constructivist .construct-split{
+  grid-template-columns:minmax(0,7fr) minmax(240px,5fr); align-items:center;
+}
+.composition-constructivist .construct-copy{ max-width:56ch; }
+.composition-constructivist .construct-anchor{ align-self:stretch; display:flex;
+  flex-direction:column; justify-content:center; }
+.composition-constructivist .construct-grid.construct-plane{ padding:0; }
+.composition-constructivist .construct-kpi{ text-align:left; padding:clamp(1rem,2.3vw,1.8rem); }
+.composition-constructivist .construct-kpi .num{ font-size:clamp(2.2rem,5vw,4rem) !important; }
+.composition-constructivist .stat-composition{
+  grid-template-columns:minmax(0,5fr) minmax(300px,7fr); align-items:end;
+}
+.composition-constructivist .stat-copy{ padding-bottom:clamp(.3rem,2vh,1.2rem); }
+.composition-constructivist .stat-copy .lead{ margin:.45em 0 0; }
+.composition-constructivist .stat-anchor{ text-align:right; }
+
+/* Comparison is one argument divided by a rule, not two floating cards. */
+.composition-constructivist .construct-compare{ gap:0; padding:0; overflow:visible; }
+.composition-constructivist .compare-side{ padding:clamp(1.1rem,2.6vw,2rem); min-width:0; }
+.composition-constructivist .compare-side:first-child{ border-right:1px solid var(--construct-rule); }
+.composition-constructivist .vs{
+  top:clamp(.9rem,2vw,1.5rem); transform:translateX(-50%);
+  width:auto; height:auto; border-radius:0; padding:.25em .55em;
+  background:var(--accent); color:#fff; border:0; box-shadow:none;
+  font-size:var(--small-size); letter-spacing:.12em;
+}
+.composition-constructivist .bullets li::before{ width:.75em; height:2px; top:.72em; border-radius:0; box-shadow:none; }
+
+/* Quote / divider / imagery use one strong axis. */
+.composition-constructivist .quote-composition{ max-width:min(78vw,980px); }
+.composition-constructivist .quote-composition .construct-plane{
+  padding:clamp(1.5rem,4.5vw,4rem); border-left:clamp(4px,.55vw,8px) solid var(--accent);
+}
+.composition-constructivist .quote-composition blockquote{
+  max-width:30ch; font-size:clamp(1.65rem,4.4vw,3.8rem); line-height:1.22; text-wrap:balance;
+}
+.composition-constructivist .quote-by{ text-align:right; }
+.composition-constructivist .section-composition{ max-width:min(82vw,1060px); text-align:left; }
+.composition-constructivist .section-composition .qbadge{
+  width:auto; height:auto; border-radius:0; padding:.32em .55em; margin:0 0 .5em;
+  background:var(--accent); color:#fff; border:0; box-shadow:none; animation:none;
+}
+.composition-constructivist .section-composition .lead{ margin:.55em 0 0; }
+.composition-constructivist .section-hero{ margin:0 0 clamp(1rem,2.2vh,1.5rem); }
+.composition-constructivist .image-composition{ display:grid;
+  grid-template-columns:minmax(220px,4fr) minmax(0,8fr); column-gap:clamp(1.4rem,4vw,4rem);
+  align-items:start; }
+.composition-constructivist .image-composition .eyebrow,
+.composition-constructivist .image-composition h2{ grid-column:1; }
+.composition-constructivist .image-composition .image-field{
+  grid-column:2; grid-row:1 / span 3; margin:0; max-width:100%; justify-self:stretch;
+}
+.composition-constructivist .image-composition .image-field img{ width:100%; height:min(60vh,560px); }
+.composition-constructivist .object-composition{ grid-template-columns:minmax(0,7fr) minmax(240px,5fr) !important; }
+.composition-constructivist .chart-split{ grid-template-columns:minmax(230px,4fr) minmax(0,8fr); }
+
+/* Keep closing deliberately centered; it is the release after the asymmetric deck. */
+.composition-constructivist .closing .slide-content::before{ left:50%; transform:translateX(-50%); }
+.composition-constructivist .closing .wrap{ margin:0 auto; }
+.composition-constructivist .closing h1,
+.composition-constructivist .closing h2{ max-width:none; }
+.composition-constructivist .closing .eyebrow{ justify-content:center; }
+.composition-constructivist .closing .eyebrow::after{ display:none; }
+
+@media (max-width:800px){
+  .composition-constructivist{ --frame-x:clamp(1rem,5vw,2.5rem); --frame-y:clamp(2.8rem,6vh,4rem); }
+  .composition-constructivist .composition-shell{ max-width:100%; }
+  .composition-constructivist .cover-layout,
+  .composition-constructivist .cover-layout:has(.cover-hero),
+  .composition-constructivist .construct-split,
+  .composition-constructivist .stat-composition,
+  .composition-constructivist .image-composition,
+  .composition-constructivist .object-composition{
+    grid-template-columns:1fr !important; gap:clamp(.8rem,2.2vh,1.25rem); text-align:left;
+  }
+  .composition-constructivist .cover-layout .cover-copy,
+  .composition-constructivist .image-composition .eyebrow,
+  .composition-constructivist .image-composition h2,
+  .composition-constructivist .image-composition .image-field{ grid-column:1; grid-row:auto; }
+  .composition-constructivist .cover-layout:has(.cover-hero) .cover-copy{ grid-row:1; }
+  .composition-constructivist .cover-hero{ grid-row:2; max-width:min(82vw,520px); justify-self:start; }
+  .composition-constructivist .cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.4em 0 0; }
+  .composition-constructivist .stat-anchor{ text-align:left; font-size:clamp(3.6rem,17vw,7rem); }
+  .composition-constructivist .image-composition .image-field img{ height:min(42vh,380px); }
+  .composition-constructivist .section-hero{ max-width:100%; }
+}
+@media (max-width:640px){
+  .composition-constructivist .slide-content::before{ height:2px; }
+  .composition-constructivist .toc-grid,
+  .composition-constructivist .construct-grid{ grid-template-columns:1fr; }
+  .composition-constructivist .toc-card,
+  .composition-constructivist .construct-grid-item{ border-right:0 !important; }
+  .composition-constructivist .compare{ grid-template-columns:1fr; }
+  .composition-constructivist .compare-side:first-child{ border-right:0; border-bottom:1px solid var(--construct-rule); }
+  .composition-constructivist .vs{ left:auto; right:clamp(.8rem,2vw,1.2rem); top:50%; transform:translateY(-50%); }
+  .composition-constructivist .quote-composition{ max-width:100%; }
+}

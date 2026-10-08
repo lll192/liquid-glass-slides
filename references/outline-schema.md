@@ -14,9 +14,14 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 |---|---|---|---|
 | `lang` | string | no | HTML `lang` attr. Default `zh-CN`. |
 | `title` | string | no | Browser tab title. Default `Liquid Glass Deck`. |
+| `composition` | string | no | `constructivist` (default) or `classic`. The default uses an asymmetric editorial grid, strict alignment, shared glass planes, and restrained geometry. |
 | `theme` | object | no | Topic color theme — see below. `build.py` derives the 3 background blobs, the Three.js particle palette, the accent text color, and every glow/shadow from it. **Fully automatic: the AI picks the palette from the topic; the user never sets colors.** |
 | `auto_ripple` | boolean | no | Default `true`. Automatically adds a restrained ripple surface to slides that have no Three.js, ECharts, image, or explicit `surface`. |
 | `slides` | array | **yes** | Ordered list of slide objects. Each needs a `layout`. |
+
+`constructivist` changes composition, not topic color. It does not force red/black,
+historic motifs, or diagonal decoration. Use `classic` only to reproduce the older
+centered, card-forward layout treatment.
 
 ## Theme (auto color system)
 
@@ -60,15 +65,15 @@ reading text in HTML — never bake text into an image.
 `eyebrow`, `title`, `subtitle`; optional `hero` (image src) + `hero_alt`.
 
 ### `toc`
-`eyebrow`, `title`; `items: [{ label, desc }]`. Renders as a **numbered glass-card grid**:
-auto zero-padded numbers (01, 02, …), ≤4 items → 2 columns, 5+ → 3 columns.
+`eyebrow`, `title`; `items: [{ label, desc }]`. Renders as one indexed composition
+field with separators and auto zero-padded numbers (01, 02, …).
 
 ### `section-divider`
 `num`, `title`, `subtitle`.
 
 ### `bullets`
-`eyebrow`, `title`; `items: [{ text, desc? }]`. Renders as **full-width glass rows**
-(accent dot + title + description), not a thin single-column list. Best with 3–6 items;
+`eyebrow`, `title`; `items: [{ text, desc? }]`. Renders as flat rows inside one
+shared glass plane (index + title + description). Best with 3–6 items;
 with more, consider splitting the page.
 
 ### `two-column`

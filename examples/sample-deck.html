@@ -396,14 +396,219 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   transition-delay:calc(var(--i,0) * 90ms); }
 .slide.active .reveal{ opacity:1; transform:none; }
 
+/* ============================================================
+   CONSTRUCTIVIST COMPOSITION
+   Material remains Liquid Glass; hierarchy comes from an asymmetric
+   editorial grid, shared planes, hard alignments and deliberate quiet space.
+   ============================================================ */
+.composition-shell{ max-width:min(88vw,1120px); }
+.construct-plane{ padding:clamp(1rem,2.4vw,1.8rem); }
+.construct-split{ display:grid; grid-template-columns:minmax(0,7fr) minmax(240px,5fr);
+  gap:clamp(1.2rem,4vw,4.2rem); align-items:center; }
+.construct-anchor{ padding:clamp(1.1rem,2.5vw,2rem); }
+.quote-composition blockquote{ font-size:clamp(1.3rem,3.2vw,2.4rem); line-height:1.32;
+  margin:0; color:var(--ink); font-weight:650; }
+.quote-by{ margin-top:1em; font-size:var(--small-size); letter-spacing:.16em;
+  color:var(--muted); text-transform:uppercase; }
+.stat-composition{ display:grid; grid-template-columns:minmax(0,5fr) minmax(260px,7fr);
+  gap:clamp(1.5rem,5vw,5rem); align-items:end; }
+.stat-anchor{ font-weight:800; letter-spacing:-.055em; line-height:.82; color:var(--accent);
+  font-size:clamp(4rem,12vw,9.5rem); font-variant-numeric:tabular-nums; }
+.stat-anchor span{ font-size:.27em; letter-spacing:-.02em; color:var(--muted); }
+.section-hero{ margin:0 0 1rem; max-width:min(72vw,600px); }
+.image-field{ margin:1rem auto 0; max-width:min(92vw,860px); }
+
+.composition-constructivist{
+  --frame-x:clamp(1.35rem,6.4vw,7rem);
+  --frame-y:clamp(2.8rem,7.2vh,5rem);
+  --construct-rule:rgba(29,29,31,.16);
+  --glass-radius:clamp(12px,1.4vw,18px);
+}
+.composition-constructivist .slide-content{
+  padding:var(--frame-y) var(--frame-x);
+  justify-content:center;
+}
+.composition-constructivist .slide-content::before{
+  content:""; position:absolute; left:var(--frame-x); top:clamp(1.1rem,3.5vh,2.25rem);
+  width:clamp(34px,5.5vw,78px); height:3px;
+  background:linear-gradient(90deg,var(--accent) 0 68%,rgba(var(--accent-rgb),.18) 68%);
+}
+.composition-constructivist .wrap{ margin-left:0; margin-right:auto; }
+.composition-constructivist .composition-shell{ max-width:min(86vw,1160px); }
+.composition-constructivist .eyebrow{
+  display:flex; align-items:center; gap:clamp(.65rem,1.2vw,1rem);
+  letter-spacing:.2em; text-align:left;
+}
+.composition-constructivist .eyebrow::after{
+  content:""; width:clamp(2.2rem,5vw,5.2rem); height:1px;
+  background:linear-gradient(90deg,rgba(var(--accent-rgb),.62),transparent);
+}
+.composition-constructivist h1,
+.composition-constructivist h2{ max-width:15ch; text-wrap:balance; }
+.composition-constructivist h2{ font-size:clamp(1.55rem,3.5vw,2.8rem); margin-bottom:clamp(.8rem,2.1vh,1.5rem); }
+.composition-constructivist .lead{ max-width:48ch; }
+.composition-constructivist .glass{
+  border-color:rgba(255,255,255,.56);
+  box-shadow:0 15px 48px rgba(24,42,90,.09),inset 0 1px 1px rgba(255,255,255,.78);
+}
+.composition-constructivist .glass:hover{ transform:none; }
+.composition-constructivist .slide > .orb{ display:none; }
+
+/* Cover: left seven columns remain the typographic anchor; the right side is
+   either a large visual field or intentional negative space. */
+.composition-constructivist .cover-layout{
+  max-width:min(86vw,1160px); text-align:left; display:grid;
+  grid-template-columns:minmax(0,7fr) minmax(160px,5fr); gap:clamp(1.4rem,4vw,4.5rem);
+  align-items:center;
+}
+.composition-constructivist .cover-layout .cover-copy{ grid-column:1; }
+.composition-constructivist .cover-layout .cover-copy .lead,
+.composition-constructivist .cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.55em 0 0; }
+.composition-constructivist .cover-layout h1{ font-size:clamp(2.4rem,6.2vw,5.6rem); max-width:10ch; }
+.composition-constructivist .cover-layout:has(.cover-hero){ max-width:min(86vw,1160px);
+  grid-template-columns:minmax(0,7fr) minmax(280px,5fr); text-align:left; }
+.composition-constructivist .cover-hero{ width:100%; max-width:520px; justify-self:end; }
+
+/* Contents / lists: one plane, multiple coordinates. */
+.composition-constructivist .toc-grid,
+.composition-constructivist .construct-grid{
+  gap:0; overflow:hidden;
+}
+.composition-constructivist .toc-card,
+.composition-constructivist .construct-grid-item{
+  position:relative; min-width:0; padding:clamp(.9rem,2.1vw,1.55rem);
+  border-right:1px solid var(--construct-rule); border-bottom:1px solid var(--construct-rule);
+}
+.composition-constructivist .toc-card:nth-child(2n),
+.composition-constructivist .g2 .construct-grid-item:nth-child(2n){ border-right:0; }
+.composition-constructivist .g3 .toc-card:nth-child(3n),
+.composition-constructivist .g3 .construct-grid-item:nth-child(3n),
+.composition-constructivist .g4 .construct-grid-item:nth-child(4n){ border-right:0; }
+.composition-constructivist .toc-card h3,
+.composition-constructivist .construct-grid-item h3{ max-width:18ch; }
+.composition-constructivist .toc-num,
+.composition-constructivist .construct-grid-item .num{
+  font-size:clamp(1.6rem,3.8vw,3.2rem); letter-spacing:-.05em;
+}
+.composition-constructivist .lrows{ gap:0; padding-top:.15rem; padding-bottom:.15rem; }
+.composition-constructivist .lrow{
+  display:grid; grid-template-columns:clamp(1.2rem,2vw,2rem) minmax(0,1fr);
+  gap:clamp(.85rem,1.8vw,1.4rem); align-items:start;
+  padding:clamp(.78rem,1.7vh,1.2rem) clamp(.35rem,1.2vw,.9rem);
+  border-bottom:1px solid var(--construct-rule);
+}
+.composition-constructivist .lrow:last-child{ border-bottom:0; }
+.composition-constructivist .lrow-dot{
+  width:100%; height:2px; margin-top:.72em; border-radius:0; box-shadow:none;
+}
+
+/* Asymmetric content and editorial anchors. */
+.composition-constructivist .construct-split{
+  grid-template-columns:minmax(0,7fr) minmax(240px,5fr); align-items:center;
+}
+.composition-constructivist .construct-copy{ max-width:56ch; }
+.composition-constructivist .construct-anchor{ align-self:stretch; display:flex;
+  flex-direction:column; justify-content:center; }
+.composition-constructivist .construct-grid.construct-plane{ padding:0; }
+.composition-constructivist .construct-kpi{ text-align:left; padding:clamp(1rem,2.3vw,1.8rem); }
+.composition-constructivist .construct-kpi .num{ font-size:clamp(2.2rem,5vw,4rem) !important; }
+.composition-constructivist .stat-composition{
+  grid-template-columns:minmax(0,5fr) minmax(300px,7fr); align-items:end;
+}
+.composition-constructivist .stat-copy{ padding-bottom:clamp(.3rem,2vh,1.2rem); }
+.composition-constructivist .stat-copy .lead{ margin:.45em 0 0; }
+.composition-constructivist .stat-anchor{ text-align:right; }
+
+/* Comparison is one argument divided by a rule, not two floating cards. */
+.composition-constructivist .construct-compare{ gap:0; padding:0; overflow:visible; }
+.composition-constructivist .compare-side{ padding:clamp(1.1rem,2.6vw,2rem); min-width:0; }
+.composition-constructivist .compare-side:first-child{ border-right:1px solid var(--construct-rule); }
+.composition-constructivist .vs{
+  top:clamp(.9rem,2vw,1.5rem); transform:translateX(-50%);
+  width:auto; height:auto; border-radius:0; padding:.25em .55em;
+  background:var(--accent); color:#fff; border:0; box-shadow:none;
+  font-size:var(--small-size); letter-spacing:.12em;
+}
+.composition-constructivist .bullets li::before{ width:.75em; height:2px; top:.72em; border-radius:0; box-shadow:none; }
+
+/* Quote / divider / imagery use one strong axis. */
+.composition-constructivist .quote-composition{ max-width:min(78vw,980px); }
+.composition-constructivist .quote-composition .construct-plane{
+  padding:clamp(1.5rem,4.5vw,4rem); border-left:clamp(4px,.55vw,8px) solid var(--accent);
+}
+.composition-constructivist .quote-composition blockquote{
+  max-width:30ch; font-size:clamp(1.65rem,4.4vw,3.8rem); line-height:1.22; text-wrap:balance;
+}
+.composition-constructivist .quote-by{ text-align:right; }
+.composition-constructivist .section-composition{ max-width:min(82vw,1060px); text-align:left; }
+.composition-constructivist .section-composition .qbadge{
+  width:auto; height:auto; border-radius:0; padding:.32em .55em; margin:0 0 .5em;
+  background:var(--accent); color:#fff; border:0; box-shadow:none; animation:none;
+}
+.composition-constructivist .section-composition .lead{ margin:.55em 0 0; }
+.composition-constructivist .section-hero{ margin:0 0 clamp(1rem,2.2vh,1.5rem); }
+.composition-constructivist .image-composition{ display:grid;
+  grid-template-columns:minmax(220px,4fr) minmax(0,8fr); column-gap:clamp(1.4rem,4vw,4rem);
+  align-items:start; }
+.composition-constructivist .image-composition .eyebrow,
+.composition-constructivist .image-composition h2{ grid-column:1; }
+.composition-constructivist .image-composition .image-field{
+  grid-column:2; grid-row:1 / span 3; margin:0; max-width:100%; justify-self:stretch;
+}
+.composition-constructivist .image-composition .image-field img{ width:100%; height:min(60vh,560px); }
+.composition-constructivist .object-composition{ grid-template-columns:minmax(0,7fr) minmax(240px,5fr) !important; }
+.composition-constructivist .chart-split{ grid-template-columns:minmax(230px,4fr) minmax(0,8fr); }
+
+/* Keep closing deliberately centered; it is the release after the asymmetric deck. */
+.composition-constructivist .closing .slide-content::before{ left:50%; transform:translateX(-50%); }
+.composition-constructivist .closing .wrap{ margin:0 auto; }
+.composition-constructivist .closing h1,
+.composition-constructivist .closing h2{ max-width:none; }
+.composition-constructivist .closing .eyebrow{ justify-content:center; }
+.composition-constructivist .closing .eyebrow::after{ display:none; }
+
+@media (max-width:800px){
+  .composition-constructivist{ --frame-x:clamp(1rem,5vw,2.5rem); --frame-y:clamp(2.8rem,6vh,4rem); }
+  .composition-constructivist .composition-shell{ max-width:100%; }
+  .composition-constructivist .cover-layout,
+  .composition-constructivist .cover-layout:has(.cover-hero),
+  .composition-constructivist .construct-split,
+  .composition-constructivist .stat-composition,
+  .composition-constructivist .image-composition,
+  .composition-constructivist .object-composition{
+    grid-template-columns:1fr !important; gap:clamp(.8rem,2.2vh,1.25rem); text-align:left;
+  }
+  .composition-constructivist .cover-layout .cover-copy,
+  .composition-constructivist .image-composition .eyebrow,
+  .composition-constructivist .image-composition h2,
+  .composition-constructivist .image-composition .image-field{ grid-column:1; grid-row:auto; }
+  .composition-constructivist .cover-layout:has(.cover-hero) .cover-copy{ grid-row:1; }
+  .composition-constructivist .cover-hero{ grid-row:2; max-width:min(82vw,520px); justify-self:start; }
+  .composition-constructivist .cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.4em 0 0; }
+  .composition-constructivist .stat-anchor{ text-align:left; font-size:clamp(3.6rem,17vw,7rem); }
+  .composition-constructivist .image-composition .image-field img{ height:min(42vh,380px); }
+  .composition-constructivist .section-hero{ max-width:100%; }
+}
+@media (max-width:640px){
+  .composition-constructivist .slide-content::before{ height:2px; }
+  .composition-constructivist .toc-grid,
+  .composition-constructivist .construct-grid{ grid-template-columns:1fr; }
+  .composition-constructivist .toc-card,
+  .composition-constructivist .construct-grid-item{ border-right:0 !important; }
+  .composition-constructivist .compare{ grid-template-columns:1fr; }
+  .composition-constructivist .compare-side:first-child{ border-right:0; border-bottom:1px solid var(--construct-rule); }
+  .composition-constructivist .vs{ left:auto; right:clamp(.8rem,2vw,1.2rem); top:50%; transform:translateY(-50%); }
+  .composition-constructivist .quote-composition{ max-width:100%; }
+}
+
 </style>
 <style id="theme-overrides">
 :root { --accent:#0A84FF; --accent-rgb:10,132,255; --accent-2:#5DAEFF; --accent2-rgb:93,174,255; --blob-1:rgba(10,132,255,0.30); --blob-2:rgba(100,210,255,0.26); --blob-3:rgba(48,209,88,0.22); }
 </style>
 </head>
-<body>
+<body class="composition-constructivist">
 <div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
-<div class="glyphs" aria-hidden="true"><span class="g1">✦</span><span class="g2">❋</span><span class="g3">✧</span></div>
+<div class="glyphs" aria-hidden="true"></div>
 <canvas id="lg-three" aria-hidden="true"></canvas>
 <div class="progress"></div>
 <nav class="dots" aria-label="导航"></nav>
@@ -412,7 +617,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 <main class="deck">
 <section data-idx="0" class="slide" data-layout="cover" data-three="field">
   <div class="slide-content">
-    <div class="wrap cover-layout">
+    <div class="wrap cover-layout composition-shell">
       <div class="cover-copy">
         <div class="eyebrow reveal" style="--i:0">LIQUID GLASS · DEMO</div>
         <h1 class="reveal" style="--i:1">液态玻璃演示系统</h1>
@@ -427,30 +632,30 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="1" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,1080px)">
+    <div class="wrap composition-shell">
       <div class="eyebrow reveal" style="--i:0">AGENDA</div>
       <h2 class="reveal" style="--i:1">本场大纲</h2>
-      <div class="g2 toc-grid" style="margin-top:clamp(1rem,2.4vh,1.6rem)">
+      <div class="g2 toc-grid construct-plane glass" style="margin-top:clamp(1rem,2.4vh,1.6rem)">
         
-        <div class="glass toc-card reveal" style="--i:0">
+        <div class="toc-card construct-index reveal" style="--i:0">
           <div class="toc-num" aria-hidden="true"></div>
           <h3>设计哲学</h3>
           <p>为什么用液态玻璃</p>
         </div>
         
-        <div class="glass toc-card reveal" style="--i:1">
+        <div class="toc-card construct-index reveal" style="--i:1">
           <div class="toc-num" aria-hidden="true"></div>
           <h3>版式库</h3>
           <p>14 种单页布局</p>
         </div>
         
-        <div class="glass toc-card reveal" style="--i:2">
+        <div class="toc-card construct-index reveal" style="--i:2">
           <div class="toc-num" aria-hidden="true"></div>
           <h3>图片原则</h3>
           <p>悬浮 vs 装框</p>
         </div>
         
-        <div class="glass toc-card reveal" style="--i:3">
+        <div class="toc-card construct-index reveal" style="--i:3">
           <div class="toc-num" aria-hidden="true"></div>
           <h3>一键生成</h3>
           <p>outline → HTML</p>
@@ -465,11 +670,11 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="2" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-three="ripple:flow:bottom:subtle:1291">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(92vw,900px);text-align:center">
+    <div class="wrap composition-shell section-composition">
       
       <div class="qbadge reveal" style="--i:0">01</div>
       <h1 class="reveal" style="--i:1">设计哲学</h1>
-      <p class="lead reveal" style="--i:2;margin:.4em auto 0">玻璃之后，必须有彩色与虚化，才能折射出层次。</p>
+      <p class="lead reveal" style="--i:2">玻璃之后，必须有彩色与虚化，才能折射出层次。</p>
     </div>
   </div>
 </section>
@@ -478,12 +683,12 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="3" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,980px)">
+    <div class="wrap composition-shell">
       <div class="eyebrow reveal" style="--i:0">PRINCIPLES</div>
       <h2 class="reveal" style="--i:1">三条铁律</h2>
-      <div class="lrows" style="margin-top:clamp(.8rem,2vh,1.4rem)">
+      <div class="lrows construct-plane glass" style="margin-top:clamp(.8rem,2vh,1.4rem)">
         
-        <div class="glass lrow reveal" style="--i:0">
+        <div class="lrow reveal" style="--i:0">
           <span class="lrow-dot" aria-hidden="true"></span>
           <div class="lrow-body">
             <h3>每屏一页，永不内滚</h3>
@@ -491,7 +696,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
           </div>
         </div>
         
-        <div class="glass lrow reveal" style="--i:1">
+        <div class="lrow reveal" style="--i:1">
           <span class="lrow-dot" aria-hidden="true"></span>
           <div class="lrow-body">
             <h3>毛玻璃需有底色</h3>
@@ -499,7 +704,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
           </div>
         </div>
         
-        <div class="glass lrow reveal" style="--i:2">
+        <div class="lrow reveal" style="--i:2">
           <span class="lrow-dot" aria-hidden="true"></span>
           <div class="lrow-body">
             <h3>图片二选一</h3>
@@ -516,12 +721,12 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="4" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,1040px)">
+    <div class="wrap composition-shell">
       <div class="eyebrow reveal" style="--i:0">COMPOSE</div>
       <h2 class="reveal" style="--i:1">左文右卡</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,3vw,2.5rem);align-items:center;margin-top:1rem">
-        <div class="reveal" style="--i:2"><p style='color:var(--ink);font-size:var(--h3-size);line-height:1.6'>把要点放在左侧，右侧用玻璃卡承载补充信息或图示。</p><p style='margin-top:.6em'>适合「论点 + 说明」的对照结构。</p></div>
-        <div class="glass tilt reveal" style="--i:3;padding:clamp(1.2rem,2.6vw,2rem)"><h3>玻璃卡内容</h3><p>这里可以放任何 HTML：列表、图表、引用。build.py 会原样注入。</p></div>
+      <div class="construct-split" style="margin-top:1rem">
+        <div class="construct-copy reveal" style="--i:2"><p style='color:var(--ink);font-size:var(--h3-size);line-height:1.6'>把要点放在左侧，右侧用玻璃卡承载补充信息或图示。</p><p style='margin-top:.6em'>适合「论点 + 说明」的对照结构。</p></div>
+        <div class="glass construct-anchor tilt reveal" style="--i:3"><h3>玻璃卡内容</h3><p>这里可以放任何 HTML：列表、图表、引用。build.py 会原样注入。</p></div>
       </div>
     </div>
   </div>
@@ -531,30 +736,30 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="5" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,1080px)">
+    <div class="wrap composition-shell">
       <div class="eyebrow reveal" style="--i:0">LIBRARY</div>
       <h2 class="reveal" style="--i:1">版式组件库</h2>
-      <div class="g4" style="margin-top:1rem">
+      <div class="g4 construct-grid construct-plane glass" style="margin-top:1rem">
         
-        <div class="glass tilt reveal" style="--i:0">
+        <div class="construct-grid-item reveal" style="--i:0">
           <div class="num">01</div>
           <h3>封面</h3>
           <p>标题 + 副标题 + 可选悬浮主图</p>
         </div>
         
-        <div class="glass tilt reveal" style="--i:1">
+        <div class="construct-grid-item reveal" style="--i:1">
           <div class="num">02</div>
           <h3>目录</h3>
           <p>带描述的条目列表</p>
         </div>
         
-        <div class="glass tilt reveal" style="--i:2">
+        <div class="construct-grid-item reveal" style="--i:2">
           <div class="num">03</div>
           <h3>卡片网格</h3>
           <p>2/3/4 列自动适配</p>
         </div>
         
-        <div class="glass tilt reveal" style="--i:3">
+        <div class="construct-grid-item reveal" style="--i:3">
           <div class="num">04</div>
           <h3>时间线</h3>
           <p>生长式节点动画</p>
@@ -569,12 +774,13 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="6" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-three="ripple:flow:bottom:subtle:1679">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(92vw,860px);text-align:center">
-      <div class="eyebrow reveal" style="--i:0">BY THE NUMBERS</div>
-      <div class="reveal" style="--i:1;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--accent);
-        font-size:clamp(3.4rem,11vw,8rem);font-variant-numeric:tabular-nums;margin:.1em 0">14<span style="font-size:.4em;color:var(--muted)"> 种</span></div>
-      <h2 class="reveal" style="--i:2">单页布局</h2>
-      <p class="lead reveal" style="--i:3;margin:.3em auto 0">覆盖封面、分栏、统计、对比、结束页等常见结构。</p>
+    <div class="wrap composition-shell stat-composition">
+      <div class="stat-copy">
+        <div class="eyebrow reveal" style="--i:0">BY THE NUMBERS</div>
+        <h2 class="reveal" style="--i:2">单页布局</h2>
+        <p class="lead reveal" style="--i:3">覆盖封面、分栏、统计、对比、结束页等常见结构。</p>
+      </div>
+      <div class="stat-anchor reveal" style="--i:1">14<span> 种</span></div>
     </div>
   </div>
 </section>
@@ -583,22 +789,22 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="7" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,1000px)">
+    <div class="wrap composition-shell">
       <div class="eyebrow reveal" style="--i:0">METRICS</div>
       <h2 class="reveal" style="--i:1">关键指标</h2>
-      <div class="g3" style="margin-top:1rem">
+      <div class="g3 construct-grid construct-plane glass" style="margin-top:1rem">
         
-        <div class="glass reveal" style="--i:0;text-align:center;padding:clamp(1rem,2.2vw,1.6rem)">
+        <div class="construct-grid-item construct-kpi reveal" style="--i:0">
           <div class="num" style="font-size:clamp(1.8rem,4vw,2.8rem)">36</div>
           <div style="color:var(--ink);font-weight:600;font-size:var(--body-size)">主题(竞品参考)</div>
         </div>
         
-        <div class="glass reveal" style="--i:1;text-align:center;padding:clamp(1rem,2.2vw,1.6rem)">
+        <div class="construct-grid-item construct-kpi reveal" style="--i:1">
           <div class="num" style="font-size:clamp(1.8rem,4vw,2.8rem)">0</div>
           <div style="color:var(--ink);font-weight:600;font-size:var(--body-size)">外部依赖</div>
         </div>
         
-        <div class="glass reveal" style="--i:2;text-align:center;padding:clamp(1rem,2.2vw,1.6rem)">
+        <div class="construct-grid-item construct-kpi reveal" style="--i:2">
           <div class="num" style="font-size:clamp(1.8rem,4vw,2.8rem)">1</div>
           <div style="color:var(--ink);font-weight:600;font-size:var(--body-size)">自包含文件</div>
         </div>
@@ -612,10 +818,10 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="8" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(92vw,880px)">
+    <div class="wrap composition-shell">
       <div class="eyebrow reveal" style="--i:0">EVOLUTION</div>
       <h2 class="reveal" style="--i:1">演进历程</h2>
-      <div class="glass reveal" style="--i:2;padding:clamp(1rem,2.4vw,1.8rem)">
+      <div class="glass construct-plane reveal" style="--i:2">
         <div class="tline">
           
           <div class="titem" style="--i:0"><span>v1</span><b>单文件模板</b> —— 手写母版，灵活但不可复现。</div>
@@ -634,11 +840,11 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="9" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,1000px)">
+    <div class="wrap composition-shell">
       <div class="eyebrow reveal" style="--i:0">VS</div>
       <h2 class="reveal" style="--i:1">悬浮 vs 装框</h2>
-      <div class="compare" style="margin-top:1rem">
-        <div class="glass reveal" style="--i:2;padding:clamp(1rem,2.2vw,1.6rem)">
+      <div class="compare construct-compare construct-plane glass reveal" style="--i:2;margin-top:1rem">
+        <div class="compare-side">
           <h3 class="accent" style="margin-bottom:.6em">透明对象</h3>
           <ul class="bullets">
             
@@ -650,8 +856,8 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
             
           </ul>
         </div>
-        <div class="vs">VS</div>
-        <div class="glass reveal" style="--i:3;padding:clamp(1rem,2.2vw,1.6rem)">
+        <div class="vs" aria-hidden="true">VS</div>
+        <div class="compare-side">
           <h3 class="accent" style="margin-bottom:.6em">背景照片</h3>
           <ul class="bullets">
             
@@ -672,10 +878,10 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="10" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-three="ripple:flow:bottom:subtle:2067">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(90vw,880px);text-align:center">
-      <div class="glass reveal" style="--i:0;padding:clamp(1.4rem,3.6vw,2.8rem)">
-        <blockquote style="font-size:clamp(1.25rem,3vw,2.2rem);line-height:1.35;margin:0;color:var(--ink);font-weight:600">「整体，不等于各部分之和。」</blockquote>
-        <div style="margin-top:1em;font-size:var(--small-size);letter-spacing:.16em;color:var(--muted);text-transform:uppercase">格式塔心理学 · 1912</div>
+    <div class="wrap composition-shell quote-composition">
+      <div class="glass construct-plane reveal" style="--i:0">
+        <blockquote>「整体，不等于各部分之和。」</blockquote>
+        <div class="quote-by">格式塔心理学 · 1912</div>
       </div>
     </div>
   </div>
@@ -684,10 +890,10 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 
   <section data-idx="11" class="slide" data-layout="image-frame">
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,960px)">
+    <div class="wrap composition-shell image-composition">
       <div class="eyebrow reveal" style="--i:0">PHOTO</div>
       <h2 class="reveal" style="--i:1">照片装框（同心圆角）</h2>
-      <figure class="photo-frame reveal" style="--i:2;margin:1rem auto 0;max-width:min(92vw,860px)">
+      <figure class="photo-frame image-field reveal" style="--i:2">
         <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='%23cfe3ff'/><circle cx='200' cy='150' r='90' fill='%230A84FF'/><text x='200' y='158' font-size='28' fill='white' text-anchor='middle' font-family='sans-serif'>PHOTO</text></svg>" alt="示例图">
         <figcaption>带背景的图片走玻璃相框，内图圆角 = 外框圆角 − 内边距。</figcaption>
       </figure>
@@ -699,7 +905,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   <section data-idx="12" class="slide" data-layout="object-float">
   <div class="orb o1"></div><div class="orb o2"></div>
   <div class="slide-content">
-    <div class="wrap" style="max-width:min(94vw,980px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(1rem,4vw,3rem);align-items:center">
+    <div class="wrap composition-shell construct-split object-composition">
       <div>
         <div class="eyebrow reveal" style="--i:0">OBJECT</div>
         <h2 class="reveal" style="--i:1">透明对象悬浮</h2>

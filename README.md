@@ -9,6 +9,7 @@
 `liquid-glass-slides` 是一个模型无关、可移植的演示文稿生成技能。它既可安装到 WorkBuddy 或支持 `SKILL.md` 的智能体环境，也可通过仓库内置适配文件在 OpenAI Codex、Claude Code、Gemini CLI 与 Cursor 中直接使用。任何能够读取 Markdown 并运行 Python 的 AI Agent，也可以遵循 `references/INSTRUCTIONS.md` 完成同样的构建流程。
 
 - **液态玻璃质感**：半透明磨砂面板、背景虚化与折射、边缘高光、层次景深，忠实还原 Apple 的 Liquid Glass 设计语言（纯 CSS 实现，无原生 Apple API）。
+- **构成主义简约版式**：默认采用非对称网格、严格边缘对齐、尺度对比与大留白；用一个共享玻璃平面组织内容，避免“每句话一张卡片”的仪表盘感。
 - **真实中文文字**：所有可读文字都是真正的 HTML 文本，绝不乱码、可直接编辑。
 - **零依赖单文件输出**：内联 CSS/JS，浏览器直接全屏播放，支持键盘 / 滚轮 / 触摸翻页与入场动画。
 - **ECharts 数据图表**：仅在页面确有真实可比数据时自动加入（趋势、对比、占比、雷达），并自动套用液态玻璃主题。
@@ -104,6 +105,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 ## Highlights
 
 - **Liquid Glass aesthetic** — translucent frosted panels, backdrop blur/refraction, specular edge highlights, layered depth (pure CSS, no native Apple APIs).
+- **Constructivist-minimal composition** — asymmetric grids, strict edge alignment, scale contrast, quiet space, and shared glass planes instead of dashboard-like card repetition.
 - **Real, editable text** — all readable text is genuine HTML; Chinese never garbles.
 - **Zero-dependency single file** — inlined CSS/JS, fullscreen playback, keyboard/wheel/touch navigation with reveal animations.
 - **ECharts charts** — auto-added only where real quantitative data exists, themed to match the deck.

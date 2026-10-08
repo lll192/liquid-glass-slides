@@ -558,6 +558,11 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     with open(os.path.join(templates_dir, 'deck.html'), encoding='utf-8') as f:
         deck = f.read()
 
+    composition = str(outline.get('composition', 'constructivist')).strip().lower()
+    if composition not in ('constructivist', 'classic'):
+        sys.stderr.write('[warn] composition "%s" is invalid; using constructivist\n' % composition)
+        composition = 'constructivist'
+
     sp_dir = os.path.join(templates_dir, 'single-page')
     slides_out = []
     charts = []
@@ -672,6 +677,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
               .replace('<!--__GLYPHS__-->', glyphs_html)
               .replace('{{lang}}', outline.get('lang', 'zh-CN'))
               .replace('{{title}}', outline.get('title', 'Liquid Glass Deck'))
+              .replace('{{composition}}', composition)
               .replace('{{theme}}', theme_css))
     # Auto-embed: any local relative image path (e.g. images/foo.png) is read and
     # inlined as a base64 data URI, keeping the output a self-contained single file
