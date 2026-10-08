@@ -16,6 +16,8 @@ ROLES = {"primary", "supporting", "data", "visual"}
 PURPOSES = {"must-use", "reference", "evidence", "visual"}
 STATUSES = {"available", "missing", "unreadable"}
 COVERAGE = {"provided", "partial", "missing"}
+VISUAL_TREATMENTS = {"evidence", "decorative"}
+VISUAL_FITS = {"contain", "cover", "float", "no-crop"}
 
 
 def _nonempty_string(value: Any) -> bool:
@@ -76,6 +78,24 @@ def validate_manifest(manifest: Any) -> list[str]:
             errors.append(f"{prefix}.status must be one of: " + ", ".join(sorted(STATUSES)))
         elif purpose in {"must-use", "evidence"} and status != "available":
             errors.append(f"{prefix} is required for the deck but is not available")
+        if role == "visual":
+            if purpose != "visual":
+                errors.append(f"{prefix}.purpose must be visual when role is visual")
+            if not _nonempty_string(source.get("intended_use")):
+                errors.append(f"{prefix}.intended_use must be a non-empty string")
+            if source.get("treatment") not in VISUAL_TREATMENTS:
+                errors.append(
+                    f"{prefix}.treatment must be one of: "
+                    + ", ".join(sorted(VISUAL_TREATMENTS))
+                )
+            if source.get("fit") not in VISUAL_FITS:
+                errors.append(
+                    f"{prefix}.fit must be one of: " + ", ".join(sorted(VISUAL_FITS))
+                )
+            for optional_field in ("caption", "credit"):
+                value = source.get(optional_field)
+                if value is not None and not isinstance(value, str):
+                    errors.append(f"{prefix}.{optional_field} must be a string or null")
 
     if mode == "supplied" and primary_count != 1:
         errors.append("supplied mode requires exactly one primary source")

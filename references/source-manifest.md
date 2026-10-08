@@ -26,6 +26,19 @@ Gate. It stores provenance and handling decisions, not the full source text.
       "purpose": "reference",
       "scope": "第 2–4 页",
       "status": "available"
+    },
+    {
+      "id": "src-03",
+      "path": "sources/crawler-flow.png",
+      "role": "visual",
+      "purpose": "visual",
+      "scope": "整张图片",
+      "status": "available",
+      "intended_use": "工作流程",
+      "treatment": "evidence",
+      "fit": "contain",
+      "caption": "用户提供的爬虫流程示意图",
+      "credit": "用户提供"
     }
   ],
   "must_preserve": ["课程给出的学习目标原文"],
@@ -75,6 +88,17 @@ Each source needs:
 Every `must-use` and `evidence` source must be `available` before the Source Gate
 passes. A missing optional reference may remain listed when its consequence is
 recorded in `open_questions`.
+
+For `role = visual`, also record:
+
+- `intended_use`: cover, a named section, or `auto`;
+- `treatment`: `evidence` or `decorative`;
+- `fit`: `contain`, `cover`, `float`, or `no-crop`;
+- optional `caption` and `credit` strings.
+
+Visual evidence should normally use `contain` or `no-crop`. A transparent
+decorative object may use `float`; a photographic decorative image may use
+`cover`. Do not encode required slide copy into the image.
 
 ### Content map
 

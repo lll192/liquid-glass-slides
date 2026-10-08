@@ -18,6 +18,19 @@
       "purpose": "reference",
       "scope": "第 2–4 页",
       "status": "available"
+    },
+    {
+      "id": "src-03",
+      "path": "sources/crawler-flow.png",
+      "role": "visual",
+      "purpose": "visual",
+      "scope": "整张图片",
+      "status": "available",
+      "intended_use": "工作流程",
+      "treatment": "evidence",
+      "fit": "contain",
+      "caption": "用户提供的爬虫流程示意图",
+      "credit": "用户提供"
     }
   ],
   "must_preserve": [
@@ -38,8 +51,8 @@
     {
       "section": "工作流程",
       "coverage": "provided",
-      "source_ids": ["src-01"],
-      "handling": "重组成五个连续步骤"
+      "source_ids": ["src-01", "src-03"],
+      "handling": "重组成五个连续步骤；流程图完整显示在文字旁，不裁切"
     },
     {
       "section": "使用边界",

@@ -94,7 +94,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 
 3. **Pass the Source Gate when material is supplied**
    - If `content.mode` is `supplied` or `assisted`, read `references/source-intake.md`. Skip this gate for `agent-led` work unless the user also provides files.
-   - Accept attached `.docx` / `.pdf` / `.md` / `.txt`, accessible local paths, or pasted text. Never claim to have read an inaccessible attachment.
+   - Accept attached `.docx` / `.pdf` / `.md` / `.txt`, accessible local paths, pasted text, and separately uploaded visual assets. Text and images may map to the same section; never require the user to merge them first or bake readable copy into an image.
    - Classify one primary source plus any supporting, data, or visual sources; capture processing level, protected content, and requested AI additions.
    - Read `references/source-manifest.md`, create `source-manifest.json` and `content-map.md`, then run `python scripts/validate_source_manifest.py source-manifest.json`.
    - Do not start the outline while a required source is unreadable, source priority is ambiguous, or a material conflict remains hidden.

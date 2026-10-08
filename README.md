@@ -18,7 +18,7 @@
 - **可选 AI 配图**：封面 / 章节分隔可自动生成透明背景的装饰插画（仅用于装饰，文字绝不进图）。
 - **生成前 Brief Gate**：先盘点用户已经提供的信息；信息不足时一次性显示 6 项简洁表单，信息充分时直接生成结构化简报，避免重复追问。
 - **可复用设计简报**：把主题、目标、受众、内容归属、视觉偏好和约束固化为可校验的 `brief.json`，再进入故事板与渲染。
-- **条件式 Source Gate**：选择完整文案或部分素材时，支持附件、本地路径与粘贴文本，自动确认主文案、辅助材料、改写幅度和缺失内容。
+- **条件式 Source Gate**：选择完整文案或部分素材时，支持附件、本地路径、粘贴文本及图文混合上传，自动确认主文案、辅助材料、图片用途、改写幅度和缺失内容。
 - **来源与补写可追踪**：通过 `source-manifest.json` 和 `content-map.md` 区分用户原文、辅助参考与 AI 补充，避免素材混用或静默改写。
 
 ## 快速开始
@@ -113,7 +113,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Optional AI imagery** — transparent decorative hero/motif illustrations (text never baked into images).
 - **Adaptive Brief Gate** — inventories what the user already supplied, asks one compact six-field form only when needed, and avoids redundant questions.
 - **Reusable design brief** — captures intent, audience, content ownership, visual preferences, and constraints in a validated `brief.json` before storyboarding.
-- **Conditional Source Gate** — when full or partial copy is supplied, accepts attachments, local paths, or pasted text and records source priority, editing level, protected wording, and content gaps.
+- **Conditional Source Gate** — when full or partial copy is supplied, accepts attachments, local paths, pasted text, and mixed text/image input while recording source priority, image use, editing level, protected wording, and content gaps.
 - **Traceable AI additions** — `source-manifest.json` and `content-map.md` distinguish user copy, references, and AI-authored additions.
 
 ## Quick start

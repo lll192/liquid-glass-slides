@@ -15,8 +15,9 @@ Offer all channels supported by the current client:
 - provide an accessible local project path;
 - paste text directly into the conversation.
 
-Visual assets may be attached separately and classified as `visual`; do not
-treat an image as factual copy unless the user explicitly asks for extraction.
+Visual assets may be attached in the same message and classified as `visual`;
+do not treat an image as factual copy unless the user explicitly asks for
+extraction.
 If an attachment or path cannot be read, say which item is unavailable and ask
 the user to attach it again or paste the relevant text. Never pretend to have
 read an inaccessible source.
@@ -24,6 +25,30 @@ read an inaccessible source.
 Keep original files unchanged. Work from extracted text or a task-local copy;
 do not overwrite, rename, move, or delete user sources merely to organize a
 deck.
+
+### Mixed text and images
+
+The user does not need to merge text and images before uploading. Accept them as
+separate sources, then associate both with the same content-map section. Offer a
+compact mapping line for each image:
+
+```text
+图片：crawler-flow.png｜用途：工作流程页｜性质：内容证据｜裁切：不可裁切｜图注/来源：用户提供
+```
+
+Allowed user-facing choices:
+
+- intended use: cover, a named section, or automatic placement;
+- treatment: `内容证据` or `装饰素材`;
+- fit: keep whole image, crop to frame, or float a transparent object;
+- optional caption and source credit.
+
+If the user supplies no placement preference, infer it from the image and show
+the choice in the source receipt. Images with meaningful labels or evidence must
+remain readable and should default to `contain` / `no-crop`. Decorative photos
+may use a frame and crop. Transparent cut-outs may float. Keep slide copy as real
+HTML text beside or over a protected quiet zone; never rasterize the user's text
+into the image just to combine them.
 
 ## 2. Collect only the choices that change treatment
 
