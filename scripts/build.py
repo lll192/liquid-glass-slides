@@ -696,6 +696,19 @@ _RHYTHM_FAMILIES = {
     'bullets': 'explain', 'two-column': 'explain', 'comparison': 'explain',
 }
 
+_GENERIC_TITLES = {
+    '介绍', '基本介绍', '相关介绍', '概述', '基本概念', '研究背景', '现状分析',
+    '问题分析', '案例分析', '数据分析', '核心内容', '主要内容', '解决方案',
+    '发展趋势', '未来展望', '总结', '结论',
+    'introduction', 'overview', 'background', 'analysis', 'case study',
+    'key points', 'solution', 'future outlook', 'summary', 'conclusion',
+}
+_NON_CLAIM_LAYOUTS = {'cover', 'toc', 'section-divider', 'big-quote', 'closing'}
+_SCREEN_BLOCK_LIMITS = {
+    'subtitle': 90, 'desc': 100, 'note': 120, 'takeaway': 90,
+    'left': 220, 'right': 220, 'caption': 120,
+}
+
 
 def _plain_text(value):
     if value is None:
@@ -734,6 +747,65 @@ def title_profile(value):
     else:
         script = 'latin'
     return size, script, visual_units
+
+
+def _normalized_title(value):
+    text = _plain_text(value).strip().lower()
+    return re.sub(r'[\s\-—_:：·•,.，。!?！？()（）]+', ' ', text).strip()
+
+
+def speaker_notes_html(value):
+    """Render notes as inert escaped HTML; never treat notes as slide markup."""
+    if isinstance(value, list):
+        parts = [_plain_text(item) for item in value if _plain_text(item)]
+    else:
+        text = _plain_text(value)
+        parts = [text] if text else []
+    return ''.join('<p>%s</p>' % html.escape(part) for part in parts)
+
+
+def content_profile(slide):
+    """Inspect display copy while preserving user wording and source fidelity."""
+    layout = slide.get('layout', '')
+    title = _plain_text(slide.get('title'))
+    normalized = _normalized_title(title)
+    title_quality = 'not-applicable' if layout in _NON_CLAIM_LAYOUTS else (
+        'missing' if not title else ('generic' if normalized in _GENERIC_TITLES else 'claim')
+    )
+    long_blocks = []
+    for field, limit in _SCREEN_BLOCK_LIMITS.items():
+        length = _text_len(slide.get(field))
+        if length > limit:
+            long_blocks.append({'field': field, 'length': length, 'limit': limit})
+    for field in ('items', 'left_items', 'right_items'):
+        values = slide.get(field)
+        if not isinstance(values, list):
+            continue
+        for item_index, item in enumerate(values):
+            if not isinstance(item, dict):
+                continue
+            for key in ('desc', 'text'):
+                length = _text_len(item.get(key))
+                limit = 82 if key == 'desc' else 72
+                if length > limit:
+                    long_blocks.append({
+                        'field': '%s[%d].%s' % (field, item_index, key),
+                        'length': length, 'limit': limit,
+                    })
+    notes = slide.get('speaker_notes', slide.get('notes'))
+    notes_length = _text_len(notes)
+    main_point = _plain_text(slide.get('main_point'))
+    main_point_source = 'explicit' if main_point else (
+        'title' if title_quality == 'claim' else 'missing'
+    )
+    return {
+        'titleQuality': title_quality,
+        'mainPointSource': main_point_source,
+        'mainPoint': main_point or (title if title_quality == 'claim' else ''),
+        'screenCharacters': sum(_text_len(slide.get(key)) for key in _TEXT_FIELDS),
+        'speakerNotesCharacters': notes_length,
+        'longBlocks': long_blocks,
+    }
 
 
 def slide_density(slide):
@@ -911,6 +983,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     layout_intelligence = outline.get('layout_intelligence', True) is not False
     visual_intelligence = outline.get('visual_intelligence', True) is not False
     quality_intelligence = outline.get('quality_intelligence', True) is not False
+    content_intelligence = outline.get('content_intelligence', True) is not False
     rhythm_report = (audit_deck_rhythm(outline.get('slides', []))
                      if quality_intelligence else {'slides': [], 'warnings': []})
     rhythm_by_slide = {item['slide']: item for item in rhythm_report['slides']}
@@ -922,6 +995,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     charts = []
     chart_counter = 0
     three_scenes = []
+    content_profiles = []
     auto_ripple_enabled = outline.get('auto_ripple', True) is not False
     for idx, slide in enumerate(outline.get('slides', [])):
         layout = slide.get('layout')
@@ -945,6 +1019,12 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         rhythm = rhythm_by_slide.get(idx + 1, {
             'family': 'content', 'weight': 'medium', 'density': density, 'score': density_score,
         })
+        copy_profile = content_profile(slide) if content_intelligence else {
+            'titleQuality': 'unchecked', 'mainPointSource': 'unchecked',
+            'mainPoint': '',
+            'screenCharacters': 0, 'speakerNotesCharacters': 0, 'longBlocks': [],
+        }
+        content_profiles.append(dict({'slide': idx + 1, 'layout': layout}, **copy_profile))
         variant = (resolve_variant(slide, idx, media_shape, chart_family)
                    if layout_intelligence else 'default')
         title_size, title_script, title_units = title_profile(slide.get('title'))
@@ -956,6 +1036,13 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         if density == 'overfull':
             sys.stderr.write('[layout] slide %d (%s) is overfull (score=%d); '
                              'shorten copy or split the slide\n' % (idx + 1, layout, density_score))
+        if content_intelligence and copy_profile['titleQuality'] in ('missing', 'generic'):
+            sys.stderr.write('[copy] slide %d (%s) has a %s title; rewrite it as one audience-facing claim\n'
+                             % (idx + 1, layout, copy_profile['titleQuality']))
+        if content_intelligence:
+            for block in copy_profile['longBlocks']:
+                sys.stderr.write('[copy] slide %d %s is long (%d>%d chars); move detail to speaker_notes or split it\n'
+                                 % (idx + 1, block['field'], block['length'], block['limit']))
         if visual_intelligence and image_src:
             alt_key = 'hero_alt' if image_field == 'hero' else 'alt'
             if not str(slide.get(alt_key, '')).strip():
@@ -1032,6 +1119,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             'variant-' + variant, 'density-' + density,
             'title-size-' + title_size, 'script-' + title_script,
             'rhythm-' + rhythm['family'], 'weight-' + rhythm['weight'],
+            'copy-title-' + copy_profile['titleQuality'],
         ]
         if media_shape != 'none':
             intelligence_classes.append('media-' + media_shape)
@@ -1046,9 +1134,15 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         rendered = re.sub(
             r'(<section\b[^>]*>)',
             lambda m: m.group(1).rstrip('>') +
-            ' data-variant="%s" data-density="%s" data-media="%s" data-chart-profile="%s" data-rhythm="%s" data-weight="%s">'
-            % (variant, density, media_shape, chart_family, rhythm['family'], rhythm['weight']),
+            ' data-variant="%s" data-density="%s" data-media="%s" data-chart-profile="%s" data-rhythm="%s" data-weight="%s" data-title-quality="%s">'
+            % (variant, density, media_shape, chart_family, rhythm['family'], rhythm['weight'], copy_profile['titleQuality']),
             rendered, count=1)
+        notes_markup = speaker_notes_html(slide.get('speaker_notes', slide.get('notes')))
+        if notes_markup:
+            rendered = re.sub(
+                r'</section>',
+                '<aside class="speaker-notes" hidden aria-label="Speaker notes">%s</aside></section>' % notes_markup,
+                rendered, count=1)
         if ripple:
             ripple_classes = ' '.join([
                 'ripple-material',
@@ -1084,9 +1178,11 @@ def build(outline_path, out_path, assets_dir, templates_dir):
                           for i, g in enumerate(glyphs))
 
     build_report = {
-        'version': 1,
+        'version': 2,
         'qualityIntelligence': quality_intelligence,
+        'contentIntelligence': content_intelligence,
         'rhythm': rhythm_report,
+        'content': {'slides': content_profiles},
     }
     report_js = 'window.__LG_BUILD_REPORT__=' + json.dumps(build_report, ensure_ascii=False) + ';\n'
     result = (deck

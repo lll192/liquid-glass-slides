@@ -883,6 +883,25 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .qa-visible .slide[data-qa="warning"]{ outline:2px solid rgba(255,159,10,.72); outline-offset:-2px; }
 .qa-visible .slide[data-qa="error"]{ outline:3px solid rgba(255,69,58,.82); outline-offset:-3px; }
 
+/* Presenter notes: press N or append ?notes=1. Hidden in ordinary playback. */
+.presenter-notes{
+  display:none; position:fixed; z-index:1100; right:clamp(.75rem,2vw,1.5rem); bottom:clamp(.75rem,2vw,1.5rem);
+  width:min(420px,calc(100vw - 1.5rem)); max-height:min(42vh,360px); overflow:auto;
+  color:#17181a; background:rgba(255,255,255,.94); border:1px solid rgba(0,0,0,.12);
+  border-radius:18px; box-shadow:0 18px 50px rgba(22,35,60,.2); backdrop-filter:blur(18px);
+  font:400 14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+.notes-visible .presenter-notes{ display:block; }
+.presenter-notes-head{
+  position:sticky; top:0; display:flex; align-items:center; justify-content:space-between;
+  padding:.7rem .9rem; background:rgba(246,248,252,.96); border-bottom:1px solid rgba(0,0,0,.08);
+  font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+}
+.presenter-notes-head button{ border:0; background:transparent; color:#475467; font-size:20px; line-height:1; cursor:pointer; }
+.presenter-notes-body{ padding:.8rem .95rem 1rem; }
+.presenter-notes-body p{ margin:.25rem 0 .65rem; color:#202329; font-size:14px; line-height:1.55; }
+.presenter-notes-body .notes-empty{ color:#7a808a; font-style:italic; }
+
 </style>
 <style id="theme-overrides">
 :root { --accent:#0A84FF; --accent-rgb:10,132,255; --accent-2:#5DAEFF; --accent2-rgb:93,174,255; --blob-1:rgba(10,132,255,0.30); --blob-2:rgba(100,210,255,0.26); --blob-3:rgba(48,209,88,0.22); }
@@ -897,7 +916,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 <div class="counter">01 / 01</div>
 
 <main class="deck">
-<section data-idx="0" class="slide variant-default density-standard title-size-short script-cjk rhythm-opening weight-light" data-layout="cover" data-variant="default" data-density="standard" data-media="none" data-chart-profile="none" data-rhythm="opening" data-weight="light" data-three="field">
+<section data-idx="0" class="slide variant-default density-standard title-size-short script-cjk rhythm-opening weight-light copy-title-not-applicable" data-layout="cover" data-variant="default" data-density="standard" data-media="none" data-chart-profile="none" data-rhythm="opening" data-weight="light" data-title-quality="not-applicable" data-three="field">
   <div class="slide-content">
     <div class="wrap cover-layout composition-shell">
       <div class="cover-copy">
@@ -911,7 +930,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="1" class="slide variant-index-quadrant density-sparse title-size-short script-cjk rhythm-navigation weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="navigation" data-weight="medium">
+  <section data-idx="1" class="slide variant-index-quadrant density-sparse title-size-short script-cjk rhythm-navigation weight-medium copy-title-not-applicable ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="navigation" data-weight="medium" data-title-quality="not-applicable">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -949,7 +968,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="2" class="slide variant-default density-sparse title-size-short script-cjk rhythm-break weight-light ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-three="ripple:flow:bottom:subtle:1291">
+  <section data-idx="2" class="slide variant-default density-sparse title-size-short script-cjk rhythm-break weight-light copy-title-not-applicable ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-title-quality="not-applicable" data-three="ripple:flow:bottom:subtle:1291">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell section-composition">
@@ -962,7 +981,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="3" class="slide variant-list-spread density-sparse title-size-short script-cjk rhythm-explain weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium">
+  <section data-idx="3" class="slide variant-list-spread density-sparse title-size-short script-cjk rhythm-explain weight-medium copy-title-claim ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium" data-title-quality="claim">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -997,10 +1016,10 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-</section>
+<aside class="speaker-notes" hidden aria-label="Speaker notes"><p>先强调这里的规则服务于可读性，而不是单纯追求视觉效果。</p><p>第三条可结合后面的图片页面现场演示。</p></aside></section>
 
 
-  <section data-idx="4" class="slide variant-split-balanced density-sparse title-size-short script-cjk rhythm-explain weight-medium ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium">
+  <section data-idx="4" class="slide variant-split-balanced density-sparse title-size-short script-cjk rhythm-explain weight-medium copy-title-claim ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium" data-title-quality="claim">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1015,7 +1034,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="5" class="slide variant-mosaic density-sparse title-size-short script-cjk rhythm-structure weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium">
+  <section data-idx="5" class="slide variant-mosaic density-sparse title-size-short script-cjk rhythm-structure weight-medium copy-title-claim ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium" data-title-quality="claim">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1053,7 +1072,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="6" class="slide variant-number-left density-sparse title-size-short script-cjk rhythm-emphasis weight-light ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="emphasis" data-weight="light" data-three="ripple:flow:bottom:subtle:1679">
+  <section data-idx="6" class="slide variant-number-left density-sparse title-size-short script-cjk rhythm-emphasis weight-light copy-title-claim ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="emphasis" data-weight="light" data-title-quality="claim" data-three="ripple:flow:bottom:subtle:1679">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell stat-composition">
@@ -1068,7 +1087,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="7" class="slide variant-feature-first density-sparse title-size-short script-cjk rhythm-evidence weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="evidence" data-weight="medium">
+  <section data-idx="7" class="slide variant-feature-first density-sparse title-size-short script-cjk rhythm-evidence weight-medium copy-title-claim ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="evidence" data-weight="medium" data-title-quality="claim">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1097,7 +1116,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="8" class="slide variant-line-spacious density-sparse title-size-short script-cjk rhythm-structure weight-medium ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium">
+  <section data-idx="8" class="slide variant-line-spacious density-sparse title-size-short script-cjk rhythm-structure weight-medium copy-title-claim ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium" data-title-quality="claim">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1119,7 +1138,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="9" class="slide variant-compare-left density-standard title-size-short script-mixed rhythm-explain weight-heavy ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="heavy">
+  <section data-idx="9" class="slide variant-compare-left density-standard title-size-short script-mixed rhythm-explain weight-heavy copy-title-claim ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="heavy" data-title-quality="claim">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1157,7 +1176,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="10" class="slide variant-default density-sparse title-size-short script-latin rhythm-break weight-light ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-three="ripple:flow:bottom:subtle:2067">
+  <section data-idx="10" class="slide variant-default density-sparse title-size-short script-latin rhythm-break weight-light copy-title-not-applicable ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-title-quality="not-applicable" data-three="ripple:flow:bottom:subtle:2067">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell quote-composition">
@@ -1170,7 +1189,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="11" class="slide variant-visual-right density-sparse title-size-short script-cjk rhythm-visual weight-medium media-landscape" data-layout="image-frame" data-variant="visual-right" data-density="sparse" data-media="landscape" data-chart-profile="none" data-rhythm="visual" data-weight="medium">
+  <section data-idx="11" class="slide variant-visual-right density-sparse title-size-short script-cjk rhythm-visual weight-medium copy-title-claim media-landscape" data-layout="image-frame" data-variant="visual-right" data-density="sparse" data-media="landscape" data-chart-profile="none" data-rhythm="visual" data-weight="medium" data-title-quality="claim">
   <div class="slide-content">
     <div class="wrap composition-shell image-composition">
       <div class="eyebrow reveal" style="--i:0">PHOTO</div>
@@ -1184,7 +1203,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="12" class="slide variant-default density-sparse title-size-short script-cjk rhythm-visual weight-medium media-square" data-layout="object-float" data-variant="default" data-density="sparse" data-media="square" data-chart-profile="none" data-rhythm="visual" data-weight="medium">
+  <section data-idx="12" class="slide variant-default density-sparse title-size-short script-cjk rhythm-visual weight-medium copy-title-claim media-square" data-layout="object-float" data-variant="default" data-density="sparse" data-media="square" data-chart-profile="none" data-rhythm="visual" data-weight="medium" data-title-quality="claim">
   <div class="orb o1"></div><div class="orb o2"></div>
   <div class="slide-content">
     <div class="wrap composition-shell construct-split object-composition">
@@ -1201,7 +1220,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="13" class="slide closing variant-default density-sparse title-size-short script-cjk rhythm-closing weight-light ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="closing" data-weight="light" data-three="ripple:rings:bottom-right:subtle:2358">
+  <section data-idx="13" class="slide closing variant-default density-sparse title-size-short script-cjk rhythm-closing weight-light copy-title-not-applicable ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="closing" data-weight="light" data-title-quality="not-applicable" data-three="ripple:rings:bottom-right:subtle:2358">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="halo"></div>
   <div class="slide-content">
@@ -1223,7 +1242,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </main>
 
 <script>
-window.__LG_BUILD_REPORT__={"version": 1, "qualityIntelligence": true, "rhythm": {"slides": [{"slide": 1, "layout": "cover", "family": "opening", "weight": "light", "density": "standard", "score": 60}, {"slide": 2, "layout": "toc", "family": "navigation", "weight": "medium", "density": "sparse", "score": 70}, {"slide": 3, "layout": "section-divider", "family": "break", "weight": "light", "density": "sparse", "score": 26}, {"slide": 4, "layout": "bullets", "family": "explain", "weight": "medium", "density": "sparse", "score": 89}, {"slide": 5, "layout": "two-column", "family": "explain", "weight": "medium", "density": "sparse", "score": 96}, {"slide": 6, "layout": "grid-cards", "family": "structure", "weight": "medium", "density": "sparse", "score": 85}, {"slide": 7, "layout": "stat-highlight", "family": "emphasis", "weight": "light", "density": "sparse", "score": 41}, {"slide": 8, "layout": "kpi-grid", "family": "evidence", "weight": "medium", "density": "sparse", "score": 37}, {"slide": 9, "layout": "timeline", "family": "structure", "weight": "medium", "density": "sparse", "score": 76}, {"slide": 10, "layout": "comparison", "family": "explain", "weight": "heavy", "density": "standard", "score": 129}, {"slide": 11, "layout": "big-quote", "family": "break", "weight": "light", "density": "sparse", "score": 25}, {"slide": 12, "layout": "image-frame", "family": "visual", "weight": "medium", "density": "sparse", "score": 45}, {"slide": 13, "layout": "object-float", "family": "visual", "weight": "medium", "density": "sparse", "score": 36}, {"slide": 14, "layout": "closing", "family": "closing", "weight": "light", "density": "sparse", "score": 39}], "warnings": []}};
+window.__LG_BUILD_REPORT__={"version": 2, "qualityIntelligence": true, "contentIntelligence": true, "rhythm": {"slides": [{"slide": 1, "layout": "cover", "family": "opening", "weight": "light", "density": "standard", "score": 60}, {"slide": 2, "layout": "toc", "family": "navigation", "weight": "medium", "density": "sparse", "score": 70}, {"slide": 3, "layout": "section-divider", "family": "break", "weight": "light", "density": "sparse", "score": 26}, {"slide": 4, "layout": "bullets", "family": "explain", "weight": "medium", "density": "sparse", "score": 89}, {"slide": 5, "layout": "two-column", "family": "explain", "weight": "medium", "density": "sparse", "score": 96}, {"slide": 6, "layout": "grid-cards", "family": "structure", "weight": "medium", "density": "sparse", "score": 85}, {"slide": 7, "layout": "stat-highlight", "family": "emphasis", "weight": "light", "density": "sparse", "score": 41}, {"slide": 8, "layout": "kpi-grid", "family": "evidence", "weight": "medium", "density": "sparse", "score": 37}, {"slide": 9, "layout": "timeline", "family": "structure", "weight": "medium", "density": "sparse", "score": 76}, {"slide": 10, "layout": "comparison", "family": "explain", "weight": "heavy", "density": "standard", "score": 129}, {"slide": 11, "layout": "big-quote", "family": "break", "weight": "light", "density": "sparse", "score": 25}, {"slide": 12, "layout": "image-frame", "family": "visual", "weight": "medium", "density": "sparse", "score": 45}, {"slide": 13, "layout": "object-float", "family": "visual", "weight": "medium", "density": "sparse", "score": 36}, {"slide": 14, "layout": "closing", "family": "closing", "weight": "light", "density": "sparse", "score": 39}], "warnings": []}, "content": {"slides": [{"slide": 1, "layout": "cover", "titleQuality": "not-applicable", "mainPointSource": "missing", "mainPoint": "", "screenCharacters": 60, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 2, "layout": "toc", "titleQuality": "not-applicable", "mainPointSource": "missing", "mainPoint": "", "screenCharacters": 70, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 3, "layout": "section-divider", "titleQuality": "not-applicable", "mainPointSource": "missing", "mainPoint": "", "screenCharacters": 26, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 4, "layout": "bullets", "titleQuality": "claim", "mainPointSource": "explicit", "mainPoint": "稳定的演示系统必须同时守住视口、材质和图片语义", "screenCharacters": 89, "speakerNotesCharacters": 46, "longBlocks": []}, {"slide": 5, "layout": "two-column", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "左文右卡", "screenCharacters": 96, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 6, "layout": "grid-cards", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "版式组件库", "screenCharacters": 85, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 7, "layout": "stat-highlight", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "单页布局", "screenCharacters": 41, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 8, "layout": "kpi-grid", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "关键指标", "screenCharacters": 37, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 9, "layout": "timeline", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "演进历程", "screenCharacters": 76, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 10, "layout": "comparison", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "悬浮 vs 装框", "screenCharacters": 81, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 11, "layout": "big-quote", "titleQuality": "not-applicable", "mainPointSource": "missing", "mainPoint": "", "screenCharacters": 25, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 12, "layout": "image-frame", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "照片装框（同心圆角）", "screenCharacters": 45, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 13, "layout": "object-float", "titleQuality": "claim", "mainPointSource": "title", "mainPoint": "透明对象悬浮", "screenCharacters": 36, "speakerNotesCharacters": 0, "longBlocks": []}, {"slide": 14, "layout": "closing", "titleQuality": "not-applicable", "mainPointSource": "missing", "mainPoint": "", "screenCharacters": 39, "speakerNotesCharacters": 0, "longBlocks": []}]}};
 /* ============================================================
    liquid-glass-slides · ENGINE JS (extracted from template.html)
    Consumed by scripts/build.py and inlined into the final deck.
@@ -1235,6 +1254,28 @@ window.__LG_BUILD_REPORT__={"version": 1, "qualityIntelligence": true, "rhythm":
   const progress = document.querySelector('.progress');
   const counter = document.querySelector('.counter');
   let current = 0, wheelLock = false;
+  let notesVisible = new URLSearchParams(location.search).has('notes');
+
+  const notesPanel = document.createElement('aside');
+  notesPanel.className = 'presenter-notes';
+  notesPanel.setAttribute('aria-live', 'polite');
+  notesPanel.innerHTML = '<div class="presenter-notes-head"><span>Speaker notes</span><button type="button" aria-label="Close speaker notes">×</button></div><div class="presenter-notes-body"></div>';
+  document.body.appendChild(notesPanel);
+  notesPanel.querySelector('button').addEventListener('click', () => setNotesVisible(false));
+
+  function updateSpeakerNotes(){
+    const source = slides[current] && slides[current].querySelector('.speaker-notes');
+    const body = notesPanel.querySelector('.presenter-notes-body');
+    body.innerHTML = source && source.innerHTML ? source.innerHTML : '<p class="notes-empty">No speaker notes on this slide.</p>';
+    notesPanel.dataset.slide = String(current + 1);
+  }
+  function setNotesVisible(value){
+    notesVisible = Boolean(value);
+    document.body.classList.toggle('notes-visible', notesVisible);
+    notesPanel.setAttribute('aria-hidden', notesVisible ? 'false' : 'true');
+    if (notesVisible) updateSpeakerNotes();
+  }
+  setNotesVisible(notesVisible);
 
   /* Lightweight runtime QA: inspect real browser geometry without screenshots. */
   function runQualityAudit(){
@@ -1347,10 +1388,12 @@ window.__LG_BUILD_REPORT__={"version": 1, "qualityIntelligence": true, "rhythm":
   }, { passive: false });
 
   window.addEventListener('keydown', (e) => {
+    if ((e.target && /input|textarea|select/i.test(e.target.tagName))) return;
     if (['ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
     else if (['ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); goTo(current - 1); }
     else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
     else if (e.key === 'End') { e.preventDefault(); goTo(slides.length - 1); }
+    else if (e.key.toLowerCase() === 'n') { e.preventDefault(); setNotesVisible(!notesVisible); }
   });
 
   let touchY = null;
@@ -1371,6 +1414,7 @@ window.__LG_BUILD_REPORT__={"version": 1, "qualityIntelligence": true, "rhythm":
         dots.forEach((d, i) => d.classList.toggle('on', i === idx));
         progress.style.width = ((idx + 1) / slides.length * 100) + '%';
         counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+        if (notesVisible) updateSpeakerNotes();
       }
     });
   }, { root: deck, threshold: [0.55] });

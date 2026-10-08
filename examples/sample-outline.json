@@ -6,6 +6,7 @@
   "typography": "editorial",
   "visual_intelligence": true,
   "quality_intelligence": true,
+  "content_intelligence": true,
   "theme": {
     "name": "tech",
     "colors": [
@@ -58,6 +59,11 @@
       "layout": "bullets",
       "eyebrow": "PRINCIPLES",
       "title": "三条铁律",
+      "main_point": "稳定的演示系统必须同时守住视口、材质和图片语义",
+      "speaker_notes": [
+        "先强调这里的规则服务于可读性，而不是单纯追求视觉效果。",
+        "第三条可结合后面的图片页面现场演示。"
+      ],
       "items": [
         {
           "text": "每屏一页，永不内滚",

@@ -19,6 +19,7 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 | `typography` | string | no | `editorial` (default) or `classic`. Editorial mode adds visual-length title classes, CJK-aware wrapping, script-aware tracking, and tabular figures. |
 | `visual_intelligence` | boolean | no | Default `true`. Profiles local/data-URI image orientation and ECharts series semantics, then adjusts visual ratios and chart height while emitting accessibility/editorial warnings. |
 | `quality_intelligence` | boolean | no | Default `true`. Audits deck rhythm at build time and embeds a runtime DOM geometry report. Disable only for exact legacy reproduction. |
+| `content_intelligence` | boolean | no | Default `true`. Checks generic titles and oversized display blocks, and embeds presenter notes without adding them to slide density. |
 | `theme` | object | no | Topic color theme — see below. `build.py` derives the 3 background blobs, the Three.js particle palette, the accent text color, and every glow/shadow from it. **Fully automatic: the AI picks the palette from the topic; the user never sets colors.** |
 | `auto_ripple` | boolean | no | Default `true`. Automatically adds a restrained ripple surface to slides that have no Three.js, ECharts, image, or explicit `surface`. |
 | `slides` | array | **yes** | Ordered list of slide objects. Each needs a `layout`. |
@@ -26,6 +27,14 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 `constructivist` changes composition, not topic color. It does not force red/black,
 historic motifs, or diagonal decoration. Use `classic` only to reproduce the older
 centered, card-forward layout treatment.
+
+## Fields available on every slide
+
+- `main_point` — optional planning-only statement of the one audience takeaway;
+  it is included in the build report but not rendered.
+- `speaker_notes` — optional string or string array. Notes are HTML-escaped,
+  excluded from density calculations, hidden from the audience, and available
+  through the `N` presenter panel or `?notes=1`.
 
 ## Theme (auto color system)
 

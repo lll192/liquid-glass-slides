@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "1.7.0"
+  version: "1.8.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -37,6 +37,7 @@ Load only the references needed for the current task:
 - `references/typography-system.md` — editorial Chinese/Latin/mixed-script hierarchy, semantic title length, line breaking, and long-title response.
 - `references/visual-intelligence.md` — image-orientation and chart-semantic profiling, adaptive visual ratios, accessibility warnings, and chart takeaway rules.
 - `references/quality-intelligence.md` — deck-level rhythm families, visual-weight warnings, runtime DOM overflow checks, and the optional `?qa=1` inspection view.
+- `references/content-intelligence.md` — audience-facing claim titles, screen-copy limits, source-safe editing, and hidden presenter notes.
 - `references/output-quality.md` — verification gates for the final deck.
 - `references/prompt-patterns.md` — ImageGen prompt templates for liquid-glass hero/cover/concept images.
 - `references/image-handling.md` — image intake & processing rules for BOTH AI-generated and user-provided images (transparency normalization, base64 embedding, sizing, placement patterns, optimization).
@@ -78,6 +79,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
    - Read `references/narrative-planning.md`.
    - Classify the deck (teaching / persuasive / report / product / knowledge-card).
    - Build a slide-by-slide spine: each slide must carry exactly one main point.
+   - Read `references/content-intelligence.md`. Record the retained claim in `main_point`, keep display copy concise, and move spoken explanation to `speaker_notes` without altering protected source wording.
 
 5. **Map each slide to an archetype**
    - Read `references/slide-archetypes.md`.
@@ -117,6 +119,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
        h. **Layout intelligence is automatic**: `build.py` chooses content-aware variants (7:5 / 5:7 splits, feature-first grids, mosaic grids, visual-left / visual-right media) and assigns `sparse` / `standard` / `dense` / `overfull`. Treat an `overfull` warning as a prompt to revise or split content. See `references/layout-intelligence.md`.
        i. **Visual intelligence is automatic**: local/data-URI images are profiled as landscape / portrait / square, while ECharts options are profiled as trend / comparison / proportion / radar / distribution plus normal/dense. The builder adjusts ratios and bounded chart height, and warns about missing image alt text or chart takeaways. See `references/visual-intelligence.md`.
        j. **Quality intelligence is automatic**: the build audits repeated layouts, semantic rhythm, and visual weight; the browser engine then measures real DOM overflow, title wrapping, boundaries, and minimum readable type. Open the output with `?qa=1` only when an inspection overlay is useful. See `references/quality-intelligence.md`.
+       k. **Content intelligence is automatic**: generic content-page titles and oversized display blocks emit `[copy]` warnings. `main_point` records the intended claim; `speaker_notes` stays hidden from the audience and opens with `N` or `?notes=1`. See `references/content-intelligence.md`.
 
 8. **Verify**
    - Read `references/output-quality.md`.
@@ -143,6 +146,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 - Typography: editorial mode by default — automatic visual-length classes, strict CJK line breaking, balanced headings, readable line measure, script-aware tracking, and tabular figures.
 - Visual intelligence: enabled by default — orientation-aware image fields, semantic chart profiles, data-density sizing, accessible alt-text checks, and factual takeaway checks.
 - Quality intelligence: enabled by default — build-time rhythm warnings plus a runtime geometry report in `window.__LG_BUILD_REPORT__`; keep the visible `?qa=1` overlay off during presentation.
+- Content intelligence: enabled by default — use claim-led titles, preserve source constraints, and place spoken detail in `speaker_notes` instead of shrinking it onto the slide.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the AI does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**

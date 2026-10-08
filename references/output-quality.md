@@ -6,6 +6,8 @@ Verify before delivery.
 - Each slide has exactly one clear main point.
 - Chinese text is accurate; no invented facts or fake statistics (label illustrative charts as 示意).
 - Spelling / terminology consistent.
+- Resolve every `[copy]` warning. Replace generic labels with audience-facing claims, move spoken detail to `speaker_notes`, and preserve protected source wording.
+- Confirm presenter notes are hidden in the audience view and readable with the `N` panel when supplied.
 
 ## Structure & rhythm
 - Cover present; takeaway present.

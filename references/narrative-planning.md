@@ -18,4 +18,5 @@ Choose a deck shape before laying out slides.
 ## Slide-by-slide spine
 - Each slide = exactly one main point.
 - Sequence for rhythm: open with a cover, close with a takeaway.
+- Give every content page one `main_point`; make the title carry that claim when possible, and route delivery detail to `speaker_notes` rather than the visible slide.
 - Aim for a mix of archetypes (see slide-archetypes.md) so the deck breathes.

@@ -875,3 +875,22 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .qa-status[data-state="error"]{ color:#a32020; }
 .qa-visible .slide[data-qa="warning"]{ outline:2px solid rgba(255,159,10,.72); outline-offset:-2px; }
 .qa-visible .slide[data-qa="error"]{ outline:3px solid rgba(255,69,58,.82); outline-offset:-3px; }
+
+/* Presenter notes: press N or append ?notes=1. Hidden in ordinary playback. */
+.presenter-notes{
+  display:none; position:fixed; z-index:1100; right:clamp(.75rem,2vw,1.5rem); bottom:clamp(.75rem,2vw,1.5rem);
+  width:min(420px,calc(100vw - 1.5rem)); max-height:min(42vh,360px); overflow:auto;
+  color:#17181a; background:rgba(255,255,255,.94); border:1px solid rgba(0,0,0,.12);
+  border-radius:18px; box-shadow:0 18px 50px rgba(22,35,60,.2); backdrop-filter:blur(18px);
+  font:400 14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+.notes-visible .presenter-notes{ display:block; }
+.presenter-notes-head{
+  position:sticky; top:0; display:flex; align-items:center; justify-content:space-between;
+  padding:.7rem .9rem; background:rgba(246,248,252,.96); border-bottom:1px solid rgba(0,0,0,.08);
+  font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+}
+.presenter-notes-head button{ border:0; background:transparent; color:#475467; font-size:20px; line-height:1; cursor:pointer; }
+.presenter-notes-body{ padding:.8rem .95rem 1rem; }
+.presenter-notes-body p{ margin:.25rem 0 .65rem; color:#202329; font-size:14px; line-height:1.55; }
+.presenter-notes-body .notes-empty{ color:#7a808a; font-style:italic; }

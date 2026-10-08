@@ -9,6 +9,28 @@
   const progress = document.querySelector('.progress');
   const counter = document.querySelector('.counter');
   let current = 0, wheelLock = false;
+  let notesVisible = new URLSearchParams(location.search).has('notes');
+
+  const notesPanel = document.createElement('aside');
+  notesPanel.className = 'presenter-notes';
+  notesPanel.setAttribute('aria-live', 'polite');
+  notesPanel.innerHTML = '<div class="presenter-notes-head"><span>Speaker notes</span><button type="button" aria-label="Close speaker notes">×</button></div><div class="presenter-notes-body"></div>';
+  document.body.appendChild(notesPanel);
+  notesPanel.querySelector('button').addEventListener('click', () => setNotesVisible(false));
+
+  function updateSpeakerNotes(){
+    const source = slides[current] && slides[current].querySelector('.speaker-notes');
+    const body = notesPanel.querySelector('.presenter-notes-body');
+    body.innerHTML = source && source.innerHTML ? source.innerHTML : '<p class="notes-empty">No speaker notes on this slide.</p>';
+    notesPanel.dataset.slide = String(current + 1);
+  }
+  function setNotesVisible(value){
+    notesVisible = Boolean(value);
+    document.body.classList.toggle('notes-visible', notesVisible);
+    notesPanel.setAttribute('aria-hidden', notesVisible ? 'false' : 'true');
+    if (notesVisible) updateSpeakerNotes();
+  }
+  setNotesVisible(notesVisible);
 
   /* Lightweight runtime QA: inspect real browser geometry without screenshots. */
   function runQualityAudit(){
@@ -121,10 +143,12 @@
   }, { passive: false });
 
   window.addEventListener('keydown', (e) => {
+    if ((e.target && /input|textarea|select/i.test(e.target.tagName))) return;
     if (['ArrowDown','PageDown',' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
     else if (['ArrowUp','PageUp'].includes(e.key)) { e.preventDefault(); goTo(current - 1); }
     else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
     else if (e.key === 'End') { e.preventDefault(); goTo(slides.length - 1); }
+    else if (e.key.toLowerCase() === 'n') { e.preventDefault(); setNotesVisible(!notesVisible); }
   });
 
   let touchY = null;
@@ -145,6 +169,7 @@
         dots.forEach((d, i) => d.classList.toggle('on', i === idx));
         progress.style.width = ((idx + 1) / slides.length * 100) + '%';
         counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+        if (notesVisible) updateSpeakerNotes();
       }
     });
   }, { root: deck, threshold: [0.55] });
