@@ -50,6 +50,7 @@ Load only the references needed for the current task:
 - `references/slide-archetypes.md` — semantic mapping from content to slide layouts.
 - `references/visual-dna.md` — Apple iOS 26 Liquid Glass visual system (CSS technique) and cross-page style-lock constants.
 - `references/composition-system.md` — default constructivist-minimal layout system: asymmetric grid, edge alignment, quiet space, shared planes, and anti-dashboard rules.
+- `references/layout-intelligence.md` — automatic composition variants, density classes, long-title handling, and overfull-warning response.
 - `references/output-quality.md` — verification gates for the final deck.
 - `references/prompt-patterns.md` — ImageGen prompt templates for liquid-glass hero/cover/concept images.
 - `references/image-handling.md` — image intake & processing rules for BOTH AI-generated and user-provided images (transparency normalization, base64 embedding, sizing, placement patterns, optimization).
@@ -108,6 +109,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 5. **Map each slide to an archetype**
    - Read `references/slide-archetypes.md`.
    - Pick layouts from content semantics, not from a fixed template order. Vary archetypes for rhythm.
+   - Read `references/layout-intelligence.md`. Keep `variant:auto` unless semantics require a fixed reading order. Revise or split every slide reported as `overfull`.
 
 6. **Apply visual DNA (style-lock)**
    - Read `references/visual-dna.md`, `references/composition-system.md`, and `assets/theme-tokens.json`.
@@ -139,6 +141,7 @@ progress bar, dots, page index, reduced-motion). Clone its
        e. **Add ECharts charts where the data earns it**: for any slide carrying a `"chart": { "option": {...} }` field (use layout `chart`), `build.py` inlines `assets/echarts.min.js` automatically and applies the liquid-glass theme (transparent canvas, iOS palette, frosted tooltip). Per `references/echarts-charts.md`, add a chart **only** where the page has real, comparable, quantitative data — never fabricate numbers, and never chart a page that is already text-only or visually complete (timeline, bullets, dividers). The `option` must be pure JSON (no JS functions).
        f. To iterate, edit the JSON and re-run — identical outline always yields an identical deck.
        g. **Ripple fallback is automatic**: when a slide has no Three.js scene, ECharts chart, image, or explicit `surface`, `build.py` adds a deterministic ripple layer. Dense reading pages receive a subtle static texture localized away from text; sparse pages may drift gently. Use top-level or per-slide `"auto_ripple": false` to opt out. Explicit `surface` settings always win. See `references/ripple-textures.md`.
+       h. **Layout intelligence is automatic**: content shape selects split direction, list rhythm, grid hierarchy, and media side; density classes tune spacing within safe limits. `overfull` requires copy revision or a slide split, not unlimited font shrinking.
 
 8. **Verify**
    - Read `references/output-quality.md`.
@@ -161,6 +164,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 - Visual fallback: slides without Three.js, ECharts, images, or an explicit surface automatically receive a restrained ripple background; disable with `auto_ripple:false` globally or per slide.
 - Aesthetic: Apple iOS 26 Liquid Glass — translucent frosted panels with backdrop blur/refraction, specular edge highlights, and light-reactive depth over a vivid blurred backdrop.
 - Composition: constructivist minimalism by default — asymmetric 12-column logic, strict edge alignment, decisive scale contrast, restrained geometry, and fewer independent cards. Preserve the topic palette; never force Soviet red/black or propaganda clichés.
+- Layout intelligence: enabled by default; use automatic variants and resolve every `overfull` warning before delivery.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the operator does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**

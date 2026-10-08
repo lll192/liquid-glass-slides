@@ -50,6 +50,7 @@ Snippet placeholders:
 """
 import argparse
 import base64
+import html
 import json
 import os
 import re
@@ -546,6 +547,118 @@ def choose_cols(n):
     return 'g3'
 
 
+# ---------- layout intelligence ----------
+_TAG_RE = re.compile(r'<[^>]+>')
+_SPACE_RE = re.compile(r'\s+')
+_TEXT_FIELDS = (
+    'eyebrow', 'title', 'subtitle', 'left', 'right', 'quote', 'by', 'desc',
+    'note', 'takeaway', 'caption', 'items', 'left_items', 'right_items',
+)
+_DENSITY_LIMITS = {
+    'cover': (85, 150), 'toc': (210, 340), 'section-divider': (100, 170),
+    'bullets': (270, 430), 'two-column': (340, 540),
+    'grid-cards': (300, 470), 'big-quote': (110, 185),
+    'stat-highlight': (145, 230), 'kpi-grid': (175, 290),
+    'timeline': (310, 480), 'comparison': (300, 470),
+    'image-frame': (125, 210), 'object-float': (145, 240),
+    'closing': (105, 185), 'chart': (210, 340),
+}
+_LAYOUT_VARIANTS = {
+    'toc': {'index-quadrant', 'index-matrix'},
+    'bullets': {'list-spread', 'list-vertical', 'list-compact'},
+    'two-column': {'split-left', 'split-right', 'split-balanced'},
+    'grid-cards': {'feature-first', 'mosaic', 'matrix'},
+    'kpi-grid': {'feature-first', 'kpi-strip', 'matrix'},
+    'timeline': {'line-spacious', 'line-compact'},
+    'comparison': {'compare-left', 'compare-right', 'compare-balanced'},
+    'stat-highlight': {'number-left', 'number-right'},
+    'image-frame': {'visual-left', 'visual-right'},
+    'chart': {'visual-left', 'visual-right'},
+}
+
+
+def _plain_text(value):
+    if value is None:
+        return ''
+    if isinstance(value, dict):
+        return ' '.join(_plain_text(v) for v in value.values())
+    if isinstance(value, list):
+        return ' '.join(_plain_text(v) for v in value)
+    text = html.unescape(_TAG_RE.sub(' ', str(value)))
+    return _SPACE_RE.sub(' ', text).strip()
+
+
+def _text_len(value):
+    return len(_plain_text(value))
+
+
+def slide_density(slide):
+    """Return (density_class, score) without rewriting user-authored copy.
+
+    The deterministic builder can change composition safely, but semantic
+    shortening/splitting belongs to the planning agent. Severe density emits an
+    actionable warning instead of silently deleting or shrinking content.
+    """
+    layout = slide.get('layout', '')
+    score = sum(_text_len(slide.get(key)) for key in _TEXT_FIELDS)
+    item_count = sum(len(slide.get(key, [])) for key in ('items', 'left_items', 'right_items')
+                     if isinstance(slide.get(key), list))
+    score += max(0, item_count - 4) * 24
+    dense_at, overfull_at = _DENSITY_LIMITS.get(layout, (240, 390))
+    if score > overfull_at:
+        return 'overfull', score
+    if score > dense_at:
+        return 'dense', score
+    if score < dense_at * .42:
+        return 'sparse', score
+    return 'standard', score
+
+
+def resolve_variant(slide, slide_index):
+    """Choose a deterministic composition variant from content shape."""
+    layout = slide.get('layout', '')
+    allowed = _LAYOUT_VARIANTS.get(layout)
+    requested = str(slide.get('variant', 'auto')).strip().lower()
+    if requested and requested != 'auto':
+        if not allowed or requested in allowed:
+            return re.sub(r'[^a-z0-9-]+', '-', requested).strip('-') or 'default'
+        sys.stderr.write('[warn] slide %d variant "%s" is invalid for %s; using auto\n'
+                         % (slide_index + 1, requested, layout))
+
+    items = slide.get('items') if isinstance(slide.get('items'), list) else []
+    n = len(items)
+    if layout == 'toc':
+        return 'index-quadrant' if n <= 4 else 'index-matrix'
+    if layout == 'bullets':
+        return 'list-spread' if n <= 3 else ('list-compact' if n >= 6 else 'list-vertical')
+    if layout == 'two-column':
+        left, right = _text_len(slide.get('left')), _text_len(slide.get('right'))
+        if right > max(24, left * 1.25):
+            return 'split-right'
+        if left > max(24, right * 1.45):
+            return 'split-left'
+        return 'split-balanced'
+    if layout == 'grid-cards':
+        return 'feature-first' if n == 3 else ('mosaic' if n == 4 else 'matrix')
+    if layout == 'kpi-grid':
+        return 'feature-first' if n == 3 else ('kpi-strip' if n == 4 else 'matrix')
+    if layout == 'timeline':
+        return 'line-spacious' if n <= 4 else 'line-compact'
+    if layout == 'comparison':
+        left = _text_len(slide.get('left_items'))
+        right = _text_len(slide.get('right_items'))
+        if left > right * 1.35:
+            return 'compare-left'
+        if right > left * 1.35:
+            return 'compare-right'
+        return 'compare-balanced'
+    if layout == 'stat-highlight':
+        return 'number-left' if slide_index % 2 == 0 else 'number-right'
+    if layout in ('image-frame', 'chart'):
+        return 'visual-left' if slide_index % 2 == 0 else 'visual-right'
+    return 'default'
+
+
 # ---------- build ----------
 def build(outline_path, out_path, assets_dir, templates_dir):
     with open(outline_path, encoding='utf-8') as f:
@@ -562,6 +675,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     if composition not in ('constructivist', 'classic'):
         sys.stderr.write('[warn] composition "%s" is invalid; using constructivist\n' % composition)
         composition = 'constructivist'
+    layout_intelligence = outline.get('layout_intelligence', True) is not False
 
     sp_dir = os.path.join(templates_dir, 'single-page')
     slides_out = []
@@ -578,6 +692,13 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         with open(snippet_path, encoding='utf-8') as f:
             tmpl = f.read()
         data = dict(slide)
+        density, density_score = slide_density(slide) if layout_intelligence else ('standard', 0)
+        variant = resolve_variant(slide, idx) if layout_intelligence else 'default'
+        title_len = _text_len(slide.get('title'))
+        title_long = title_len > (18 if layout in ('cover', 'section-divider') else 24)
+        if density == 'overfull':
+            sys.stderr.write('[layout] slide %d (%s) is overfull (score=%d); '
+                             'shorten copy or split the slide\n' % (idx + 1, layout, density_score))
         if layout in ('grid-cards', 'kpi-grid'):
             data['cols'] = choose_cols(len(data.get('items', [])))
         elif layout == 'toc':
@@ -636,6 +757,18 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             three_scenes.append(three_scene)
         rendered = render(tmpl, data)
         rendered = re.sub(r'(<section\b)', r'\1 data-idx="%d"' % idx, rendered, count=1)
+        intelligence_classes = ['variant-' + variant, 'density-' + density]
+        if title_long:
+            intelligence_classes.append('title-long')
+        rendered = re.sub(
+            r'(<section\b[^>]*class=")([^"]*)(")',
+            lambda m: m.group(1) + m.group(2) + ' ' + ' '.join(intelligence_classes) + m.group(3),
+            rendered, count=1)
+        rendered = re.sub(
+            r'(<section\b[^>]*>)',
+            lambda m: m.group(1).rstrip('>') + ' data-variant="%s" data-density="%s">'
+            % (variant, density),
+            rendered, count=1)
         if ripple:
             ripple_classes = ' '.join([
                 'ripple-material',

@@ -15,6 +15,7 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 | `lang` | string | no | HTML `lang` attr. Default `zh-CN`. |
 | `title` | string | no | Browser tab title. Default `Liquid Glass Deck`. |
 | `composition` | string | no | `constructivist` (default) or `classic`. The default uses an asymmetric editorial grid, strict alignment, shared glass planes, and restrained geometry. |
+| `layout_intelligence` | boolean | no | Default `true`. Automatically selects a content-aware variant and density class per slide. Disable only for exact legacy reproduction. |
 | `theme` | object | no | Topic color theme — see below. `build.py` derives the 3 background blobs, the Three.js particle palette, the accent text color, and every glow/shadow from it. **Fully automatic: the AI picks the palette from the topic; the user never sets colors.** |
 | `auto_ripple` | boolean | no | Default `true`. Automatically adds a restrained ripple surface to slides that have no Three.js, ECharts, image, or explicit `surface`. |
 | `slides` | array | **yes** | Ordered list of slide objects. Each needs a `layout`. |
@@ -58,6 +59,11 @@ Curated palettes by topic mood: `references/theme-palettes.md`.
 
 HTML is allowed inside field values (e.g. `two-column` `left`/`right`). Keep required
 reading text in HTML — never bake text into an image.
+
+Every slide also accepts optional `variant`. Omit it or use `"auto"` by default.
+Supported values depend on layout; see `references/layout-intelligence.md`. The
+builder emits `data-variant` and `data-density` on each slide. An `overfull` build
+warning means the outline should be shortened or split before delivery.
 
 ## Layouts
 

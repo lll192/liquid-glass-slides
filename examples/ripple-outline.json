@@ -2,6 +2,7 @@
   "lang": "zh-CN",
   "title": "Ripple Material · 涟漪材质原型",
   "composition": "constructivist",
+  "layout_intelligence": true,
   "theme": {
     "name": "water-optics",
     "colors": ["#0A84FF", "#64D2FF", "#30D5C8"],

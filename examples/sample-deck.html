@@ -601,6 +601,140 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   .composition-constructivist .quote-composition{ max-width:100%; }
 }
 
+/* ============ LAYOUT INTELLIGENCE（内容形状 → 构图变体）============ */
+.composition-constructivist .variant-split-right .construct-split{
+  grid-template-columns:minmax(220px,5fr) minmax(0,7fr);
+}
+.composition-constructivist .variant-split-balanced .construct-split{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.composition-constructivist .variant-list-spread .lrows{
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.composition-constructivist .variant-list-spread .lrow{
+  display:block; border-right:1px solid var(--construct-rule); border-bottom:0;
+  padding:clamp(1rem,2.4vw,1.8rem);
+}
+.composition-constructivist .variant-list-spread .lrow:last-child{ border-right:0; }
+.composition-constructivist .variant-list-spread .lrow-dot{
+  display:block; width:clamp(2rem,3.5vw,3.8rem); margin:0 0 clamp(.8rem,2vh,1.25rem);
+}
+.composition-constructivist .variant-list-compact .lrow{
+  padding-top:clamp(.52rem,1.15vh,.78rem); padding-bottom:clamp(.52rem,1.15vh,.78rem);
+}
+
+.composition-constructivist .variant-feature-first .construct-grid{
+  grid-template-columns:minmax(0,7fr) minmax(220px,5fr);
+  grid-template-rows:repeat(2,minmax(0,1fr));
+}
+.composition-constructivist .variant-feature-first .construct-grid-item:first-child{
+  grid-row:1 / span 2; display:flex; flex-direction:column; justify-content:flex-end;
+  padding:clamp(1.3rem,3.2vw,2.7rem);
+}
+.composition-constructivist .variant-feature-first .construct-grid-item:nth-child(2),
+.composition-constructivist .variant-feature-first .construct-grid-item:nth-child(3){ border-right:0; }
+.composition-constructivist .variant-feature-first .construct-grid-item:nth-child(2){ border-bottom:1px solid var(--construct-rule); }
+.composition-constructivist .variant-feature-first .construct-grid-item:first-child .num{
+  font-size:clamp(3rem,7vw,6.4rem); margin-bottom:auto;
+}
+.composition-constructivist .variant-mosaic .construct-grid{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+.composition-constructivist .variant-mosaic .construct-grid-item:nth-child(1),
+.composition-constructivist .variant-mosaic .construct-grid-item:nth-child(4){ grid-column:span 4; }
+.composition-constructivist .variant-mosaic .construct-grid-item:nth-child(2),
+.composition-constructivist .variant-mosaic .construct-grid-item:nth-child(3){ grid-column:span 2; }
+.composition-constructivist .variant-mosaic .construct-grid-item:nth-child(2),
+.composition-constructivist .variant-mosaic .construct-grid-item:nth-child(4){ border-right:0; }
+.composition-constructivist .variant-kpi-strip .construct-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+.composition-constructivist .variant-line-spacious .construct-plane{
+  max-width:min(72vw,900px); padding:clamp(1.35rem,3vw,2.5rem);
+}
+.composition-constructivist .variant-line-compact .titem{
+  padding-bottom:clamp(.35rem,.9vh,.65rem);
+}
+
+.composition-constructivist .variant-compare-left .construct-compare{
+  grid-template-columns:minmax(0,7fr) minmax(220px,5fr);
+}
+.composition-constructivist .variant-compare-right .construct-compare{
+  grid-template-columns:minmax(220px,5fr) minmax(0,7fr);
+}
+.composition-constructivist .variant-number-left .stat-copy{ grid-column:2; grid-row:1; }
+.composition-constructivist .variant-number-left .stat-anchor{
+  grid-column:1; grid-row:1; text-align:left;
+}
+
+.composition-constructivist .chart-split{
+  grid-template-areas:"copy visual";
+}
+.composition-constructivist .chart-side-text{ grid-area:copy; }
+.composition-constructivist .chart-card{ grid-area:visual; }
+.composition-constructivist .variant-visual-left .chart-split{
+  grid-template-columns:minmax(0,8fr) minmax(230px,4fr);
+  grid-template-areas:"visual copy";
+}
+.composition-constructivist .variant-visual-left .image-composition{
+  grid-template-columns:minmax(0,8fr) minmax(220px,4fr);
+}
+.composition-constructivist .variant-visual-left .image-composition .eyebrow,
+.composition-constructivist .variant-visual-left .image-composition h2{ grid-column:2; }
+.composition-constructivist .variant-visual-left .image-composition .image-field{ grid-column:1; }
+
+/* Density is handled by spacing first. The builder warns before text would need
+   destructive rewriting or illegible scaling. */
+.composition-constructivist .density-dense,
+.composition-constructivist .density-overfull{
+  --content-gap:clamp(.42rem,1.05vh,.9rem);
+  --body-size:clamp(.78rem,1.25vw,.98rem);
+}
+.composition-constructivist .density-dense .construct-grid-item,
+.composition-constructivist .density-dense .compare-side,
+.composition-constructivist .density-overfull .construct-grid-item,
+.composition-constructivist .density-overfull .compare-side{
+  padding:clamp(.72rem,1.7vw,1.25rem);
+}
+.composition-constructivist .density-overfull .slide-content{
+  padding-top:clamp(2.4rem,5.5vh,3.6rem); padding-bottom:clamp(2.2rem,5vh,3.4rem);
+}
+.composition-constructivist .title-long h1{ font-size:clamp(2rem,5.2vw,4.4rem); max-width:13ch; }
+.composition-constructivist .title-long h2{ font-size:clamp(1.35rem,2.9vw,2.3rem); max-width:18ch; }
+
+@media (max-width:800px){
+  .composition-constructivist .variant-list-spread .lrows,
+  .composition-constructivist .variant-feature-first .construct-grid,
+  .composition-constructivist .variant-mosaic .construct-grid,
+  .composition-constructivist .variant-kpi-strip .construct-grid{
+    grid-template-columns:1fr; grid-template-rows:auto;
+  }
+  .composition-constructivist .variant-list-spread .lrow{
+    display:grid; border-right:0; border-bottom:1px solid var(--construct-rule);
+    padding:clamp(.72rem,1.5vh,1rem);
+  }
+  .composition-constructivist .variant-list-spread .lrow:last-child{ border-bottom:0; }
+  .composition-constructivist .variant-list-spread .lrow-dot{ margin-top:.72em; margin-bottom:0; width:100%; }
+  .composition-constructivist .variant-feature-first .construct-grid-item:first-child,
+  .composition-constructivist .variant-mosaic .construct-grid-item{
+    grid-column:auto !important; grid-row:auto; display:block; padding:clamp(.82rem,2vw,1.2rem);
+  }
+  .composition-constructivist .variant-feature-first .construct-grid-item:first-child .num{ font-size:clamp(1.8rem,8vw,3rem); margin-bottom:.35em; }
+  .composition-constructivist .variant-number-left .stat-copy,
+  .composition-constructivist .variant-number-left .stat-anchor{ grid-column:1; grid-row:auto; }
+  .composition-constructivist .variant-number-left .stat-copy{ order:1; }
+  .composition-constructivist .variant-number-left .stat-anchor{ order:2; }
+  .composition-constructivist .variant-visual-left .chart-split{
+    grid-template-columns:1fr; grid-template-areas:"copy" "visual";
+  }
+  .composition-constructivist .variant-visual-left .image-composition .eyebrow,
+  .composition-constructivist .variant-visual-left .image-composition h2,
+  .composition-constructivist .variant-visual-left .image-composition .image-field{ grid-column:1; }
+  .composition-constructivist .variant-line-spacious .construct-plane{ max-width:100%; }
+}
+
 </style>
 <style id="theme-overrides">
 :root { --accent:#0A84FF; --accent-rgb:10,132,255; --accent-2:#5DAEFF; --accent2-rgb:93,174,255; --blob-1:rgba(10,132,255,0.30); --blob-2:rgba(100,210,255,0.26); --blob-3:rgba(48,209,88,0.22); }
@@ -615,7 +749,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 <div class="counter">01 / 01</div>
 
 <main class="deck">
-<section data-idx="0" class="slide" data-layout="cover" data-three="field">
+<section data-idx="0" class="slide variant-default density-standard" data-layout="cover" data-variant="default" data-density="standard" data-three="field">
   <div class="slide-content">
     <div class="wrap cover-layout composition-shell">
       <div class="cover-copy">
@@ -629,7 +763,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="1" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc">
+  <section data-idx="1" class="slide variant-index-quadrant density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -667,7 +801,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="2" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-three="ripple:flow:bottom:subtle:1291">
+  <section data-idx="2" class="slide variant-default density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-three="ripple:flow:bottom:subtle:1291">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell section-composition">
@@ -680,7 +814,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="3" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets">
+  <section data-idx="3" class="slide variant-list-spread density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -718,7 +852,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="4" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column">
+  <section data-idx="4" class="slide variant-split-balanced density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -733,7 +867,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="5" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards">
+  <section data-idx="5" class="slide variant-mosaic density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -771,7 +905,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="6" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-three="ripple:flow:bottom:subtle:1679">
+  <section data-idx="6" class="slide variant-number-left density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-three="ripple:flow:bottom:subtle:1679">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell stat-composition">
@@ -786,7 +920,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="7" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid">
+  <section data-idx="7" class="slide variant-feature-first density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -815,7 +949,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="8" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline">
+  <section data-idx="8" class="slide variant-line-spacious density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -837,7 +971,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="9" class="slide ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison">
+  <section data-idx="9" class="slide variant-compare-left density-standard ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -875,7 +1009,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="10" class="slide ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-three="ripple:flow:bottom:subtle:2067">
+  <section data-idx="10" class="slide variant-default density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-three="ripple:flow:bottom:subtle:2067">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell quote-composition">
@@ -888,7 +1022,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="11" class="slide" data-layout="image-frame">
+  <section data-idx="11" class="slide variant-visual-right density-sparse" data-layout="image-frame" data-variant="visual-right" data-density="sparse">
   <div class="slide-content">
     <div class="wrap composition-shell image-composition">
       <div class="eyebrow reveal" style="--i:0">PHOTO</div>
@@ -902,7 +1036,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="12" class="slide" data-layout="object-float">
+  <section data-idx="12" class="slide variant-default density-sparse" data-layout="object-float" data-variant="default" data-density="sparse">
   <div class="orb o1"></div><div class="orb o2"></div>
   <div class="slide-content">
     <div class="wrap composition-shell construct-split object-composition">
@@ -919,7 +1053,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="13" class="slide closing ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-three="ripple:rings:bottom-right:subtle:2358">
+  <section data-idx="13" class="slide closing variant-default density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-three="ripple:rings:bottom-right:subtle:2358">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="halo"></div>
   <div class="slide-content">

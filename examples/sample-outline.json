@@ -2,6 +2,7 @@
   "title": "液态玻璃演示 · 示例 Deck",
   "lang": "zh-CN",
   "composition": "constructivist",
+  "layout_intelligence": true,
   "theme": {
     "name": "tech",
     "colors": [
