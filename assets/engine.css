@@ -733,3 +733,52 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   .composition-constructivist .variant-visual-left .image-composition .image-field{ grid-column:1; }
   .composition-constructivist .variant-line-spacious .construct-plane{ max-width:100%; }
 }
+
+/* ============ EDITORIAL TYPOGRAPHY（中文 / Latin / mixed）============ */
+.typography-editorial{
+  font-kerning:normal; font-synthesis:none; text-rendering:optimizeLegibility;
+  font-feature-settings:"kern" 1,"liga" 1,"clig" 1;
+}
+.typography-editorial h1,
+.typography-editorial h2,
+.typography-editorial h3{
+  text-wrap:balance; line-break:strict; word-break:normal; overflow-wrap:break-word;
+  hanging-punctuation:first last; text-autospace:normal;
+}
+.typography-editorial p,
+.typography-editorial li,
+.typography-editorial blockquote,
+.typography-editorial figcaption{
+  text-wrap:pretty; line-break:strict; word-break:normal; overflow-wrap:break-word;
+  hanging-punctuation:first last; text-autospace:normal;
+}
+.typography-editorial .lead{ line-height:1.62; max-width:50ch; }
+.typography-editorial .script-cjk h1,
+.typography-editorial .script-cjk h2{ letter-spacing:-.025em; }
+.typography-editorial .script-mixed h1,
+.typography-editorial .script-mixed h2{ letter-spacing:-.032em; }
+.typography-editorial .script-latin h1,
+.typography-editorial .script-latin h2{ letter-spacing:-.045em; }
+
+.typography-editorial .slide.title-size-short h1{ font-size:clamp(2.8rem,7.2vw,6.2rem); max-width:9ch; }
+.typography-editorial .slide.title-size-short h2{ font-size:clamp(1.8rem,4.2vw,3.4rem); max-width:10ch; }
+.typography-editorial .slide.title-size-medium h1{ font-size:clamp(2.5rem,6.2vw,5.4rem); max-width:12ch; }
+.typography-editorial .slide.title-size-medium h2{ font-size:clamp(1.6rem,3.6vw,2.9rem); max-width:15ch; }
+.typography-editorial .slide.title-size-long h1{ font-size:clamp(2.1rem,5.1vw,4.3rem); max-width:15ch; }
+.typography-editorial .slide.title-size-long h2{ font-size:clamp(1.4rem,3vw,2.4rem); max-width:19ch; }
+.typography-editorial .slide.title-size-xlong h1{ font-size:clamp(1.8rem,4.2vw,3.6rem); max-width:18ch; }
+.typography-editorial .slide.title-size-xlong h2{ font-size:clamp(1.25rem,2.5vw,2.05rem); max-width:22ch; }
+.typography-editorial .num,
+.typography-editorial .stat-anchor,
+.typography-editorial .counter,
+.typography-editorial .toc-num{
+  font-variant-numeric:tabular-nums lining-nums; font-feature-settings:"tnum" 1,"lnum" 1;
+}
+.typography-editorial .stat-anchor span{ white-space:nowrap; letter-spacing:-.015em; }
+
+@media (max-width:640px){
+  .typography-editorial .slide.title-size-short h1{ font-size:clamp(2.5rem,13vw,4.2rem); }
+  .typography-editorial .slide.title-size-short h2{ font-size:clamp(1.65rem,8vw,2.55rem); }
+  .typography-editorial .slide.title-size-xlong h1{ font-size:clamp(1.65rem,8.5vw,2.8rem); max-width:16ch; }
+  .typography-editorial .slide.title-size-xlong h2{ font-size:clamp(1.2rem,6vw,1.8rem); max-width:20ch; }
+}

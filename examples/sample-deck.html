@@ -741,12 +741,61 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   .composition-constructivist .variant-line-spacious .construct-plane{ max-width:100%; }
 }
 
+/* ============ EDITORIAL TYPOGRAPHY（中文 / Latin / mixed）============ */
+.typography-editorial{
+  font-kerning:normal; font-synthesis:none; text-rendering:optimizeLegibility;
+  font-feature-settings:"kern" 1,"liga" 1,"clig" 1;
+}
+.typography-editorial h1,
+.typography-editorial h2,
+.typography-editorial h3{
+  text-wrap:balance; line-break:strict; word-break:normal; overflow-wrap:break-word;
+  hanging-punctuation:first last; text-autospace:normal;
+}
+.typography-editorial p,
+.typography-editorial li,
+.typography-editorial blockquote,
+.typography-editorial figcaption{
+  text-wrap:pretty; line-break:strict; word-break:normal; overflow-wrap:break-word;
+  hanging-punctuation:first last; text-autospace:normal;
+}
+.typography-editorial .lead{ line-height:1.62; max-width:50ch; }
+.typography-editorial .script-cjk h1,
+.typography-editorial .script-cjk h2{ letter-spacing:-.025em; }
+.typography-editorial .script-mixed h1,
+.typography-editorial .script-mixed h2{ letter-spacing:-.032em; }
+.typography-editorial .script-latin h1,
+.typography-editorial .script-latin h2{ letter-spacing:-.045em; }
+
+.typography-editorial .slide.title-size-short h1{ font-size:clamp(2.8rem,7.2vw,6.2rem); max-width:9ch; }
+.typography-editorial .slide.title-size-short h2{ font-size:clamp(1.8rem,4.2vw,3.4rem); max-width:10ch; }
+.typography-editorial .slide.title-size-medium h1{ font-size:clamp(2.5rem,6.2vw,5.4rem); max-width:12ch; }
+.typography-editorial .slide.title-size-medium h2{ font-size:clamp(1.6rem,3.6vw,2.9rem); max-width:15ch; }
+.typography-editorial .slide.title-size-long h1{ font-size:clamp(2.1rem,5.1vw,4.3rem); max-width:15ch; }
+.typography-editorial .slide.title-size-long h2{ font-size:clamp(1.4rem,3vw,2.4rem); max-width:19ch; }
+.typography-editorial .slide.title-size-xlong h1{ font-size:clamp(1.8rem,4.2vw,3.6rem); max-width:18ch; }
+.typography-editorial .slide.title-size-xlong h2{ font-size:clamp(1.25rem,2.5vw,2.05rem); max-width:22ch; }
+.typography-editorial .num,
+.typography-editorial .stat-anchor,
+.typography-editorial .counter,
+.typography-editorial .toc-num{
+  font-variant-numeric:tabular-nums lining-nums; font-feature-settings:"tnum" 1,"lnum" 1;
+}
+.typography-editorial .stat-anchor span{ white-space:nowrap; letter-spacing:-.015em; }
+
+@media (max-width:640px){
+  .typography-editorial .slide.title-size-short h1{ font-size:clamp(2.5rem,13vw,4.2rem); }
+  .typography-editorial .slide.title-size-short h2{ font-size:clamp(1.65rem,8vw,2.55rem); }
+  .typography-editorial .slide.title-size-xlong h1{ font-size:clamp(1.65rem,8.5vw,2.8rem); max-width:16ch; }
+  .typography-editorial .slide.title-size-xlong h2{ font-size:clamp(1.2rem,6vw,1.8rem); max-width:20ch; }
+}
+
 </style>
 <style id="theme-overrides">
 :root { --accent:#0A84FF; --accent-rgb:10,132,255; --accent-2:#5DAEFF; --accent2-rgb:93,174,255; --blob-1:rgba(10,132,255,0.30); --blob-2:rgba(100,210,255,0.26); --blob-3:rgba(48,209,88,0.22); }
 </style>
 </head>
-<body class="composition-constructivist">
+<body class="composition-constructivist typography-editorial">
 <div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 <div class="glyphs" aria-hidden="true"></div>
 <canvas id="lg-three" aria-hidden="true"></canvas>
@@ -755,7 +804,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 <div class="counter">01 / 01</div>
 
 <main class="deck">
-<section data-idx="0" class="slide variant-default density-standard" data-layout="cover" data-variant="default" data-density="standard" data-three="field">
+<section data-idx="0" class="slide variant-default density-standard title-size-short script-cjk" data-layout="cover" data-variant="default" data-density="standard" data-three="field">
   <div class="slide-content">
     <div class="wrap cover-layout composition-shell">
       <div class="cover-copy">
@@ -769,7 +818,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="1" class="slide variant-index-quadrant density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse">
+  <section data-idx="1" class="slide variant-index-quadrant density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -807,7 +856,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="2" class="slide variant-default density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-three="ripple:flow:bottom:subtle:1291">
+  <section data-idx="2" class="slide variant-default density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-three="ripple:flow:bottom:subtle:1291">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell section-composition">
@@ -820,7 +869,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="3" class="slide variant-list-spread density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse">
+  <section data-idx="3" class="slide variant-list-spread density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -858,7 +907,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="4" class="slide variant-split-balanced density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse">
+  <section data-idx="4" class="slide variant-split-balanced density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -873,7 +922,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="5" class="slide variant-mosaic density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse">
+  <section data-idx="5" class="slide variant-mosaic density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -911,7 +960,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="6" class="slide variant-number-left density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-three="ripple:flow:bottom:subtle:1679">
+  <section data-idx="6" class="slide variant-number-left density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-three="ripple:flow:bottom:subtle:1679">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell stat-composition">
@@ -926,7 +975,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="7" class="slide variant-feature-first density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse">
+  <section data-idx="7" class="slide variant-feature-first density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -955,7 +1004,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="8" class="slide variant-line-spacious density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse">
+  <section data-idx="8" class="slide variant-line-spacious density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -977,7 +1026,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="9" class="slide variant-compare-left density-standard ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard">
+  <section data-idx="9" class="slide variant-compare-left density-standard title-size-short script-mixed ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1015,7 +1064,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="10" class="slide variant-default density-sparse ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-three="ripple:flow:bottom:subtle:2067">
+  <section data-idx="10" class="slide variant-default density-sparse title-size-short script-latin ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-three="ripple:flow:bottom:subtle:2067">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell quote-composition">
@@ -1028,7 +1077,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="11" class="slide variant-visual-right density-sparse" data-layout="image-frame" data-variant="visual-right" data-density="sparse">
+  <section data-idx="11" class="slide variant-visual-right density-sparse title-size-short script-cjk" data-layout="image-frame" data-variant="visual-right" data-density="sparse">
   <div class="slide-content">
     <div class="wrap composition-shell image-composition">
       <div class="eyebrow reveal" style="--i:0">PHOTO</div>
@@ -1042,7 +1091,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="12" class="slide variant-default density-sparse" data-layout="object-float" data-variant="default" data-density="sparse">
+  <section data-idx="12" class="slide variant-default density-sparse title-size-short script-cjk" data-layout="object-float" data-variant="default" data-density="sparse">
   <div class="orb o1"></div><div class="orb o2"></div>
   <div class="slide-content">
     <div class="wrap composition-shell construct-split object-composition">
@@ -1059,7 +1108,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="13" class="slide closing variant-default density-sparse ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-three="ripple:rings:bottom-right:subtle:2358">
+  <section data-idx="13" class="slide closing variant-default density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-three="ripple:rings:bottom-right:subtle:2358">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="halo"></div>
   <div class="slide-content">

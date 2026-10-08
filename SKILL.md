@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "1.4.0"
+  version: "1.5.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -34,6 +34,7 @@ Load only the references needed for the current task:
 - `references/visual-dna.md` — Apple iOS 26 Liquid Glass visual system (CSS technique) and cross-page style-lock constants.
 - `references/composition-system.md` — default constructivist-minimal composition system: asymmetric grid, edge alignment, negative space, shared planes, and anti-dashboard rules.
 - `references/layout-intelligence.md` — automatic per-slide composition variants, density classes, long-title handling, and the required response to overfull warnings.
+- `references/typography-system.md` — editorial Chinese/Latin/mixed-script hierarchy, semantic title length, line breaking, and long-title response.
 - `references/output-quality.md` — verification gates for the final deck.
 - `references/prompt-patterns.md` — ImageGen prompt templates for liquid-glass hero/cover/concept images.
 - `references/image-handling.md` — image intake & processing rules for BOTH AI-generated and user-provided images (transparency normalization, base64 embedding, sizing, placement patterns, optimization).
@@ -83,6 +84,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 
 6. **Apply visual DNA (style-lock)**
    - Read `references/visual-dna.md`, `references/composition-system.md`, and `assets/theme-tokens.json`.
+   - Read `references/typography-system.md`; keep headings to one claim, preserve semantic phrase boundaries, and resolve extra-long-title warnings unless the wording is protected.
    - Lock cross-page constants before writing: background tone, glass parameters, title treatment, page-number position, accent color, spacing rhythm, motion feel, dominant axis, and asymmetry ratio.
    - Default to `"composition":"constructivist"`: align to edges, prefer a single shared glass plane over repeated cards, preserve 25–40% quiet space, and reserve centered layouts for a deliberate cover / quote / closing. Use `"classic"` only for legacy compatibility or an explicit request.
    - Keep the outer shell fixed; vary only the central content area per slide.
@@ -134,6 +136,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 - Aesthetic: Apple iOS 26 Liquid Glass — translucent frosted panels with backdrop blur/refraction, specular edge highlights, and light-reactive depth over a vivid blurred backdrop.
 - Composition: constructivist minimalism by default — asymmetric 12-column logic, strict edge alignment, decisive scale contrast, restrained geometry, and fewer independent cards. Preserve the topic palette; never force Soviet red/black or decorative propaganda clichés.
 - Layout intelligence: enabled by default. Let the builder vary composition from content shape and page rhythm; use explicit variants only when the narrative needs a fixed reading order.
+- Typography: editorial mode by default — automatic visual-length classes, strict CJK line breaking, balanced headings, readable line measure, script-aware tracking, and tabular figures.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the AI does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**

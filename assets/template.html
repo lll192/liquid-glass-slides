@@ -302,9 +302,19 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   .composition-constructivist .construct-grid{ grid-template-columns:1fr; }
   .composition-constructivist .construct-grid-item{ border-right:0; border-bottom:1px solid var(--construct-rule); }
 }
+.typography-editorial{ font-kerning:normal; font-synthesis:none; text-rendering:optimizeLegibility;
+  font-feature-settings:"kern" 1,"liga" 1,"clig" 1; }
+.typography-editorial h1,.typography-editorial h2,.typography-editorial h3{
+  text-wrap:balance; line-break:strict; word-break:normal; overflow-wrap:break-word;
+  hanging-punctuation:first last; text-autospace:normal; }
+.typography-editorial p,.typography-editorial li,.typography-editorial blockquote{
+  text-wrap:pretty; line-break:strict; word-break:normal; overflow-wrap:break-word;
+  hanging-punctuation:first last; text-autospace:normal; }
+.typography-editorial .num,.typography-editorial .counter{
+  font-variant-numeric:tabular-nums lining-nums; }
 </style>
 </head>
-<body class="composition-constructivist">
+<body class="composition-constructivist typography-editorial">
 <div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 <div class="glyphs" aria-hidden="true"></div>
 <div class="progress"></div>

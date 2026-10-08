@@ -550,6 +550,8 @@ def choose_cols(n):
 # ---------- layout intelligence ----------
 _TAG_RE = re.compile(r'<[^>]+>')
 _SPACE_RE = re.compile(r'\s+')
+_CJK_RE = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]')
+_LATIN_RE = re.compile(r'[A-Za-z]')
 _TEXT_FIELDS = (
     'eyebrow', 'title', 'subtitle', 'left', 'right', 'quote', 'by', 'desc',
     'note', 'takeaway', 'caption', 'items', 'left_items', 'right_items',
@@ -590,6 +592,30 @@ def _plain_text(value):
 
 def _text_len(value):
     return len(_plain_text(value))
+
+
+def title_profile(value):
+    """Return visual-length and script classes for display typography."""
+    text = _plain_text(value)
+    cjk = len(_CJK_RE.findall(text))
+    latin = len(_LATIN_RE.findall(text))
+    digits = sum(ch.isdigit() for ch in text)
+    visual_units = cjk + (latin + digits) * .56 + max(0, len(text) - cjk - latin - digits) * .35
+    if visual_units <= 9:
+        size = 'short'
+    elif visual_units <= 17:
+        size = 'medium'
+    elif visual_units <= 27:
+        size = 'long'
+    else:
+        size = 'xlong'
+    if cjk and latin:
+        script = 'mixed'
+    elif cjk:
+        script = 'cjk'
+    else:
+        script = 'latin'
+    return size, script, visual_units
 
 
 def slide_density(slide):
@@ -675,6 +701,10 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     if composition not in ('constructivist', 'classic'):
         sys.stderr.write('[warn] composition "%s" is invalid; using constructivist\n' % composition)
         composition = 'constructivist'
+    typography = str(outline.get('typography', 'editorial')).strip().lower()
+    if typography not in ('editorial', 'classic'):
+        sys.stderr.write('[warn] typography "%s" is invalid; using editorial\n' % typography)
+        typography = 'editorial'
     layout_intelligence = outline.get('layout_intelligence', True) is not False
 
     sp_dir = os.path.join(templates_dir, 'single-page')
@@ -694,8 +724,12 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         data = dict(slide)
         density, density_score = slide_density(slide) if layout_intelligence else ('standard', 0)
         variant = resolve_variant(slide, idx) if layout_intelligence else 'default'
-        title_len = _text_len(slide.get('title'))
-        title_long = title_len > (18 if layout in ('cover', 'section-divider') else 24)
+        title_size, title_script, title_units = title_profile(slide.get('title'))
+        title_long = title_size in ('long', 'xlong')
+        if title_size == 'xlong':
+            sys.stderr.write('[type] slide %d (%s) has an extra-long title (%.1f units); '
+                             'rewrite to one claim when source fidelity allows\n'
+                             % (idx + 1, layout, title_units))
         if density == 'overfull':
             sys.stderr.write('[layout] slide %d (%s) is overfull (score=%d); '
                              'shorten copy or split the slide\n' % (idx + 1, layout, density_score))
@@ -757,7 +791,10 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             three_scenes.append(three_scene)
         rendered = render(tmpl, data)
         rendered = re.sub(r'(<section\b)', r'\1 data-idx="%d"' % idx, rendered, count=1)
-        intelligence_classes = ['variant-' + variant, 'density-' + density]
+        intelligence_classes = [
+            'variant-' + variant, 'density-' + density,
+            'title-size-' + title_size, 'script-' + title_script,
+        ]
         if title_long:
             intelligence_classes.append('title-long')
         rendered = re.sub(
@@ -811,6 +848,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
               .replace('{{lang}}', outline.get('lang', 'zh-CN'))
               .replace('{{title}}', outline.get('title', 'Liquid Glass Deck'))
               .replace('{{composition}}', composition)
+              .replace('{{typography}}', typography)
               .replace('{{theme}}', theme_css))
     # Auto-embed: any local relative image path (e.g. images/foo.png) is read and
     # inlined as a base64 data URI, keeping the output a self-contained single file

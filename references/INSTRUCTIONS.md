@@ -51,6 +51,7 @@ Load only the references needed for the current task:
 - `references/visual-dna.md` — Apple iOS 26 Liquid Glass visual system (CSS technique) and cross-page style-lock constants.
 - `references/composition-system.md` — default constructivist-minimal layout system: asymmetric grid, edge alignment, quiet space, shared planes, and anti-dashboard rules.
 - `references/layout-intelligence.md` — automatic composition variants, density classes, long-title handling, and overfull-warning response.
+- `references/typography-system.md` — editorial Chinese/Latin/mixed-script hierarchy, semantic title length, line breaking, and long-title response.
 - `references/output-quality.md` — verification gates for the final deck.
 - `references/prompt-patterns.md` — ImageGen prompt templates for liquid-glass hero/cover/concept images.
 - `references/image-handling.md` — image intake & processing rules for BOTH AI-generated and user-provided images (transparency normalization, base64 embedding, sizing, placement patterns, optimization).
@@ -113,6 +114,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 
 6. **Apply visual DNA (style-lock)**
    - Read `references/visual-dna.md`, `references/composition-system.md`, and `assets/theme-tokens.json`.
+   - Read `references/typography-system.md`; use one-claim headings and resolve extra-long-title warnings unless wording is protected.
    - Lock background, glass material, title treatment, page number, accent, spacing, motion, dominant axis, and asymmetry ratio.
    - Default to `"composition":"constructivist"`: align to edges, prefer one shared glass plane over repeated cards, preserve 25–40% quiet space, and center only with a clear reason. Use `"classic"` for legacy compatibility or an explicit request.
    - Keep the outer shell fixed; vary only the central content area per slide.
@@ -165,6 +167,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 - Aesthetic: Apple iOS 26 Liquid Glass — translucent frosted panels with backdrop blur/refraction, specular edge highlights, and light-reactive depth over a vivid blurred backdrop.
 - Composition: constructivist minimalism by default — asymmetric 12-column logic, strict edge alignment, decisive scale contrast, restrained geometry, and fewer independent cards. Preserve the topic palette; never force Soviet red/black or propaganda clichés.
 - Layout intelligence: enabled by default; use automatic variants and resolve every `overfull` warning before delivery.
+- Typography: editorial by default; the builder adds title-length and script classes, while the operator preserves semantic phrase boundaries and concise headings.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the operator does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**
