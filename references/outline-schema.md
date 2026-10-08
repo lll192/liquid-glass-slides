@@ -18,6 +18,7 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 | `layout_intelligence` | boolean | no | Default `true`. Automatically selects a content-aware variant and density class per slide. Disable only for exact legacy reproduction. |
 | `typography` | string | no | `editorial` (default) or `classic`. Editorial mode adds visual-length title classes, CJK-aware wrapping, script-aware tracking, and tabular figures. |
 | `visual_intelligence` | boolean | no | Default `true`. Profiles local/data-URI image orientation and ECharts series semantics, then adjusts visual ratios and chart height while emitting accessibility/editorial warnings. |
+| `quality_intelligence` | boolean | no | Default `true`. Audits deck rhythm at build time and embeds a runtime DOM geometry report. Disable only for exact legacy reproduction. |
 | `theme` | object | no | Topic color theme — see below. `build.py` derives the 3 background blobs, the Three.js particle palette, the accent text color, and every glow/shadow from it. **Fully automatic: the AI picks the palette from the topic; the user never sets colors.** |
 | `auto_ripple` | boolean | no | Default `true`. Automatically adds a restrained ripple surface to slides that have no Three.js, ECharts, image, or explicit `surface`. |
 | `slides` | array | **yes** | Ordered list of slide objects. Each needs a `layout`. |

@@ -870,6 +870,19 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   }
 }
 
+/* Runtime QA is invisible by default. Add ?qa=1 to the deck URL to inspect it. */
+.qa-status{
+  position:fixed; z-index:1000; left:12px; bottom:12px; border:1px solid rgba(0,0,0,.12);
+  border-radius:999px; padding:.45rem .75rem; font:600 12px/1 system-ui,sans-serif;
+  color:#123; background:rgba(255,255,255,.88); backdrop-filter:blur(14px);
+  box-shadow:0 6px 24px rgba(0,0,0,.12); cursor:pointer;
+}
+.qa-status[data-state="pass"]{ color:#176b3a; }
+.qa-status[data-state="warning"]{ color:#8a5b00; }
+.qa-status[data-state="error"]{ color:#a32020; }
+.qa-visible .slide[data-qa="warning"]{ outline:2px solid rgba(255,159,10,.72); outline-offset:-2px; }
+.qa-visible .slide[data-qa="error"]{ outline:3px solid rgba(255,69,58,.82); outline-offset:-3px; }
+
 </style>
 <style id="theme-overrides">
 :root { --accent:#0A84FF; --accent-rgb:10,132,255; --accent-2:#5DAEFF; --accent2-rgb:93,174,255; --blob-1:rgba(10,132,255,0.30); --blob-2:rgba(100,210,255,0.26); --blob-3:rgba(48,209,88,0.22); }
@@ -884,7 +897,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 <div class="counter">01 / 01</div>
 
 <main class="deck">
-<section data-idx="0" class="slide variant-default density-standard title-size-short script-cjk" data-layout="cover" data-variant="default" data-density="standard" data-media="none" data-chart-profile="none" data-three="field">
+<section data-idx="0" class="slide variant-default density-standard title-size-short script-cjk rhythm-opening weight-light" data-layout="cover" data-variant="default" data-density="standard" data-media="none" data-chart-profile="none" data-rhythm="opening" data-weight="light" data-three="field">
   <div class="slide-content">
     <div class="wrap cover-layout composition-shell">
       <div class="cover-copy">
@@ -898,7 +911,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="1" class="slide variant-index-quadrant density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse" data-media="none" data-chart-profile="none">
+  <section data-idx="1" class="slide variant-index-quadrant density-sparse title-size-short script-cjk rhythm-navigation weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="navigation" data-weight="medium">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -936,7 +949,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="2" class="slide variant-default density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-three="ripple:flow:bottom:subtle:1291">
+  <section data-idx="2" class="slide variant-default density-sparse title-size-short script-cjk rhythm-break weight-light ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-three="ripple:flow:bottom:subtle:1291">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell section-composition">
@@ -949,7 +962,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="3" class="slide variant-list-spread density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse" data-media="none" data-chart-profile="none">
+  <section data-idx="3" class="slide variant-list-spread density-sparse title-size-short script-cjk rhythm-explain weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -987,7 +1000,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="4" class="slide variant-split-balanced density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse" data-media="none" data-chart-profile="none">
+  <section data-idx="4" class="slide variant-split-balanced density-sparse title-size-short script-cjk rhythm-explain weight-medium ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1002,7 +1015,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="5" class="slide variant-mosaic density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse" data-media="none" data-chart-profile="none">
+  <section data-idx="5" class="slide variant-mosaic density-sparse title-size-short script-cjk rhythm-structure weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1040,7 +1053,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="6" class="slide variant-number-left density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-media="none" data-chart-profile="none" data-three="ripple:flow:bottom:subtle:1679">
+  <section data-idx="6" class="slide variant-number-left density-sparse title-size-short script-cjk rhythm-emphasis weight-light ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="emphasis" data-weight="light" data-three="ripple:flow:bottom:subtle:1679">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell stat-composition">
@@ -1055,7 +1068,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="7" class="slide variant-feature-first density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse" data-media="none" data-chart-profile="none">
+  <section data-idx="7" class="slide variant-feature-first density-sparse title-size-short script-cjk rhythm-evidence weight-medium ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="evidence" data-weight="medium">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1084,7 +1097,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="8" class="slide variant-line-spacious density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse" data-media="none" data-chart-profile="none">
+  <section data-idx="8" class="slide variant-line-spacious density-sparse title-size-short script-cjk rhythm-structure weight-medium ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1106,7 +1119,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="9" class="slide variant-compare-left density-standard title-size-short script-mixed ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard" data-media="none" data-chart-profile="none">
+  <section data-idx="9" class="slide variant-compare-left density-standard title-size-short script-mixed rhythm-explain weight-heavy ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="heavy">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell">
@@ -1144,7 +1157,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="10" class="slide variant-default density-sparse title-size-short script-latin ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-three="ripple:flow:bottom:subtle:2067">
+  <section data-idx="10" class="slide variant-default density-sparse title-size-short script-latin rhythm-break weight-light ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-three="ripple:flow:bottom:subtle:2067">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="slide-content">
     <div class="wrap composition-shell quote-composition">
@@ -1157,7 +1170,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="11" class="slide variant-visual-right density-sparse title-size-short script-cjk media-landscape" data-layout="image-frame" data-variant="visual-right" data-density="sparse" data-media="landscape" data-chart-profile="none">
+  <section data-idx="11" class="slide variant-visual-right density-sparse title-size-short script-cjk rhythm-visual weight-medium media-landscape" data-layout="image-frame" data-variant="visual-right" data-density="sparse" data-media="landscape" data-chart-profile="none" data-rhythm="visual" data-weight="medium">
   <div class="slide-content">
     <div class="wrap composition-shell image-composition">
       <div class="eyebrow reveal" style="--i:0">PHOTO</div>
@@ -1171,7 +1184,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="12" class="slide variant-default density-sparse title-size-short script-cjk media-square" data-layout="object-float" data-variant="default" data-density="sparse" data-media="square" data-chart-profile="none">
+  <section data-idx="12" class="slide variant-default density-sparse title-size-short script-cjk rhythm-visual weight-medium media-square" data-layout="object-float" data-variant="default" data-density="sparse" data-media="square" data-chart-profile="none" data-rhythm="visual" data-weight="medium">
   <div class="orb o1"></div><div class="orb o2"></div>
   <div class="slide-content">
     <div class="wrap composition-shell construct-split object-composition">
@@ -1188,7 +1201,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </section>
 
 
-  <section data-idx="13" class="slide closing variant-default density-sparse title-size-short script-cjk ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-three="ripple:rings:bottom-right:subtle:2358">
+  <section data-idx="13" class="slide closing variant-default density-sparse title-size-short script-cjk rhythm-closing weight-light ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="closing" data-weight="light" data-three="ripple:rings:bottom-right:subtle:2358">
   <div class="ripple-surface" aria-hidden="true"></div>
   <div class="halo"></div>
   <div class="slide-content">
@@ -1210,6 +1223,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 </main>
 
 <script>
+window.__LG_BUILD_REPORT__={"version": 1, "qualityIntelligence": true, "rhythm": {"slides": [{"slide": 1, "layout": "cover", "family": "opening", "weight": "light", "density": "standard", "score": 60}, {"slide": 2, "layout": "toc", "family": "navigation", "weight": "medium", "density": "sparse", "score": 70}, {"slide": 3, "layout": "section-divider", "family": "break", "weight": "light", "density": "sparse", "score": 26}, {"slide": 4, "layout": "bullets", "family": "explain", "weight": "medium", "density": "sparse", "score": 89}, {"slide": 5, "layout": "two-column", "family": "explain", "weight": "medium", "density": "sparse", "score": 96}, {"slide": 6, "layout": "grid-cards", "family": "structure", "weight": "medium", "density": "sparse", "score": 85}, {"slide": 7, "layout": "stat-highlight", "family": "emphasis", "weight": "light", "density": "sparse", "score": 41}, {"slide": 8, "layout": "kpi-grid", "family": "evidence", "weight": "medium", "density": "sparse", "score": 37}, {"slide": 9, "layout": "timeline", "family": "structure", "weight": "medium", "density": "sparse", "score": 76}, {"slide": 10, "layout": "comparison", "family": "explain", "weight": "heavy", "density": "standard", "score": 129}, {"slide": 11, "layout": "big-quote", "family": "break", "weight": "light", "density": "sparse", "score": 25}, {"slide": 12, "layout": "image-frame", "family": "visual", "weight": "medium", "density": "sparse", "score": 45}, {"slide": 13, "layout": "object-float", "family": "visual", "weight": "medium", "density": "sparse", "score": 36}, {"slide": 14, "layout": "closing", "family": "closing", "weight": "light", "density": "sparse", "score": 39}], "warnings": []}};
 /* ============================================================
    liquid-glass-slides · ENGINE JS (extracted from template.html)
    Consumed by scripts/build.py and inlined into the final deck.
@@ -1221,6 +1235,94 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   const progress = document.querySelector('.progress');
   const counter = document.querySelector('.counter');
   let current = 0, wheelLock = false;
+
+  /* Lightweight runtime QA: inspect real browser geometry without screenshots. */
+  function runQualityAudit(){
+    const issues = [];
+    slides.forEach((slide, index) => {
+      const page = index + 1;
+      const pageIssues = [];
+      const overflowX = slide.scrollWidth > slide.clientWidth + 2;
+      const overflowY = slide.scrollHeight > slide.clientHeight + 2;
+      if (overflowX) pageIssues.push({ code:'horizontal-overflow', severity:'error', message:'content exceeds slide width' });
+      if (overflowY) pageIssues.push({ code:'vertical-overflow', severity:'error', message:'content exceeds slide height' });
+
+      const title = slide.querySelector('h1, h2');
+      if (title) {
+        const style = getComputedStyle(title);
+        const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.15;
+        const lines = Math.max(1, Math.round(title.getBoundingClientRect().height / lineHeight));
+        const limit = title.tagName === 'H1' ? 3 : 2;
+        if (lines > limit) pageIssues.push({
+          code:'title-wrap', severity:'warning',
+          message:'title occupies ' + lines + ' lines; shorten or widen the title field'
+        });
+      }
+
+      slide.querySelectorAll('p:not(.footnote), li').forEach((el) => {
+        if (!el.textContent.trim() || el.offsetParent === null) return;
+        const size = parseFloat(getComputedStyle(el).fontSize);
+        if (size && size < 14) pageIssues.push({
+          code:'small-type', severity:'warning', message:'readable text falls below 14px'
+        });
+      });
+      slide.querySelectorAll('figcaption, .footnote').forEach((el) => {
+        if (!el.textContent.trim() || el.offsetParent === null) return;
+        const size = parseFloat(getComputedStyle(el).fontSize);
+        if (size && size < 11.5) pageIssues.push({
+          code:'small-caption', severity:'warning', message:'caption text falls below 11.5px'
+        });
+      });
+
+      const shell = slide.querySelector('.composition-shell, .wrap');
+      if (shell) {
+        const sr = slide.getBoundingClientRect();
+        const cr = shell.getBoundingClientRect();
+        if (cr.left < sr.left - 2 || cr.right > sr.right + 2 || cr.top < sr.top - 2 || cr.bottom > sr.bottom + 2) {
+          pageIssues.push({ code:'out-of-bounds', severity:'error', message:'main composition crosses the slide boundary' });
+        }
+      }
+
+      const unique = [];
+      pageIssues.forEach((issue) => {
+        if (!unique.some((seen) => seen.code === issue.code)) unique.push(issue);
+      });
+      slide.dataset.qa = unique.some((i) => i.severity === 'error') ? 'error' : (unique.length ? 'warning' : 'pass');
+      unique.forEach((issue) => issues.push(Object.assign({ slide:page, layout:slide.dataset.layout || '' }, issue)));
+    });
+    const report = { viewport:{ width:innerWidth, height:innerHeight }, checkedAt:new Date().toISOString(), issues:issues };
+    window.__LG_BUILD_REPORT__ = window.__LG_BUILD_REPORT__ || {};
+    window.__LG_BUILD_REPORT__.runtime = report;
+    if (issues.length) console.warn('[Liquid Glass QA]', issues);
+    if (new URLSearchParams(location.search).has('qa')) {
+      document.body.classList.add('qa-visible');
+      let badge = document.querySelector('.qa-status');
+      if (!badge) {
+        badge = document.createElement('button');
+        badge.className = 'qa-status';
+        badge.addEventListener('click', () => console.table(runQualityAudit().issues));
+        document.body.appendChild(badge);
+      }
+      const errors = issues.filter((issue) => issue.severity === 'error').length;
+      badge.textContent = errors ? 'QA · ' + errors + ' errors' : (issues.length ? 'QA · ' + issues.length + ' warnings' : 'QA · pass');
+      badge.dataset.state = errors ? 'error' : (issues.length ? 'warning' : 'pass');
+      badge.title = 'Click to print the current viewport report in the console';
+    }
+    return report;
+  }
+  window.LiquidGlassQA = { run:runQualityAudit, get report(){ return (window.__LG_BUILD_REPORT__ || {}).runtime || null; } };
+
+  function scheduleQualityAudit(){
+    requestAnimationFrame(() => requestAnimationFrame(runQualityAudit));
+  }
+  const automaticQA = !window.__LG_BUILD_REPORT__ || window.__LG_BUILD_REPORT__.qualityIntelligence !== false;
+  if (automaticQA && document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleQualityAudit);
+  else if (automaticQA) window.addEventListener('load', scheduleQualityAudit, { once:true });
+  let qaResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(qaResizeTimer);
+    if (automaticQA) qaResizeTimer = setTimeout(scheduleQualityAudit, 180);
+  });
 
   slides.forEach((s, i) => {
     const d = document.createElement('button');

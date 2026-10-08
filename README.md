@@ -13,6 +13,7 @@
 - **智能构图与密度检测**：根据项目数量、左右文字量和页面类型自动选择 7:5 / 5:7、主次网格、马赛克网格及图文方向；内容过载时明确警告，不再无止境缩小字号。
 - **中文与中英混排优化**：按视觉长度自动区分短、中、长标题，启用中文严格换行、标题平衡换行、脚本感知字距和表格数字，并提示需要改写的超长标题。
 - **图片与图表智能编排**：识别横图、竖图、方图及趋势、比较、占比、雷达、分布图，自动调整图文比例和图表高度，并检查替代文本与数据结论。
+- **整套节奏与自动质检**：构建时发现连续重复版式、页面重量失衡和缺失的呼吸页；浏览器端无需截图即可检测溢出、越界、标题过度换行和过小字号。
 - **真实中文文字**：所有可读文字都是真正的 HTML 文本，绝不乱码、可直接编辑。
 - **零依赖单文件输出**：内联 CSS/JS，浏览器直接全屏播放，支持键盘 / 滚轮 / 触摸翻页与入场动画。
 - **ECharts 数据图表**：仅在页面确有真实可比数据时自动加入（趋势、对比、占比、雷达），并自动套用液态玻璃主题。
@@ -112,6 +113,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Layout intelligence and density checks** — automatically selects split direction, feature-first or mosaic grids, media side, and bounded compact spacing; overfull slides are reported for revision instead of silently shrinking text.
 - **Editorial CJK and mixed-script typography** — visual-length title profiles, strict Chinese line breaking, balanced headings, script-aware tracking, tabular figures, and warnings for titles that should be rewritten.
 - **Visual intelligence** — profiles landscape/portrait/square imagery and trend/comparison/proportion/radar/distribution charts, then adjusts visual ratios and bounded chart height while checking alt text and takeaways.
+- **Deck rhythm and automatic QA** — reports repetitive layout/weight sequences at build time, then measures overflow, boundaries, title wrapping, and minimum readable type in the real browser viewport without routine screenshot loops.
 - **Real, editable text** — all readable text is genuine HTML; Chinese never garbles.
 - **Zero-dependency single file** — inlined CSS/JS, fullscreen playback, keyboard/wheel/touch navigation with reveal animations.
 - **ECharts charts** — auto-added only where real quantitative data exists, themed to match the deck.

@@ -10,6 +10,94 @@
   const counter = document.querySelector('.counter');
   let current = 0, wheelLock = false;
 
+  /* Lightweight runtime QA: inspect real browser geometry without screenshots. */
+  function runQualityAudit(){
+    const issues = [];
+    slides.forEach((slide, index) => {
+      const page = index + 1;
+      const pageIssues = [];
+      const overflowX = slide.scrollWidth > slide.clientWidth + 2;
+      const overflowY = slide.scrollHeight > slide.clientHeight + 2;
+      if (overflowX) pageIssues.push({ code:'horizontal-overflow', severity:'error', message:'content exceeds slide width' });
+      if (overflowY) pageIssues.push({ code:'vertical-overflow', severity:'error', message:'content exceeds slide height' });
+
+      const title = slide.querySelector('h1, h2');
+      if (title) {
+        const style = getComputedStyle(title);
+        const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.15;
+        const lines = Math.max(1, Math.round(title.getBoundingClientRect().height / lineHeight));
+        const limit = title.tagName === 'H1' ? 3 : 2;
+        if (lines > limit) pageIssues.push({
+          code:'title-wrap', severity:'warning',
+          message:'title occupies ' + lines + ' lines; shorten or widen the title field'
+        });
+      }
+
+      slide.querySelectorAll('p:not(.footnote), li').forEach((el) => {
+        if (!el.textContent.trim() || el.offsetParent === null) return;
+        const size = parseFloat(getComputedStyle(el).fontSize);
+        if (size && size < 14) pageIssues.push({
+          code:'small-type', severity:'warning', message:'readable text falls below 14px'
+        });
+      });
+      slide.querySelectorAll('figcaption, .footnote').forEach((el) => {
+        if (!el.textContent.trim() || el.offsetParent === null) return;
+        const size = parseFloat(getComputedStyle(el).fontSize);
+        if (size && size < 11.5) pageIssues.push({
+          code:'small-caption', severity:'warning', message:'caption text falls below 11.5px'
+        });
+      });
+
+      const shell = slide.querySelector('.composition-shell, .wrap');
+      if (shell) {
+        const sr = slide.getBoundingClientRect();
+        const cr = shell.getBoundingClientRect();
+        if (cr.left < sr.left - 2 || cr.right > sr.right + 2 || cr.top < sr.top - 2 || cr.bottom > sr.bottom + 2) {
+          pageIssues.push({ code:'out-of-bounds', severity:'error', message:'main composition crosses the slide boundary' });
+        }
+      }
+
+      const unique = [];
+      pageIssues.forEach((issue) => {
+        if (!unique.some((seen) => seen.code === issue.code)) unique.push(issue);
+      });
+      slide.dataset.qa = unique.some((i) => i.severity === 'error') ? 'error' : (unique.length ? 'warning' : 'pass');
+      unique.forEach((issue) => issues.push(Object.assign({ slide:page, layout:slide.dataset.layout || '' }, issue)));
+    });
+    const report = { viewport:{ width:innerWidth, height:innerHeight }, checkedAt:new Date().toISOString(), issues:issues };
+    window.__LG_BUILD_REPORT__ = window.__LG_BUILD_REPORT__ || {};
+    window.__LG_BUILD_REPORT__.runtime = report;
+    if (issues.length) console.warn('[Liquid Glass QA]', issues);
+    if (new URLSearchParams(location.search).has('qa')) {
+      document.body.classList.add('qa-visible');
+      let badge = document.querySelector('.qa-status');
+      if (!badge) {
+        badge = document.createElement('button');
+        badge.className = 'qa-status';
+        badge.addEventListener('click', () => console.table(runQualityAudit().issues));
+        document.body.appendChild(badge);
+      }
+      const errors = issues.filter((issue) => issue.severity === 'error').length;
+      badge.textContent = errors ? 'QA · ' + errors + ' errors' : (issues.length ? 'QA · ' + issues.length + ' warnings' : 'QA · pass');
+      badge.dataset.state = errors ? 'error' : (issues.length ? 'warning' : 'pass');
+      badge.title = 'Click to print the current viewport report in the console';
+    }
+    return report;
+  }
+  window.LiquidGlassQA = { run:runQualityAudit, get report(){ return (window.__LG_BUILD_REPORT__ || {}).runtime || null; } };
+
+  function scheduleQualityAudit(){
+    requestAnimationFrame(() => requestAnimationFrame(runQualityAudit));
+  }
+  const automaticQA = !window.__LG_BUILD_REPORT__ || window.__LG_BUILD_REPORT__.qualityIntelligence !== false;
+  if (automaticQA && document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleQualityAudit);
+  else if (automaticQA) window.addEventListener('load', scheduleQualityAudit, { once:true });
+  let qaResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(qaResizeTimer);
+    if (automaticQA) qaResizeTimer = setTimeout(scheduleQualityAudit, 180);
+  });
+
   slides.forEach((s, i) => {
     const d = document.createElement('button');
     d.className = 'dot' + (i === 0 ? ' on' : '');

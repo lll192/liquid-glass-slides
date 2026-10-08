@@ -5,6 +5,7 @@
   "layout_intelligence": true,
   "typography": "editorial",
   "visual_intelligence": true,
+  "quality_intelligence": true,
   "theme": {
     "name": "water-optics",
     "colors": ["#0A84FF", "#64D2FF", "#30D5C8"],

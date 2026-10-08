@@ -5,6 +5,7 @@
   "layout_intelligence": true,
   "typography": "editorial",
   "visual_intelligence": true,
+  "quality_intelligence": true,
   "theme": {
     "name": "tech",
     "colors": [

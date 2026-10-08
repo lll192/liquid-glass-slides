@@ -10,6 +10,7 @@ Verify before delivery.
 ## Structure & rhythm
 - Cover present; takeaway present.
 - Archetype variety; no two heavy grids back-to-back.
+- Resolve `[rhythm]` warnings that indicate repeated layouts, long heavy runs, or missing breathing beats.
 
 ## Visual consistency (Liquid Glass)
 - Background, glass parameters, accent, specular highlight, and edge-light treatment identical across slides.
@@ -21,6 +22,7 @@ Test at: 1920×1080, 1280×720, 768×1024, 375×667.
 - Every `.slide` fits one viewport, no internal scroll.
 - No horizontal scrollbar.
 - Type scales via `clamp()`; never shrunk below readable size to force a fit — split the slide instead.
+- Read `window.__LG_BUILD_REPORT__.runtime`, or append `?qa=1` for the temporary visible QA badge. Resolve every runtime error before delivery.
 
 ## Technical
 - Single self-contained HTML, inline CSS/JS, zero external deps (Google/Fontshare fonts allowed via `<link>`).

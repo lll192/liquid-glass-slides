@@ -862,3 +862,16 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
     grid-template-columns:1fr; grid-template-areas:"copy" "visual";
   }
 }
+
+/* Runtime QA is invisible by default. Add ?qa=1 to the deck URL to inspect it. */
+.qa-status{
+  position:fixed; z-index:1000; left:12px; bottom:12px; border:1px solid rgba(0,0,0,.12);
+  border-radius:999px; padding:.45rem .75rem; font:600 12px/1 system-ui,sans-serif;
+  color:#123; background:rgba(255,255,255,.88); backdrop-filter:blur(14px);
+  box-shadow:0 6px 24px rgba(0,0,0,.12); cursor:pointer;
+}
+.qa-status[data-state="pass"]{ color:#176b3a; }
+.qa-status[data-state="warning"]{ color:#8a5b00; }
+.qa-status[data-state="error"]{ color:#a32020; }
+.qa-visible .slide[data-qa="warning"]{ outline:2px solid rgba(255,159,10,.72); outline-offset:-2px; }
+.qa-visible .slide[data-qa="error"]{ outline:3px solid rgba(255,69,58,.82); outline-offset:-3px; }

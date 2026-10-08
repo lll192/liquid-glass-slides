@@ -4,6 +4,9 @@ The one-click builder analyzes each slide's content shape before rendering. This
 layer chooses a composition variant and a density class; it never changes factual
 meaning or silently deletes copy.
 
+For cross-slide pacing and browser geometry checks, continue with
+`quality-intelligence.md` after the per-slide composition is stable.
+
 ## Defaults
 
 - Top-level `"layout_intelligence": true` is implicit.

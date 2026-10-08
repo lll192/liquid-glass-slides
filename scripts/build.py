@@ -687,6 +687,15 @@ _LAYOUT_VARIANTS = {
     'chart': {'visual-left', 'visual-right'},
 }
 
+_RHYTHM_FAMILIES = {
+    'cover': 'opening', 'toc': 'navigation', 'section-divider': 'break',
+    'big-quote': 'break', 'closing': 'closing',
+    'image-frame': 'visual', 'object-float': 'visual', 'chart': 'evidence',
+    'stat-highlight': 'emphasis', 'kpi-grid': 'evidence',
+    'grid-cards': 'structure', 'timeline': 'structure',
+    'bullets': 'explain', 'two-column': 'explain', 'comparison': 'explain',
+}
+
 
 def _plain_text(value):
     if value is None:
@@ -747,6 +756,86 @@ def slide_density(slide):
     if score < dense_at * .42:
         return 'sparse', score
     return 'standard', score
+
+
+def slide_rhythm_profile(slide):
+    """Return a semantic family and visual weight for deck-level pacing."""
+    layout = slide.get('layout', '')
+    family = _RHYTHM_FAMILIES.get(layout, 'content')
+    density, score = slide_density(slide)
+    if family in ('opening', 'break', 'emphasis', 'closing'):
+        weight = 'light'
+    elif density in ('dense', 'overfull'):
+        weight = 'heavy'
+    elif layout in ('grid-cards', 'kpi-grid', 'timeline', 'comparison'):
+        items = sum(len(slide.get(key, [])) for key in ('items', 'left_items', 'right_items')
+                    if isinstance(slide.get(key), list))
+        weight = 'heavy' if items >= 5 else 'medium'
+    else:
+        weight = 'medium'
+    return family, weight, density, score
+
+
+def audit_deck_rhythm(slides):
+    """Analyze cross-slide pacing without rewriting authored content."""
+    profiles = []
+    warnings = []
+    for idx, slide in enumerate(slides):
+        family, weight, density, score = slide_rhythm_profile(slide)
+        profiles.append({
+            'slide': idx + 1,
+            'layout': slide.get('layout', ''),
+            'family': family,
+            'weight': weight,
+            'density': density,
+            'score': score,
+        })
+
+    def warn_runs(field, minimum, label):
+        start = 0
+        while start < len(profiles):
+            end = start + 1
+            while end < len(profiles) and profiles[end][field] == profiles[start][field]:
+                end += 1
+            if end - start >= minimum:
+                warnings.append({
+                    'code': 'repeated-' + field,
+                    'slides': [start + 1, end],
+                    'message': 'slides %d-%d repeat %s "%s"; vary the page rhythm'
+                               % (start + 1, end, label, profiles[start][field]),
+                })
+            start = end
+
+    warn_runs('layout', 3, 'layout')
+    warn_runs('family', 4, 'content family')
+    warn_runs('weight', 4, 'visual weight')
+    start = 0
+    while start < len(profiles):
+        end = start + 1
+        while end < len(profiles) and profiles[end]['weight'] == profiles[start]['weight']:
+            end += 1
+        if profiles[start]['weight'] == 'heavy' and end - start >= 3:
+            warnings.append({
+                'code': 'heavy-run', 'slides': [start + 1, end],
+                'message': 'slides %d-%d are all heavy; insert a purposeful breathing beat or split content'
+                           % (start + 1, end),
+            })
+        start = end
+
+    n = len(profiles)
+    if n >= 6 and profiles and profiles[0]['layout'] != 'cover':
+        warnings.append({'code': 'missing-cover', 'slides': [1, 1],
+                         'message': 'deck has no cover in the opening position'})
+    if n >= 6 and profiles and profiles[-1]['layout'] != 'closing':
+        warnings.append({'code': 'missing-closing', 'slides': [n, n],
+                         'message': 'deck has no deliberate closing page'})
+    if n >= 8 and not any(p['family'] in ('visual', 'evidence', 'emphasis') for p in profiles):
+        warnings.append({'code': 'no-visual-evidence', 'slides': [1, n],
+                         'message': 'long deck has no visual, evidence, or emphasis page'})
+    if n >= 10 and not any(p['family'] == 'break' for p in profiles[2:-1]):
+        warnings.append({'code': 'no-breathing-page', 'slides': [2, n - 1],
+                         'message': 'long deck has no section or breathing page in the middle'})
+    return {'slides': profiles, 'warnings': warnings}
 
 
 def resolve_variant(slide, slide_index, media_shape='unknown', chart_family='none'):
@@ -821,6 +910,12 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         typography = 'editorial'
     layout_intelligence = outline.get('layout_intelligence', True) is not False
     visual_intelligence = outline.get('visual_intelligence', True) is not False
+    quality_intelligence = outline.get('quality_intelligence', True) is not False
+    rhythm_report = (audit_deck_rhythm(outline.get('slides', []))
+                     if quality_intelligence else {'slides': [], 'warnings': []})
+    rhythm_by_slide = {item['slide']: item for item in rhythm_report['slides']}
+    for issue in rhythm_report['warnings']:
+        sys.stderr.write('[rhythm] %s\n' % issue['message'])
 
     sp_dir = os.path.join(templates_dir, 'single-page')
     slides_out = []
@@ -847,6 +942,9 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             else ('none', 'normal')
         )
         density, density_score = slide_density(slide) if layout_intelligence else ('standard', 0)
+        rhythm = rhythm_by_slide.get(idx + 1, {
+            'family': 'content', 'weight': 'medium', 'density': density, 'score': density_score,
+        })
         variant = (resolve_variant(slide, idx, media_shape, chart_family)
                    if layout_intelligence else 'default')
         title_size, title_script, title_units = title_profile(slide.get('title'))
@@ -933,6 +1031,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         intelligence_classes = [
             'variant-' + variant, 'density-' + density,
             'title-size-' + title_size, 'script-' + title_script,
+            'rhythm-' + rhythm['family'], 'weight-' + rhythm['weight'],
         ]
         if media_shape != 'none':
             intelligence_classes.append('media-' + media_shape)
@@ -947,8 +1046,8 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         rendered = re.sub(
             r'(<section\b[^>]*>)',
             lambda m: m.group(1).rstrip('>') +
-            ' data-variant="%s" data-density="%s" data-media="%s" data-chart-profile="%s">'
-            % (variant, density, media_shape, chart_family),
+            ' data-variant="%s" data-density="%s" data-media="%s" data-chart-profile="%s" data-rhythm="%s" data-weight="%s">'
+            % (variant, density, media_shape, chart_family, rhythm['family'], rhythm['weight']),
             rendered, count=1)
         if ripple:
             ripple_classes = ' '.join([
@@ -984,9 +1083,15 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     glyphs_html = ''.join('<span class="g%d">%s</span>' % (i + 1, g)
                           for i, g in enumerate(glyphs))
 
+    build_report = {
+        'version': 1,
+        'qualityIntelligence': quality_intelligence,
+        'rhythm': rhythm_report,
+    }
+    report_js = 'window.__LG_BUILD_REPORT__=' + json.dumps(build_report, ensure_ascii=False) + ';\n'
     result = (deck
               .replace('/*__ENGINE_CSS__*/', css)
-              .replace('/*__ENGINE_JS__*/', js)
+              .replace('/*__ENGINE_JS__*/', report_js + js)
               .replace('<!--__SLIDES__-->', slides_html)
               .replace('<!--__GLYPHS__-->', glyphs_html)
               .replace('{{lang}}', outline.get('lang', 'zh-CN'))
