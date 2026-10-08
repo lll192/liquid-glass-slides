@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "1.2.0"
+  version: "1.2.1"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -27,6 +27,8 @@ Load only the references needed for the current task:
 
 - `references/intake.md` — adaptive pre-generation form, gap diagnosis, and confirmation rules.
 - `references/design-brief.md` — the stable `brief.json` contract between intake and slide planning.
+- `references/source-intake.md` — conditional upload, source receipt, and content-coverage workflow for full or partial copy.
+- `references/source-manifest.md` — the `source-manifest.json` provenance and handling contract.
 - `references/narrative-planning.md` — deck-type selection and story structures.
 - `references/slide-archetypes.md` — semantic mapping from content to slide layouts.
 - `references/visual-dna.md` — Apple iOS 26 Liquid Glass visual system (CSS technique) and cross-page style-lock constants.
@@ -60,21 +62,28 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
    - Read `references/design-brief.md`, save the structured brief beside the future outline, and run `python scripts/validate_brief.py brief.json`.
    - Pause for explicit confirmation only when an unresolved choice materially changes claims, audience, brand, confidentiality, cost, or output scope. A completed form or “直接生成” instruction confirms the supplied fields.
 
-3. **Plan the deck narrative**
+3. **Pass the Source Gate when material is supplied**
+   - If `content.mode` is `supplied` or `assisted`, read `references/source-intake.md`. Skip this gate for `agent-led` work unless the user also provides files.
+   - Accept attached `.docx` / `.pdf` / `.md` / `.txt`, accessible local paths, or pasted text. Never claim to have read an inaccessible attachment.
+   - Classify one primary source plus any supporting, data, or visual sources; capture processing level, protected content, and requested AI additions.
+   - Read `references/source-manifest.md`, create `source-manifest.json` and `content-map.md`, then run `python scripts/validate_source_manifest.py source-manifest.json`.
+   - Do not start the outline while a required source is unreadable, source priority is ambiguous, or a material conflict remains hidden.
+
+4. **Plan the deck narrative**
    - Read `references/narrative-planning.md`.
    - Classify the deck (teaching / persuasive / report / product / knowledge-card).
    - Build a slide-by-slide spine: each slide must carry exactly one main point.
 
-4. **Map each slide to an archetype**
+5. **Map each slide to an archetype**
    - Read `references/slide-archetypes.md`.
    - Pick layouts from content semantics, not from a fixed template order. Vary archetypes for rhythm.
 
-5. **Apply visual DNA (style-lock)**
+6. **Apply visual DNA (style-lock)**
    - Read `references/visual-dna.md` and `assets/theme-tokens.json`.
    - Lock cross-page constants before writing: background tone, card style, glass parameters, title treatment, page-number position, accent color, spacing rhythm, and motion feel.
    - Keep the outer shell fixed; vary only the central content area per slide.
 
-6. **Build output**
+7. **Build output**
    - For planning-only requests, deliver a blueprint with deck type, slide count, and per-slide title / main point / archetype / content blocks / visual brief.
    - For production, choose ONE of two paths:
 
@@ -98,13 +107,13 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
        f. To iterate, edit the JSON and re-run — identical outline always yields an identical deck.
        g. **Ripple fallback is automatic**: when a slide has no Three.js scene, ECharts chart, image, or explicit `surface`, `build.py` adds a deterministic, reading-safe ripple layer. Dense pages receive a subtle static texture; sparse pages may drift gently. Set top-level `"auto_ripple": false` to disable the deck-wide default, or `"auto_ripple": false` on one slide to opt that slide out. Explicit `surface` settings always win. See `references/ripple-textures.md`.
 
-7. **Verify**
+8. **Verify**
    - Read `references/output-quality.md`.
    - Check content accuracy, slide rhythm, visual consistency, Liquid Glass aesthetic match, and no overflow at 1920×1080, 1280×720, 768×1024, and 375×667.
    - Because text is real HTML, Chinese rendering is reliable; still confirm fonts fall back to PingFang SC / Microsoft YaHei on the user's machine.
 
-8. **Deliver**
-   - Report the HTML file path, companion brief path, slide count, deck type, any assumptions, and verification performed.
+9. **Deliver**
+   - Report the HTML file path, companion brief path, source manifest/content map when created, slide count, deck type, any assumptions, and verification performed.
    - Remind the user the deck is editable: text lives in the HTML, and the theme can be retuned by editing the `:root` variables.
 
 ## Defaults
@@ -112,6 +121,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 - Language: Simplified Chinese (unless the user asks otherwise).
 - Intake: adaptive Brief Gate; never repeat questions already answered in the request or source material.
 - Brief: save a validated `brief.json` before outline planning; keep assumptions and unresolved factual dependencies explicit.
+- Sources: for full or partial user copy, pass the Source Gate and preserve provenance; skip it for pure `agent-led` work without files.
 - Audience: general or professionally curious; avoid expert-only jargon unless requested.
 - Deck length: 8–12 slides for a talk, 12–20 for a course module, 5–8 for a short idea.
 - Output: single self-contained `.html` file.
@@ -130,6 +140,7 @@ When finished, report:
 
 - The created HTML file path.
 - The validated brief path when production created one.
+- The source manifest and content map paths when user material was ingested.
 - Page count and deck type.
 - Any important assumptions.
 - Verification performed and any remaining risks.

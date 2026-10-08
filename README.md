@@ -18,6 +18,8 @@
 - **可选 AI 配图**：封面 / 章节分隔可自动生成透明背景的装饰插画（仅用于装饰，文字绝不进图）。
 - **生成前 Brief Gate**：先盘点用户已经提供的信息；信息不足时一次性显示 6 项简洁表单，信息充分时直接生成结构化简报，避免重复追问。
 - **可复用设计简报**：把主题、目标、受众、内容归属、视觉偏好和约束固化为可校验的 `brief.json`，再进入故事板与渲染。
+- **条件式 Source Gate**：选择完整文案或部分素材时，支持附件、本地路径与粘贴文本，自动确认主文案、辅助材料、改写幅度和缺失内容。
+- **来源与补写可追踪**：通过 `source-manifest.json` 和 `content-map.md` 区分用户原文、辅助参考与 AI 补充，避免素材混用或静默改写。
 
 ## 快速开始
 
@@ -28,8 +30,13 @@
    ```bash
    python scripts/validate_brief.py brief.json
    ```
-3. 根据简报编写 `outline.json`（字段规范见 `references/outline-schema.md` 与 `examples/sample-outline.json`）。
-4. 运行：
+3. 如果使用完整文案或部分素材，根据 `references/source-intake.md` 生成并校验来源清单：
+   ```bash
+   python scripts/validate_source_manifest.py source-manifest.json
+   ```
+   纯 AI 策划且没有附件时跳过此步。
+4. 根据简报和内容覆盖表编写 `outline.json`（字段规范见 `references/outline-schema.md` 与 `examples/sample-outline.json`）。
+5. 运行：
    ```bash
    python scripts/build.py --outline my-talk.json --out my-talk.html
    ```
@@ -77,6 +84,7 @@ liquid-glass-slides/
 │   └── single-page/         # 15 个布局片段（cover/toc/bullets/chart/...）
 ├── scripts/
 │   ├── validate_brief.py    # 设计简报校验器（仅标准库）
+│   ├── validate_source_manifest.py # 素材来源校验器（仅标准库）
 │   └── build.py             # 一键构建器（仅标准库）
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
@@ -105,12 +113,16 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Optional AI imagery** — transparent decorative hero/motif illustrations (text never baked into images).
 - **Adaptive Brief Gate** — inventories what the user already supplied, asks one compact six-field form only when needed, and avoids redundant questions.
 - **Reusable design brief** — captures intent, audience, content ownership, visual preferences, and constraints in a validated `brief.json` before storyboarding.
+- **Conditional Source Gate** — when full or partial copy is supplied, accepts attachments, local paths, or pasted text and records source priority, editing level, protected wording, and content gaps.
+- **Traceable AI additions** — `source-manifest.json` and `content-map.md` distinguish user copy, references, and AI-authored additions.
 
 ## Quick start
 
 **Path B — one-click build (reproducible):**
 ```bash
 python scripts/validate_brief.py brief.json
+# When user material is supplied:
+python scripts/validate_source_manifest.py source-manifest.json
 python scripts/build.py --outline my-talk.json --out my-talk.html
 ```
 Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.

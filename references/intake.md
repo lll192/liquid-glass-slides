@@ -72,6 +72,10 @@ Run the zero-dependency validator when a brief file is created:
 python scripts/validate_brief.py brief.json
 ```
 
+If `content.mode` is `supplied` or `assisted`, continue to
+`references/source-intake.md` before narrative planning. If it is `agent-led`
+and the user supplied no files, skip the Source Gate.
+
 ## 4. Confirm proportionally
 
 Present a compact card before planning:

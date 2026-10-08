@@ -59,9 +59,11 @@ the renderer-specific structure in `outline.json`.
 - `assisted`: reorganize, tighten, and fill clearly identified gaps;
 - `agent-led`: plan a draft from the topic, without inventing unsupported facts.
 
-Paths in `source_files` should remain local project paths or user-provided
-references. `must_include` and `avoid` are presentation constraints, not visual
-keywords.
+`source_files` contains only attachment labels or accessible local paths known at
+brief time. When the mode is `supplied` or `assisted`, expand those entries into
+`source-manifest.json` during the Source Gate; keep roles, scopes, availability,
+and section coverage out of the brief. `must_include` and `avoid` are
+presentation constraints, not visual keywords.
 
 ### Visual intent
 

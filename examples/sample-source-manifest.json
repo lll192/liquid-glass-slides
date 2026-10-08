@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "assisted",
+  "processing": "light-edit",
+  "sources": [
+    {
+      "id": "src-01",
+      "path": "sources/web-crawler-notes.docx",
+      "role": "primary",
+      "purpose": "must-use",
+      "scope": "全文",
+      "status": "available"
+    },
+    {
+      "id": "src-02",
+      "path": "sources/class-requirements.pdf",
+      "role": "supporting",
+      "purpose": "reference",
+      "scope": "第 2–4 页",
+      "status": "available"
+    }
+  ],
+  "must_preserve": [
+    "课程给出的学习目标原文"
+  ],
+  "ai_fill": [
+    "补充适合中学生的生活类比",
+    "起草简短总结"
+  ],
+  "conflicts": [],
+  "content_map": [
+    {
+      "section": "网页爬虫的定义",
+      "coverage": "provided",
+      "source_ids": ["src-01"],
+      "handling": "精简长句，保留原意"
+    },
+    {
+      "section": "工作流程",
+      "coverage": "provided",
+      "source_ids": ["src-01"],
+      "handling": "重组成五个连续步骤"
+    },
+    {
+      "section": "使用边界",
+      "coverage": "partial",
+      "source_ids": ["src-01", "src-02"],
+      "handling": "合并两份材料，不扩展为法律结论"
+    },
+    {
+      "section": "课堂小结",
+      "coverage": "missing",
+      "source_ids": [],
+      "handling": "由 AI 起草三条简短复习要点"
+    }
+  ],
+  "assumptions": [],
+  "open_questions": [],
+  "confirmed": true
+}
