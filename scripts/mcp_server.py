@@ -11,8 +11,10 @@ from typing import Any, Callable
 
 try:
     import slides
+    from agent_service import AgentService, ServiceError
 except ImportError:  # pragma: no cover
     from scripts import slides
+    from scripts.agent_service import AgentService, ServiceError
 
 
 SERVER_NAME = "liquid-glass-slides"
@@ -139,7 +141,8 @@ RESOURCES = [
 
 class Server:
     def __init__(self, workspace: Path):
-        self.workspace = workspace.resolve()
+        self.service = AgentService(workspace)
+        self.workspace = self.service.workspace
         self.initialized = False
 
     def _modern(self, params: dict[str, Any]) -> bool:
@@ -155,61 +158,21 @@ class Server:
         }
         return value
 
-    def _path(self, value: Any, field: str) -> Path:
-        if not isinstance(value, str) or not value.strip():
-            raise RpcError(-32602, f"{field} must be a non-empty path string")
-        candidate = Path(value)
-        if not candidate.is_absolute():
-            candidate = self.workspace / candidate
-        resolved = candidate.resolve()
-        try:
-            resolved.relative_to(self.workspace)
-        except ValueError as exc:
-            raise RpcError(-32602, f"{field} must stay inside workspace: {self.workspace}") from exc
-        return resolved
-
     def _invoke(self, name: str, arguments: dict[str, Any]) -> tuple[int, dict[str, Any]]:
-        if name == "slides_doctor":
-            return slides.command_doctor(argparse.Namespace(json=True))
-        if name == "slides_validate":
-            return slides.command_validate(argparse.Namespace(
-                json=True,
-                input=self._path(arguments.get("path"), "path"),
-                kind=arguments.get("kind", "auto"),
-            ))
-        if name == "slides_build":
-            return slides.command_build(argparse.Namespace(
-                json=True,
-                outline=self._path(arguments.get("outline"), "outline"),
-                out=self._path(arguments.get("output"), "output"),
-                assets=None,
-                templates=None,
-            ))
-        if name == "slides_run":
-            return slides.command_run(argparse.Namespace(
-                json=True,
-                outline=self._path(arguments.get("outline"), "outline"),
-                out=self._path(arguments.get("output"), "output"),
-                brief=self._path(arguments["brief"], "brief") if arguments.get("brief") else None,
-                source_manifest=(
-                    self._path(arguments["sourceManifest"], "sourceManifest")
-                    if arguments.get("sourceManifest") else None
-                ),
-                state=self._path(arguments["state"], "state") if arguments.get("state") else None,
-                assets=None,
-                templates=None,
-            ))
-        if name == "slides_status":
-            return slides.command_status(argparse.Namespace(
-                json=True, state=self._path(arguments.get("state"), "state")
-            ))
-        if name == "slides_mark_exported":
-            return slides.command_mark_exported(argparse.Namespace(
-                json=True,
-                state=self._path(arguments.get("state"), "state"),
-                message=arguments.get("message"),
-            ))
-        raise RpcError(-32602, f"unknown tool: {name}")
+        operation = {
+            "slides_doctor": "doctor",
+            "slides_validate": "validate",
+            "slides_build": "build",
+            "slides_run": "run",
+            "slides_status": "status",
+            "slides_mark_exported": "mark-exported",
+        }.get(name)
+        if not operation:
+            raise RpcError(-32602, f"unknown tool: {name}")
+        try:
+            return self.service.invoke(operation, arguments)
+        except ServiceError as exc:
+            raise RpcError(-32602, str(exc)) from exc
 
     def handle(self, request: dict[str, Any]) -> dict[str, Any] | None:
         if request.get("jsonrpc") != "2.0" or not isinstance(request.get("method"), str):

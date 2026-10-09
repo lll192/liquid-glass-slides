@@ -30,6 +30,7 @@ class AgentCliTests(unittest.TestCase):
         self.assertTrue(payload["ok"])
         self.assertEqual(payload["api_version"], "1.0")
         self.assertIn("production-run", payload["data"]["capabilities"])
+        self.assertIn("http-api", payload["data"]["capabilities"])
         self.assertIn("process-flow", payload["data"]["layouts"])
         schema = json.loads(Path(payload["data"]["response_schema"]).read_text(encoding="utf-8"))
         self.assertEqual(schema["properties"]["api_version"]["const"], "1.0")
