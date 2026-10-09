@@ -42,8 +42,11 @@
     slides.forEach((slide, index) => {
       const page = index + 1;
       const pageIssues = [];
-      const overflowX = slide.scrollWidth > slide.clientWidth + 2;
-      const overflowY = slide.scrollHeight > slide.clientHeight + 2;
+      // Audit the readable content box, not the full slide. Decorative ripple
+      // scaling and reveal transforms intentionally extend beyond the viewport.
+      const contentBox = slide.querySelector('.slide-content') || slide;
+      const overflowX = contentBox.scrollWidth > contentBox.clientWidth + 2;
+      const overflowY = contentBox.scrollHeight > contentBox.clientHeight + 2;
       if (overflowX) pageIssues.push({ code:'horizontal-overflow', severity:'error', message:'content exceeds slide width' });
       if (overflowY) pageIssues.push({ code:'vertical-overflow', severity:'error', message:'content exceeds slide height' });
 

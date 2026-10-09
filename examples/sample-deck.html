@@ -524,11 +524,11 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .composition-constructivist .stat-anchor{ text-align:right; }
 
 /* Comparison is one argument divided by a rule, not two floating cards. */
-.composition-constructivist .construct-compare{ gap:0; padding:0; overflow:visible; }
+.composition-constructivist .construct-compare{ --compare-divider:50%; gap:0; padding:0; overflow:visible; }
 .composition-constructivist .compare-side{ padding:clamp(1.1rem,2.6vw,2rem); min-width:0; }
 .composition-constructivist .compare-side:first-child{ border-right:1px solid var(--construct-rule); }
 .composition-constructivist .vs{
-  top:clamp(.9rem,2vw,1.5rem); transform:translateX(-50%);
+  left:var(--compare-divider); top:50%; transform:translate(-50%,-50%);
   width:auto; height:auto; border-radius:0; padding:.25em .55em;
   background:var(--accent); color:#fff; border:0; box-shadow:none;
   font-size:var(--small-size); letter-spacing:.12em;
@@ -665,9 +665,11 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 }
 
 .composition-constructivist .variant-compare-left .construct-compare{
+  --compare-divider:58.333%;
   grid-template-columns:minmax(0,7fr) minmax(220px,5fr);
 }
 .composition-constructivist .variant-compare-right .construct-compare{
+  --compare-divider:41.667%;
   grid-template-columns:minmax(220px,5fr) minmax(0,7fr);
 }
 .composition-constructivist .variant-number-left .stat-copy{ grid-column:2; grid-row:1; }
@@ -918,7 +920,9 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .data-table thead th{ color:var(--accent); background:rgba(var(--accent-rgb),.07); font-size:var(--small-size); letter-spacing:.04em; }
 .data-table tbody th{ font-weight:700; color:var(--ink); }
 .data-table tbody td{ color:var(--muted); font-size:var(--body-size); }
-.data-table tr.is-highlight > *{ background:rgba(var(--accent-rgb),.1); color:var(--ink); }
+.data-table tbody tr:nth-child(odd) > *{ background:rgba(255,255,255,.52); }
+.data-table tbody tr:nth-child(even) > *{ background:rgba(var(--accent-rgb),.10); }
+.data-table tr.is-highlight > *{ background:rgba(var(--accent-rgb),.18); color:var(--ink); }
 .variant-table-compact .data-table th,.variant-table-compact .data-table td{ padding:clamp(.42rem,1vh,.68rem) clamp(.55rem,1.2vw,.85rem); font-size:clamp(.72rem,1.05vw,.9rem); }
 .table-caption{ margin-top:.55rem; }
 
@@ -950,6 +954,14 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .variant-map-bilateral .concept-map{ grid-template-columns:minmax(0,5fr) minmax(190px,3fr); }
 .variant-map-bilateral .concept-core{ grid-column:2; grid-row:1; }
 .variant-map-bilateral .concept-nodes{ grid-column:1; grid-row:1; }
+
+/* Special pages keep their own alignment even when title-length rules are active. */
+.composition-constructivist.typography-editorial .slide.closing .wrap{
+  margin-left:auto; margin-right:auto; text-align:center;
+}
+.composition-constructivist.typography-editorial .slide.closing .closing-title{
+  width:100%; max-width:none; margin-left:auto; margin-right:auto; text-align:center;
+}
 
 @media (max-width:800px){
   .data-table-shell{ overflow:hidden; }
@@ -1349,8 +1361,11 @@ window.__LG_BUILD_REPORT__={"version": 3, "qualityIntelligence": true, "contentI
     slides.forEach((slide, index) => {
       const page = index + 1;
       const pageIssues = [];
-      const overflowX = slide.scrollWidth > slide.clientWidth + 2;
-      const overflowY = slide.scrollHeight > slide.clientHeight + 2;
+      // Audit the readable content box, not the full slide. Decorative ripple
+      // scaling and reveal transforms intentionally extend beyond the viewport.
+      const contentBox = slide.querySelector('.slide-content') || slide;
+      const overflowX = contentBox.scrollWidth > contentBox.clientWidth + 2;
+      const overflowY = contentBox.scrollHeight > contentBox.clientHeight + 2;
       if (overflowX) pageIssues.push({ code:'horizontal-overflow', severity:'error', message:'content exceeds slide width' });
       if (overflowY) pageIssues.push({ code:'vertical-overflow', severity:'error', message:'content exceeds slide height' });
 
