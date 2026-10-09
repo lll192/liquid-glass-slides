@@ -69,6 +69,7 @@ Load only the references needed for the current task:
 - `references/deck-schema-v2.json` — the machine-readable v2 deck protocol shared by agents, validators, and future API/MCP clients.
 - `references/production-pipeline.md` — the recoverable multi-stage CLI, artifact snapshots, status model, failure recovery, and delivery handoff.
 - `references/pipeline-state-schema-v1.json` — the machine-readable job-state contract for CLI, Web, API, and MCP clients.
+- `references/content-director.md` — deterministic narrative diagnosis, per-slide revision actions, deck metrics, and safe metadata completion.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in
 `<section class="slide">` fragments — `cover`, `toc`, `section-divider`,
@@ -163,8 +164,9 @@ progress bar, dots, page index, reduced-motion). Clone its
        i. **Visual intelligence is automatic**: image dimensions and ECharts series semantics adjust visual ratios and chart height. Resolve missing-asset, alt-text, and chart-takeaway warnings before delivery.
        j. **Quality intelligence is automatic**: resolve build-time rhythm warnings, then inspect `window.__LG_BUILD_REPORT__.runtime` at the delivery viewport. Add `?qa=1` only for the visible inspection badge.
        k. **Content intelligence is automatic**: resolve generic-title and long-display-block warnings. Use `main_point` for planning and `speaker_notes` for presenter-only explanation; press `N` to edit notes, which auto-save in the local browser.
-       l. **Narrative Director is automatic**: explicit or inferred story roles and emotions shape the arc; the presenter panel exposes audience questions, speaker intent, transitions, and main points. Resolve flat-role warnings intentionally.
+       l. **Narrative Director is automatic**: explicit or inferred story roles and emotions shape the arc; the live presenter panel shows only the main point and transition while the full planning cues remain in reports. Resolve flat-role warnings intentionally.
        m. **Visual Coverage Planner is automatic**: it checks required visual plans, chart/table provenance, meaningful visual coverage, and text-only runs. Use `data-table`, `process-flow`, and `concept-map` where their semantics fit.
+       n. **Content Director is automatic in the production pipeline**: inspect its per-slide findings before delivery. Safe completion may add only inferred structural metadata; visible copy, speaker prose, facts, and evidence still require editorial judgment.
 
 8. **Verify**
    - Read `references/output-quality.md`.

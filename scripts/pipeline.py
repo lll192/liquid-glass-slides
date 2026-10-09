@@ -12,11 +12,13 @@ from typing import Any
 
 try:
     from build import build
+    from content_director import analyze_outline
     from validate_brief import validate_brief
     from validate_outline import validate_outline
     from validate_source_manifest import validate_manifest
 except ImportError:  # pragma: no cover - module execution fallback
     from scripts.build import build
+    from scripts.content_director import analyze_outline
     from scripts.validate_brief import validate_brief
     from scripts.validate_outline import validate_outline
     from scripts.validate_source_manifest import validate_manifest
@@ -97,20 +99,31 @@ def _speaker_notes(slide: dict[str, Any]) -> str:
     return str(value or "").strip()
 
 
-def storyboard_from_outline(outline: dict[str, Any]) -> dict[str, Any]:
+def storyboard_from_outline(
+    outline: dict[str, Any], director_report: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    directed = {
+        page["slide_id"]: page for page in (director_report or {}).get("pages", [])
+    }
     slides = []
     for order, slide in enumerate(outline["slides"], 1):
+        page = directed.get(slide["slide_id"], {})
         slides.append({
             "order": order,
             "slide_id": slide["slide_id"],
             "title": slide.get("title", ""),
-            "main_point": slide.get("main_point", ""),
-            "story_role": slide.get("story_role", ""),
+            "main_point": page.get("main_point", slide.get("main_point", "")),
+            "story_role": page.get("story_role", slide.get("story_role", "")),
             "audience_question": slide.get("audience_question", ""),
             "speaker_intent": slide.get("speaker_intent", ""),
             "transition": slide.get("transition", ""),
-            "emotion": slide.get("emotion", ""),
+            "emotion": page.get("emotion", slide.get("emotion", "")),
             "speaker_notes": _speaker_notes(slide),
+            "findings": page.get("findings", []),
+            "recommendations": [
+                item for item in page.get("recommendations", [])
+                if item.get("kind") != "visual"
+            ],
         })
     return {
         "schema_version": "1.0",
@@ -120,10 +133,19 @@ def storyboard_from_outline(outline: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def visual_plan_from_outline(outline: dict[str, Any]) -> dict[str, Any]:
+def visual_plan_from_outline(
+    outline: dict[str, Any], director_report: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    directed = {
+        page["slide_id"]: page for page in (director_report or {}).get("pages", [])
+    }
     slides = []
     for order, slide in enumerate(outline["slides"], 1):
         plan = slide.get("visual_plan") if isinstance(slide.get("visual_plan"), dict) else {}
+        page = directed.get(slide["slide_id"], {})
+        visual_recommendations = [
+            item for item in page.get("recommendations", []) if item.get("kind") == "visual"
+        ]
         slides.append({
             "order": order,
             "slide_id": slide["slide_id"],
@@ -136,6 +158,11 @@ def visual_plan_from_outline(outline: dict[str, Any]) -> dict[str, Any]:
             "has_image": any(bool(slide.get(key)) for key in ("hero", "src", "image")),
             "has_three": isinstance(slide.get("three"), dict),
             "has_surface": bool(slide.get("surface")),
+            "recommended_type": (
+                visual_recommendations[0].get("suggested_value")
+                if visual_recommendations else page.get("actual_visual", "")
+            ),
+            "recommendations": visual_recommendations,
         })
     return {
         "schema_version": "1.0",
@@ -180,15 +207,16 @@ def run_pipeline(args: argparse.Namespace) -> int:
     storyboard_path = (args.storyboard or out_path.with_name(stem + ".storyboard.json")).resolve()
     visual_plan_path = (args.visual_plan or out_path.with_name(stem + ".visual-plan.json")).resolve()
     report_path = (args.report or out_path.with_name(stem + ".qa-report.json")).resolve()
+    director_path = (args.director_report or out_path.with_name(stem + ".director-report.json")).resolve()
 
-    output_paths = [out_path, state_path, storyboard_path, visual_plan_path, report_path]
+    output_paths = [out_path, state_path, storyboard_path, visual_plan_path, report_path, director_path]
     input_paths = [outline_path]
     if args.brief:
         input_paths.append(args.brief.resolve())
     if args.source_manifest:
         input_paths.append(args.source_manifest.resolve())
     if len(set(output_paths)) != len(output_paths):
-        print("PIPELINE FAILED: output, state, storyboard, visual-plan, and report paths must be distinct", file=sys.stderr)
+        print("PIPELINE FAILED: all output artifact paths must be distinct", file=sys.stderr)
         return 2
     collisions = set(output_paths).intersection(input_paths)
     if collisions:
@@ -205,6 +233,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
         "outline": _artifact_path(outline_path),
         "storyboard": _artifact_path(storyboard_path),
         "visual_plan": _artifact_path(visual_plan_path),
+        "director_report": _artifact_path(director_path),
         "deck": _artifact_path(out_path),
         "qa_report": _artifact_path(report_path),
     }
@@ -259,10 +288,15 @@ def run_pipeline(args: argparse.Namespace) -> int:
         _stage(state, "outline", "complete", "v2 outline validated")
 
         active_stage = "narrative"
-        _atomic_write_json(storyboard_path, storyboard_from_outline(outline))
-        _stage(state, "narrative", "complete", "storyboard snapshot materialized")
+        director_report = analyze_outline(outline)
+        _atomic_write_json(director_path, director_report)
+        _atomic_write_json(storyboard_path, storyboard_from_outline(outline, director_report))
+        _stage(
+            state, "narrative", "complete",
+            "storyboard and director report materialized (%d/100)" % director_report["score"],
+        )
         active_stage = "visual-planning"
-        _atomic_write_json(visual_plan_path, visual_plan_from_outline(outline))
+        _atomic_write_json(visual_plan_path, visual_plan_from_outline(outline, director_report))
         _stage(state, "visual-planning", "complete", "visual plan snapshot materialized")
         _save_state(state_path, state, "generating")
 
@@ -287,9 +321,12 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 "slides": len(outline["slides"]),
                 "warnings": len(warnings),
                 "runtime_dom_audit": "pending-browser-open",
+                "director_status": director_report["status"],
+                "director_score": director_report["score"],
             },
             "warnings": warnings,
             "build_report": build_report,
+            "director_report": director_report,
         }
         _atomic_write_json(report_path, quality_report)
         state["warnings"] = [warning.get("message", warning.get("code", "warning")) for warning in warnings]
@@ -364,6 +401,7 @@ def main() -> int:
     run.add_argument("--storyboard", type=Path, help="storyboard snapshot JSON path")
     run.add_argument("--visual-plan", type=Path, help="visual plan snapshot JSON path")
     run.add_argument("--report", type=Path, help="quality report JSON path")
+    run.add_argument("--director-report", type=Path, help="content director report JSON path")
     run.add_argument("--assets", help="engine assets directory")
     run.add_argument("--templates", help="templates directory")
     run.set_defaults(handler=run_pipeline)

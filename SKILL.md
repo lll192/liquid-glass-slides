@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "2.1.0"
+  version: "2.2.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -52,6 +52,7 @@ Load only the references needed for the current task:
 - `references/deck-schema-v2.json` — the machine-readable v2 deck protocol shared by agents, validators, and future API/MCP clients.
 - `references/production-pipeline.md` — the recoverable multi-stage CLI, artifact snapshots, status model, failure recovery, and delivery handoff.
 - `references/pipeline-state-schema-v1.json` — the machine-readable job-state contract for CLI, Web, API, and MCP clients.
+- `references/content-director.md` — deterministic narrative diagnosis, per-slide revision actions, deck metrics, and safe metadata completion.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in `<section class="slide">` fragments — `cover`, `toc`, `section-divider`, `bullets`, `two-column`, `grid-cards`, `big-quote`, `stat-highlight`, `kpi-grid`, `timeline`, `comparison`, `image-frame`, `object-float`, `closing`, `chart`, `data-table`, `process-flow`, `concept-map`. Each ships with demo data and `{{field}}` placeholders; compose a deck by listing them in an outline and running `scripts/build.py`.
 
@@ -134,6 +135,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
        k. **Content intelligence is automatic**: generic content-page titles and oversized display blocks emit `[copy]` warnings. `main_point` records the intended claim; `speaker_notes` stays hidden from the audience and opens with `N` or `?notes=1`, where it can be edited and auto-saved locally. See `references/content-intelligence.md`.
        l. **Narrative Director is automatic**: every slide receives an explicit or inferred story role and emotion. Add `audience_question`, `speaker_intent`, and `transition` for planning; the live presenter panel deliberately displays only the core conclusion and transition. Open it with `N` or `?notes=1`; it docks beside the slide and never appears in audience mode. The build warns about flat four-slide runs and long decks without evidence, example, contrast, or reveal. See `references/narrative-director.md`.
        m. **Visual Coverage Planner is automatic**: the build distinguishes meaningful visuals from decorative atmosphere, checks required visual plans and provenance, and warns about low coverage or three-page text-only runs. Use `data-table`, `process-flow`, and `concept-map` for structured evidence and explanation. See `references/visual-coverage-planner.md`.
+       n. **Content Director is automatic in the production pipeline**: it scores editorial readiness, diagnoses each stable `slide_id`, and proposes narrative, notes, copy, and visual actions. Use `scripts/content_director.py --apply-safe` only for inferred metadata; never treat its visual suggestion as permission to invent evidence. See `references/content-director.md`.
 
 8. **Verify**
    - Read `references/output-quality.md`.

@@ -20,6 +20,7 @@ they are validated before generation. Output paths default beside the HTML file:
 
 - `talk.storyboard.json` — narrative snapshot keyed by stable `slide_id`.
 - `talk.visual-plan.json` — layout and visual-coverage snapshot.
+- `talk.director-report.json` — editorial readiness score and per-slide revision actions.
 - `talk.qa-report.json` — build-time rhythm, content, narrative, and coverage report.
 - `talk.pipeline-state.json` — current job status, artifact paths, errors, and warnings.
 
@@ -67,8 +68,9 @@ The pipeline keeps factual and creative responsibility with the producing agent:
 2. The agent resolves supplied-source requirements.
 3. The agent authors the v2 outline with stable identities.
 4. The pipeline extracts inspectable narrative and visual snapshots.
-5. The deterministic builder emits HTML and build-time QA.
-6. The browser performs the runtime DOM audit when the deck is opened.
+5. Content Director diagnoses narrative, notes, copy, and visual gaps without rewriting facts.
+6. The deterministic builder emits HTML and build-time QA.
+7. The browser performs the runtime DOM audit when the deck is opened.
 
 `ready` therefore means deterministic generation and build-time QA completed. The
 quality report explicitly leaves `runtime_dom_audit` as `pending-browser-open` until a

@@ -30,6 +30,7 @@
 - **来源与补写可追踪**：通过 `source-manifest.json` 和 `content-map.md` 区分用户原文、辅助参考与 AI 补充，避免素材混用或静默改写。
 - **稳定 Deck Protocol v2**：用永久 `deck_id` 与唯一 `slide_id` 绑定页面、笔记和后续修改；提供标准库校验器、机器可读 JSON Schema 与旧版确定性迁移工具。
 - **可恢复生产流水线**：一次运行生成故事板、视觉规划、HTML、QA 报告与任务状态；失败会记录精确阶段和错误，修正后可由同一或另一个 AI 继续执行。
+- **Content Director 内容导演**：自动输出逐页叙事、演讲备注、屏幕文案和信息视觉诊断；仅安全补全结构元数据，不擅自改写事实。
 
 ## 快速开始
 
@@ -73,6 +74,7 @@ python scripts/pipeline.py run \
 
 - `my-talk.storyboard.json`
 - `my-talk.visual-plan.json`
+- `my-talk.director-report.json`
 - `my-talk.qa-report.json`
 - `my-talk.pipeline-state.json`
 
@@ -129,6 +131,7 @@ liquid-glass-slides/
 │   ├── validate_outline.py  # v2 Deck Schema 与稳定 ID 校验器
 │   ├── migrate_outline.py   # 旧版 outline → v2 确定性迁移
 │   ├── pipeline.py          # 可恢复的多阶段生产流水线与任务状态
+│   ├── content_director.py  # 逐页内容诊断与安全元数据补全
 │   └── build.py             # 一键构建器（仅标准库）
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
@@ -169,6 +172,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Traceable AI additions** — `source-manifest.json` and `content-map.md` distinguish user copy, references, and AI-authored additions.
 - **Stable Deck Protocol v2** — permanent `deck_id` and unique `slide_id` values anchor pages, notes, and revisions, with a stdlib validator, machine-readable JSON Schema, and deterministic legacy migration.
 - **Recoverable production pipeline** — one run emits storyboard, visual-plan, HTML, QA, and task-state artifacts; failures identify the exact stage so the same or another AI can resume after correction.
+- **Content Director** — produces per-slide narrative, notes, copy, and information-visual diagnoses while limiting automatic edits to safe structural metadata.
 
 ## Quick start
 

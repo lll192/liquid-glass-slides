@@ -29,8 +29,9 @@ class ProductionPipelineTests(unittest.TestCase):
             state_path = Path(temp_dir) / "talk.pipeline-state.json"
             storyboard_path = Path(temp_dir) / "talk.storyboard.json"
             visual_path = Path(temp_dir) / "talk.visual-plan.json"
+            director_path = Path(temp_dir) / "talk.director-report.json"
             report_path = Path(temp_dir) / "talk.qa-report.json"
-            for path in (output, state_path, storyboard_path, visual_path, report_path):
+            for path in (output, state_path, storyboard_path, visual_path, director_path, report_path):
                 self.assertTrue(path.exists(), path)
 
             state = json.loads(state_path.read_text(encoding="utf-8"))
@@ -39,14 +40,18 @@ class ProductionPipelineTests(unittest.TestCase):
             self.assertEqual(state["stages"]["narrative"]["status"], "complete")
             self.assertEqual(state["stages"]["visual-planning"]["status"], "complete")
             self.assertEqual(state["stages"]["delivery"]["status"], "pending")
+            self.assertEqual(Path(state["artifacts"]["director_report"]), director_path)
 
             storyboard = json.loads(storyboard_path.read_text(encoding="utf-8"))
             visual_plan = json.loads(visual_path.read_text(encoding="utf-8"))
             report = json.loads(report_path.read_text(encoding="utf-8"))
+            director = json.loads(director_path.read_text(encoding="utf-8"))
             self.assertEqual(storyboard["slides"][1]["slide_id"], "crawler-loop")
             self.assertEqual(visual_plan["slides"][1]["layout"], "process-flow")
             self.assertEqual(report["summary"]["slides"], 7)
             self.assertEqual(report["summary"]["runtime_dom_audit"], "pending-browser-open")
+            self.assertEqual(report["summary"]["director_score"], director["score"])
+            self.assertGreaterEqual(director["score"], 80)
 
             status = self._run("status", state_path)
             self.assertEqual(status.returncode, 0, status.stderr)
@@ -68,6 +73,7 @@ class ProductionPipelineTests(unittest.TestCase):
             ["draft", "planning", "generating", "validating", "needs_revision", "ready", "exported"],
         )
         self.assertIn("delivery", schema["properties"]["stages"]["required"])
+        self.assertNotIn("director_report", schema["properties"]["artifacts"]["required"])
 
     def test_supplied_brief_requires_source_manifest(self):
         with tempfile.TemporaryDirectory() as temp_dir:
