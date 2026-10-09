@@ -33,6 +33,10 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('contentBox.scrollWidth > contentBox.clientWidth', JS)
         self.assertIn('contentBox.scrollHeight > contentBox.clientHeight', JS)
 
+    def test_presenter_cues_are_visible_and_discoverable(self):
+        self.assertIn("notesToggle.className = 'presenter-toggle'", JS)
+        self.assertIn("notesToggle.addEventListener('click'", JS)
+
     def test_reference_deck_builds_with_all_three_layouts(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir) / 'deck.html'
@@ -48,6 +52,8 @@ class VisualContractTests(unittest.TestCase):
             html = output.read_text(encoding='utf-8')
             for layout in ('data-table', 'comparison', 'closing'):
                 self.assertIn('data-layout="%s"' % layout, html)
+            self.assertIn('<strong>故事角色</strong>', html)
+            self.assertIn('<strong>情绪节拍</strong>', html)
 
 
 if __name__ == '__main__':

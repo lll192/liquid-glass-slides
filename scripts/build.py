@@ -921,13 +921,25 @@ def audit_narrative(slides):
     return {'slides': profiles, 'warnings': warnings}
 
 
-def narrative_cues_html(profile):
-    labels = (
-        ('Main point', profile.get('mainPoint')),
-        ('Audience question', profile.get('audienceQuestion')),
-        ('Speaker intent', profile.get('speakerIntent')),
-        ('Transition', profile.get('transition')),
-    )
+def narrative_cues_html(profile, lang='en'):
+    if str(lang).lower().startswith('zh'):
+        labels = (
+            ('故事角色', profile.get('storyRole')),
+            ('情绪节拍', profile.get('emotion')),
+            ('核心结论', profile.get('mainPoint')),
+            ('观众问题', profile.get('audienceQuestion')),
+            ('讲述意图', profile.get('speakerIntent')),
+            ('转场提示', profile.get('transition')),
+        )
+    else:
+        labels = (
+            ('Story role', profile.get('storyRole')),
+            ('Emotion', profile.get('emotion')),
+            ('Main point', profile.get('mainPoint')),
+            ('Audience question', profile.get('audienceQuestion')),
+            ('Speaker intent', profile.get('speakerIntent')),
+            ('Transition', profile.get('transition')),
+        )
     return ''.join(
         '<p><strong>%s</strong>%s</p>' % (html.escape(label), html.escape(value))
         for label, value in labels if value
@@ -1398,7 +1410,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             % (variant, density, media_shape, chart_family, rhythm['family'], rhythm['weight'],
                copy_profile['titleQuality'], narrative['storyRole'], narrative['emotion'], coverage['actualType']),
             rendered, count=1)
-        cues_markup = narrative_cues_html(narrative)
+        cues_markup = narrative_cues_html(narrative, outline.get('lang', 'zh-CN'))
         if cues_markup:
             rendered = re.sub(
                 r'</section>',

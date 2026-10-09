@@ -879,6 +879,19 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .qa-visible .slide[data-qa="error"]{ outline:3px solid rgba(255,69,58,.82); outline-offset:-3px; }
 
 /* Presenter notes: press N or append ?notes=1. Hidden in ordinary playback. */
+.presenter-toggle{
+  position:fixed; z-index:1090; left:clamp(.75rem,2vw,1.5rem); bottom:clamp(.75rem,2vw,1.5rem);
+  display:flex; align-items:center; gap:.55rem; border:1px solid rgba(0,0,0,.1);
+  border-radius:999px; padding:.48rem .72rem; color:#475467; background:rgba(255,255,255,.72);
+  box-shadow:0 7px 24px rgba(22,35,60,.1); backdrop-filter:blur(14px);
+  font:600 12px/1 system-ui,-apple-system,"Segoe UI",sans-serif; cursor:pointer;
+  opacity:.58; transition:opacity .2s ease,background .2s ease,color .2s ease;
+}
+.presenter-toggle:hover,.presenter-toggle:focus-visible,.presenter-toggle[aria-pressed="true"]{
+  opacity:1; color:var(--accent); background:rgba(255,255,255,.94);
+}
+.presenter-toggle kbd{ min-width:1.35rem; padding:.22rem .34rem; border-radius:.38rem;
+  background:rgba(var(--accent-rgb),.1); color:var(--accent); font:700 10px/1 system-ui,sans-serif; }
 .presenter-notes{
   display:none; position:fixed; z-index:1100; right:clamp(.75rem,2vw,1.5rem); bottom:clamp(.75rem,2vw,1.5rem);
   width:min(420px,calc(100vw - 1.5rem)); max-height:min(42vh,360px); overflow:auto;

@@ -886,6 +886,19 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
 .qa-visible .slide[data-qa="error"]{ outline:3px solid rgba(255,69,58,.82); outline-offset:-3px; }
 
 /* Presenter notes: press N or append ?notes=1. Hidden in ordinary playback. */
+.presenter-toggle{
+  position:fixed; z-index:1090; left:clamp(.75rem,2vw,1.5rem); bottom:clamp(.75rem,2vw,1.5rem);
+  display:flex; align-items:center; gap:.55rem; border:1px solid rgba(0,0,0,.1);
+  border-radius:999px; padding:.48rem .72rem; color:#475467; background:rgba(255,255,255,.72);
+  box-shadow:0 7px 24px rgba(22,35,60,.1); backdrop-filter:blur(14px);
+  font:600 12px/1 system-ui,-apple-system,"Segoe UI",sans-serif; cursor:pointer;
+  opacity:.58; transition:opacity .2s ease,background .2s ease,color .2s ease;
+}
+.presenter-toggle:hover,.presenter-toggle:focus-visible,.presenter-toggle[aria-pressed="true"]{
+  opacity:1; color:var(--accent); background:rgba(255,255,255,.94);
+}
+.presenter-toggle kbd{ min-width:1.35rem; padding:.22rem .34rem; border-radius:.38rem;
+  background:rgba(var(--accent-rgb),.1); color:var(--accent); font:700 10px/1 system-ui,sans-serif; }
 .presenter-notes{
   display:none; position:fixed; z-index:1100; right:clamp(.75rem,2vw,1.5rem); bottom:clamp(.75rem,2vw,1.5rem);
   width:min(420px,calc(100vw - 1.5rem)); max-height:min(42vh,360px); overflow:auto;
@@ -1001,7 +1014,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       
     </div>
   </div>
-</section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>hook</p><p><strong>情绪节拍</strong>curiosity</p></aside></section>
 
 
   <section data-idx="1" class="slide variant-index-quadrant density-sparse title-size-short script-cjk rhythm-navigation weight-medium copy-title-not-applicable story-orient emotion-clarity visual-type-text ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="toc" data-variant="index-quadrant" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="navigation" data-weight="medium" data-title-quality="not-applicable" data-story-role="orient" data-emotion="clarity" data-visual-type="text">
@@ -1039,7 +1052,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-</section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>orient</p><p><strong>情绪节拍</strong>clarity</p></aside></section>
 
 
   <section data-idx="2" class="slide variant-default density-sparse title-size-short script-cjk rhythm-break weight-light copy-title-not-applicable story-transition emotion-reset visual-type-text ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="section-divider" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-title-quality="not-applicable" data-story-role="transition" data-emotion="reset" data-visual-type="text" data-three="ripple:flow:bottom:subtle:1291">
@@ -1052,7 +1065,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       <p class="lead reveal" style="--i:2">玻璃之后，必须有彩色与虚化，才能折射出层次。</p>
     </div>
   </div>
-</section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>transition</p><p><strong>情绪节拍</strong>reset</p></aside></section>
 
 
   <section data-idx="3" class="slide variant-list-spread density-sparse title-size-short script-cjk rhythm-explain weight-medium copy-title-claim story-explain emotion-clarity visual-type-text ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="bullets" data-variant="list-spread" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium" data-title-quality="claim" data-story-role="explain" data-emotion="clarity" data-visual-type="text">
@@ -1090,7 +1103,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>稳定的演示系统必须同时守住视口、材质和图片语义</p></aside><aside class="speaker-notes" hidden aria-label="Speaker notes"><p>先强调这里的规则服务于可读性，而不是单纯追求视觉效果。</p><p>第三条可结合后面的图片页面现场演示。</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>explain</p><p><strong>情绪节拍</strong>clarity</p><p><strong>核心结论</strong>稳定的演示系统必须同时守住视口、材质和图片语义</p></aside><aside class="speaker-notes" hidden aria-label="Speaker notes"><p>先强调这里的规则服务于可读性，而不是单纯追求视觉效果。</p><p>第三条可结合后面的图片页面现场演示。</p></aside></section>
 
 
   <section data-idx="4" class="slide variant-split-balanced density-sparse title-size-short script-cjk rhythm-explain weight-medium copy-title-claim story-explain emotion-clarity visual-type-text ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="two-column" data-variant="split-balanced" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="medium" data-title-quality="claim" data-story-role="explain" data-emotion="clarity" data-visual-type="text">
@@ -1105,7 +1118,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>左文右卡</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>explain</p><p><strong>情绪节拍</strong>clarity</p><p><strong>核心结论</strong>左文右卡</p></aside></section>
 
 
   <section data-idx="5" class="slide variant-mosaic density-sparse title-size-short script-cjk rhythm-structure weight-medium copy-title-claim story-explain emotion-clarity visual-type-structured-grid ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="grid-cards" data-variant="mosaic" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium" data-title-quality="claim" data-story-role="explain" data-emotion="clarity" data-visual-type="structured-grid">
@@ -1143,7 +1156,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>版式组件库</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>explain</p><p><strong>情绪节拍</strong>clarity</p><p><strong>核心结论</strong>版式组件库</p></aside></section>
 
 
   <section data-idx="6" class="slide variant-number-left density-sparse title-size-short script-cjk rhythm-emphasis weight-light copy-title-claim story-reveal emotion-surprise visual-type-stat ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="stat-highlight" data-variant="number-left" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="emphasis" data-weight="light" data-title-quality="claim" data-story-role="reveal" data-emotion="surprise" data-visual-type="stat" data-three="ripple:flow:bottom:subtle:1679">
@@ -1158,7 +1171,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       <div class="stat-anchor reveal" style="--i:1">14<span> 种</span></div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>单页布局</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>reveal</p><p><strong>情绪节拍</strong>surprise</p><p><strong>核心结论</strong>单页布局</p></aside></section>
 
 
   <section data-idx="7" class="slide variant-feature-first density-sparse title-size-short script-cjk rhythm-evidence weight-medium copy-title-claim story-evidence emotion-confidence visual-type-kpi ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="kpi-grid" data-variant="feature-first" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="evidence" data-weight="medium" data-title-quality="claim" data-story-role="evidence" data-emotion="confidence" data-visual-type="kpi">
@@ -1187,7 +1200,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>关键指标</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>evidence</p><p><strong>情绪节拍</strong>confidence</p><p><strong>核心结论</strong>关键指标</p></aside></section>
 
 
   <section data-idx="8" class="slide variant-line-spacious density-sparse title-size-short script-cjk rhythm-structure weight-medium copy-title-claim story-explain emotion-clarity visual-type-timeline ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-static" data-layout="timeline" data-variant="line-spacious" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="structure" data-weight="medium" data-title-quality="claim" data-story-role="explain" data-emotion="clarity" data-visual-type="timeline">
@@ -1209,7 +1222,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>演进历程</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>explain</p><p><strong>情绪节拍</strong>clarity</p><p><strong>核心结论</strong>演进历程</p></aside></section>
 
 
   <section data-idx="9" class="slide variant-compare-left density-standard title-size-short script-mixed rhythm-explain weight-heavy copy-title-claim story-contrast emotion-tension visual-type-comparison ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-static" data-layout="comparison" data-variant="compare-left" data-density="standard" data-media="none" data-chart-profile="none" data-rhythm="explain" data-weight="heavy" data-title-quality="claim" data-story-role="contrast" data-emotion="tension" data-visual-type="comparison">
@@ -1247,7 +1260,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>悬浮 vs 装框</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>contrast</p><p><strong>情绪节拍</strong>tension</p><p><strong>核心结论</strong>悬浮 vs 装框</p></aside></section>
 
 
   <section data-idx="10" class="slide variant-default density-sparse title-size-short script-latin rhythm-break weight-light copy-title-not-applicable story-pause emotion-reflection visual-type-text ripple-material ripple-auto ripple-flow ripple-zone-bottom ripple-subtle ripple-dynamic" data-layout="big-quote" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="break" data-weight="light" data-title-quality="not-applicable" data-story-role="pause" data-emotion="reflection" data-visual-type="text" data-three="ripple:flow:bottom:subtle:2067">
@@ -1260,7 +1273,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-</section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>pause</p><p><strong>情绪节拍</strong>reflection</p></aside></section>
 
 
   <section data-idx="11" class="slide variant-visual-right density-sparse title-size-short script-cjk rhythm-visual weight-medium copy-title-claim story-example emotion-recognition visual-type-image media-landscape" data-layout="image-frame" data-variant="visual-right" data-density="sparse" data-media="landscape" data-chart-profile="none" data-rhythm="visual" data-weight="medium" data-title-quality="claim" data-story-role="example" data-emotion="recognition" data-visual-type="image">
@@ -1274,7 +1287,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </figure>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>照片装框（同心圆角）</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>example</p><p><strong>情绪节拍</strong>recognition</p><p><strong>核心结论</strong>照片装框（同心圆角）</p></aside></section>
 
 
   <section data-idx="12" class="slide variant-default density-sparse title-size-short script-cjk rhythm-visual weight-medium copy-title-claim story-example emotion-recognition visual-type-image media-square" data-layout="object-float" data-variant="default" data-density="sparse" data-media="square" data-chart-profile="none" data-rhythm="visual" data-weight="medium" data-title-quality="claim" data-story-role="example" data-emotion="recognition" data-visual-type="image">
@@ -1291,7 +1304,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>Main point</strong>透明对象悬浮</p></aside></section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>example</p><p><strong>情绪节拍</strong>recognition</p><p><strong>核心结论</strong>透明对象悬浮</p></aside></section>
 
 
   <section data-idx="13" class="slide closing variant-default density-sparse title-size-short script-cjk rhythm-closing weight-light copy-title-not-applicable story-resolution emotion-closure visual-type-text ripple-material ripple-auto ripple-rings ripple-zone-bottom-right ripple-subtle ripple-dynamic" data-layout="closing" data-variant="default" data-density="sparse" data-media="none" data-chart-profile="none" data-rhythm="closing" data-weight="light" data-title-quality="not-applicable" data-story-role="resolution" data-emotion="closure" data-visual-type="text" data-three="ripple:rings:bottom-right:subtle:2358">
@@ -1311,7 +1324,7 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
       </div>
     </div>
   </div>
-</section>
+<aside class="narrative-cues" hidden aria-label="Narrative cues"><p><strong>故事角色</strong>resolution</p><p><strong>情绪节拍</strong>closure</p></aside></section>
 
 </main>
 
@@ -1333,9 +1346,19 @@ window.__LG_BUILD_REPORT__={"version": 3, "qualityIntelligence": true, "contentI
   const notesPanel = document.createElement('aside');
   notesPanel.className = 'presenter-notes';
   notesPanel.setAttribute('aria-live', 'polite');
-  notesPanel.innerHTML = '<div class="presenter-notes-head"><span>Speaker notes</span><button type="button" aria-label="Close speaker notes">×</button></div><div class="presenter-notes-body"></div>';
+  notesPanel.innerHTML = '<div class="presenter-notes-head"><span>Narrative Director</span><button type="button" aria-label="Close presenter cues">×</button></div><div class="presenter-notes-body"></div>';
   document.body.appendChild(notesPanel);
   notesPanel.querySelector('button').addEventListener('click', () => setNotesVisible(false));
+
+  const notesToggle = document.createElement('button');
+  const isChinese = (document.documentElement.lang || '').toLowerCase().startsWith('zh');
+  notesToggle.className = 'presenter-toggle';
+  notesToggle.type = 'button';
+  notesToggle.innerHTML = '<span>' + (isChinese ? '讲者提示' : 'Presenter cues') + '</span><kbd>N</kbd>';
+  notesToggle.setAttribute('aria-controls', 'presenter-notes');
+  notesToggle.addEventListener('click', () => setNotesVisible(!notesVisible));
+  document.body.appendChild(notesToggle);
+  notesPanel.id = 'presenter-notes';
 
   function updateSpeakerNotes(){
     const source = slides[current] && slides[current].querySelector('.speaker-notes');
@@ -1351,6 +1374,7 @@ window.__LG_BUILD_REPORT__={"version": 3, "qualityIntelligence": true, "contentI
     notesVisible = Boolean(value);
     document.body.classList.toggle('notes-visible', notesVisible);
     notesPanel.setAttribute('aria-hidden', notesVisible ? 'false' : 'true');
+    notesToggle.setAttribute('aria-pressed', notesVisible ? 'true' : 'false');
     if (notesVisible) updateSpeakerNotes();
   }
   setNotesVisible(notesVisible);
