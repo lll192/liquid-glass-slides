@@ -1,0 +1,17 @@
+<section class="slide" data-layout="process-flow">
+  <div class="slide-content">
+    <div class="wrap composition-shell">
+      {{#eyebrow}}<div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>{{/eyebrow}}
+      <h2 class="reveal" style="--i:1">{{title}}</h2>
+      <div class="process-flow glass construct-plane reveal" style="--i:2">
+        {{#items}}
+        <article class="process-step" style="--i:{{i}}">
+          <span class="process-index">{{n}}</span>
+          <div><h3>{{item.label}}</h3><p>{{item.desc}}</p></div>
+        </article>
+        {{/items}}
+      </div>
+      {{#caption}}<p class="footnote reveal" style="--i:3">{{caption}}</p>{{/caption}}
+    </div>
+  </div>
+</section>

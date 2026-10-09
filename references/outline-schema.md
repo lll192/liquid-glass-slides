@@ -20,6 +20,8 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 | `visual_intelligence` | boolean | no | Default `true`. Profiles local/data-URI image orientation and ECharts series semantics, then adjusts visual ratios and chart height while emitting accessibility/editorial warnings. |
 | `quality_intelligence` | boolean | no | Default `true`. Audits deck rhythm at build time and embeds a runtime DOM geometry report. Disable only for exact legacy reproduction. |
 | `content_intelligence` | boolean | no | Default `true`. Checks generic titles and oversized display blocks, and embeds presenter notes without adding them to slide density. |
+| `narrative_director` | boolean | no | Default `true`. Infers or reads story roles/emotions, exposes presenter cues, and audits flat narrative runs. |
+| `visual_coverage_planner` | boolean | no | Default `true`. Audits meaningful visual coverage, required visual plans, text-only runs, and chart/table provenance. |
 | `theme` | object | no | Topic color theme — see below. `build.py` derives the 3 background blobs, the Three.js particle palette, the accent text color, and every glow/shadow from it. **Fully automatic: the AI picks the palette from the topic; the user never sets colors.** |
 | `auto_ripple` | boolean | no | Default `true`. Automatically adds a restrained ripple surface to slides that have no Three.js, ECharts, image, or explicit `surface`. |
 | `slides` | array | **yes** | Ordered list of slide objects. Each needs a `layout`. |
@@ -35,6 +37,13 @@ centered, card-forward layout treatment.
 - `speaker_notes` — optional string or string array. Notes are HTML-escaped,
   excluded from density calculations, hidden from the audience, and available
   through the `N` presenter panel or `?notes=1`.
+- `story_role` — optional narrative role: `hook`, `orient`, `question`, `context`,
+  `conflict`, `explain`, `example`, `evidence`, `contrast`, `reveal`, `synthesis`,
+  `transition`, `resolution`, or `pause`.
+- `audience_question`, `speaker_intent`, `transition`, `emotion` — optional
+  Narrative Director cues shown only in the presenter panel.
+- `visual_plan` — optional object with `type`, `purpose`, `priority`
+  (`required`/`optional`), and `source`. See `visual-coverage-planner.md`.
 
 ## Theme (auto color system)
 
@@ -147,6 +156,25 @@ a unique id (`echart-0`, `echart-1`, …) — you never write it by hand.
 - Use `chart` for trends (line/area), category comparison (grouped bar), proportion (pie/doughnut),
   multi-dimension (radar), correlation (scatter).
 
+### `data-table`  (exact values / evidence)
+
+`eyebrow`, `title`; `columns` (string array), `rows` (array of row arrays);
+optional `highlight_rows` (zero-based row indexes), `caption`, and `source`.
+Keep to five columns and seven visible rows. Use a chart for pattern recognition and
+a table when the audience needs exact values.
+
+### `process-flow`  (ordered mechanism)
+
+`eyebrow`, `title`; `items: [{ label, desc }]`; optional `caption`.
+Best with three to five concise steps. The builder supplies sequence numbers and a
+horizontal/compact variant.
+
+### `concept-map`  (relationships / system model)
+
+`eyebrow`, `title`, `center`; `items: [{ label, desc }]`; optional `caption`.
+Best with three to six nodes around one central concept. Use the spoken explanation to
+name the relationships rather than filling nodes with paragraphs.
+
 ### `three`  (Three.js 3D background — optional per-slide)
 Add a live 3D scene **behind any existing slide** by adding a `three` field to that slide object.
 It does NOT need its own layout — the 3D plays behind the slide's own text.
@@ -213,4 +241,4 @@ For AI-generated images, request the matching background up front (see `image-ha
 
 - Deterministic: same outline → same HTML. Great for re-runs and version control.
 - For a one-off bespoke layout, fall back to Path A (hand-write from `assets/template.html`).
-- See `examples/sample-outline.json` + the generated `examples/sample-deck.html` for a live tour of all 15 layouts.
+- See `examples/sample-outline.json` + `examples/sample-deck.html` for the core layout tour, and `examples/narrative-visual-outline.json` for Narrative Director plus the three structured visual layouts (18 layouts total).

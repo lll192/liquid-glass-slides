@@ -20,9 +20,13 @@
 
   function updateSpeakerNotes(){
     const source = slides[current] && slides[current].querySelector('.speaker-notes');
+    const cues = slides[current] && slides[current].querySelector('.narrative-cues');
     const body = notesPanel.querySelector('.presenter-notes-body');
-    body.innerHTML = source && source.innerHTML ? source.innerHTML : '<p class="notes-empty">No speaker notes on this slide.</p>';
+    const cueHTML = cues && cues.innerHTML ? '<div class="presenter-cues">' + cues.innerHTML + '</div>' : '';
+    const noteHTML = source && source.innerHTML ? source.innerHTML : '<p class="notes-empty">No speaker notes on this slide.</p>';
+    body.innerHTML = cueHTML + noteHTML;
     notesPanel.dataset.slide = String(current + 1);
+    notesPanel.dataset.role = slides[current] ? (slides[current].dataset.storyRole || '') : '';
   }
   function setNotesVisible(value){
     notesVisible = Boolean(value);

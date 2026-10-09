@@ -7,7 +7,9 @@ Map each slide's content to a layout by semantics, not by a fixed order.
 | cover | title / opening | left-anchored 7:5 composition, optional hero field, eyebrow + subtitle |
 | single-concept | one idea | one oversized statement against deliberate quiet space |
 | two-column | explanation + example / summary | asymmetric 7:5 split; only the smaller anchor needs glass |
-| process | steps / how-it-works | horizontal numbered steps |
+| process-flow | steps / how-it-works | 3–5 horizontal numbered steps with short verbs |
+| concept-map | relationships / systems / taxonomy | one central idea with 3–6 named nodes |
+| data-table | exact values / evidence lookup | 5 columns × 7 visible rows maximum; highlight only decisive rows |
 | grid-cards | 3–6 related items | one shared glass plane with ruled cells; avoid detached cards |
 | timeline | chronology / evolution | one vertical sequence inside a shared plane |
 | stat-row | key numbers | one dominant number or one ruled KPI field |
@@ -22,6 +24,7 @@ Map each slide's content to a layout by semantics, not by a fixed order.
 - Use one dominant axis and one visual anchor per slide.
 - Prefer one shared glass plane with internal rules; do not make every paragraph a card.
 - Preserve 25–40% quiet space whenever the content allows it.
+- Plan the deck-wide mix with `visual-coverage-planner.md`; decorative motion is not a substitute for evidence or explanation.
 
 ## Component library (template.html v2) — vary the art form, never repeat one visual for 10+ slides
 
@@ -35,6 +38,9 @@ Map each slide's content to a layout by semantics, not by a fixed order.
 | Glass timeline | `.tline` + `.titem` (with `--i`) | chronology, challenge lists; line grows + nodes pop on slide activation |
 | SVG ring | `.rings` / `.ring` (`.val` with `--off`) | stats/progress; `stroke-dasharray:283`, `--off = 283×(1−pct)`; always mark 示意 unless data is sourced |
 | Step flow | `.flow` (`.step` + `.arrow`) | process/roadmap with nudging arrows |
+| Structured flow | `.process-flow` + `.process-step` | reproducible ordered mechanisms in outline-driven decks |
+| Concept map | `.concept-map` + `.concept-node` | central concept and bounded relationship nodes |
+| Data table | `.data-table-shell` + `.data-table` | exact sourced values with editorial row emphasis |
 | Section index | `.qbadge` | rectangular chapter coordinate in constructivist mode |
 | Comparison field | `.construct-compare` + `.vs` | one divided plane; `VS` is a small coordinate label |
 | Chips | `.chip` | keywords, tags; shimmer sweep |

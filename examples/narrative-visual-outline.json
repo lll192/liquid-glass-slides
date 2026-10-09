@@ -1,0 +1,143 @@
+{
+  "title": "网络爬虫 · 叙事与视觉规划示例",
+  "lang": "zh-CN",
+  "composition": "constructivist",
+  "layout_intelligence": true,
+  "typography": "editorial",
+  "visual_intelligence": true,
+  "quality_intelligence": true,
+  "content_intelligence": true,
+  "narrative_director": true,
+  "visual_coverage_planner": true,
+  "theme": {
+    "name": "academic-tech",
+    "colors": ["#0A84FF", "#64D2FF", "#30D5C8"],
+    "accent": "#0A84FF"
+  },
+  "slides": [
+    {
+      "layout": "cover",
+      "eyebrow": "WEB CRAWLER",
+      "title": "爬虫如何在庞大的互联网中选择下一步",
+      "subtitle": "从种子 URL、待访列表到抓取策略",
+      "story_role": "hook",
+      "audience_question": "如果网页近乎无限，程序从哪里开始？",
+      "speaker_intent": "用一个问题建立学习动机",
+      "transition": "先把一次抓取循环拆成四个动作",
+      "emotion": "curiosity"
+    },
+    {
+      "layout": "process-flow",
+      "eyebrow": "01 · LOOP",
+      "title": "每次抓取都让待访列表继续生长",
+      "main_point": "爬虫通过发现链接和更新队列形成持续循环",
+      "story_role": "explain",
+      "audience_question": "一次完整抓取包含哪些动作？",
+      "speaker_intent": "建立可复述的基础机制",
+      "transition": "循环建立后，真正困难的是决定先访问谁",
+      "emotion": "clarity",
+      "visual_plan": {
+        "type": "process-flow",
+        "purpose": "展示抓取循环",
+        "priority": "required",
+        "source": "教学示意"
+      },
+      "items": [
+        {"label": "读取种子", "desc": "从已知 URL 列表开始"},
+        {"label": "下载页面", "desc": "请求并解析当前网页"},
+        {"label": "发现链接", "desc": "提取页面中的新 URL"},
+        {"label": "更新队列", "desc": "去重后加入待访列表"}
+      ],
+      "speaker_notes": ["可以把待访列表比作不断增长的任务队列。"]
+    },
+    {
+      "layout": "concept-map",
+      "eyebrow": "02 · SYSTEM",
+      "title": "四类策略共同决定爬虫行为",
+      "main_point": "选择、重访、礼貌和并行策略缺一不可",
+      "story_role": "synthesis",
+      "audience_question": "仅有待访列表为什么还不够？",
+      "speaker_intent": "建立策略之间的整体关系",
+      "transition": "这些策略最终需要在有限资源之间做取舍",
+      "emotion": "confidence",
+      "visual_plan": {
+        "type": "concept-map",
+        "purpose": "呈现策略关系",
+        "priority": "required",
+        "source": "教学整理"
+      },
+      "center": "抓取策略",
+      "items": [
+        {"label": "选择", "desc": "哪些页面优先下载"},
+        {"label": "重访", "desc": "何时检查页面变化"},
+        {"label": "礼貌", "desc": "避免给服务器造成压力"},
+        {"label": "并行", "desc": "如何协调多个抓取任务"}
+      ]
+    },
+    {
+      "layout": "data-table",
+      "eyebrow": "03 · TRADE-OFF",
+      "title": "不同页面特征对应不同抓取优先级",
+      "main_point": "变化速度与信息价值共同影响访问顺序",
+      "story_role": "evidence",
+      "audience_question": "优先级判断具体看什么？",
+      "speaker_intent": "用可查询的表格呈现取舍",
+      "transition": "优先级之外，重复 URL 还会消耗大量资源",
+      "emotion": "confidence",
+      "visual_plan": {
+        "type": "table",
+        "purpose": "比较页面特征与策略",
+        "priority": "required",
+        "source": "教学示意，非评分标准"
+      },
+      "columns": ["页面特征", "抓取倾向", "原因"],
+      "rows": [
+        ["更新频繁", "提高重访频率", "快照容易过期"],
+        ["链接丰富", "提高发现优先级", "可能通向更多页面"],
+        ["内容重复", "降低或跳过", "节省带宽与存储"],
+        ["服务器繁忙", "延迟访问", "遵守礼貌策略"]
+      ],
+      "highlight_rows": [1],
+      "caption": "示意表：具体策略取决于任务目标与站点规则。"
+    },
+    {
+      "layout": "comparison",
+      "eyebrow": "04 · DUPLICATION",
+      "title": "不同 URL 不一定代表不同内容",
+      "main_point": "参数组合会让相同内容产生大量地址",
+      "story_role": "contrast",
+      "audience_question": "为什么简单去重 URL 仍然不够？",
+      "speaker_intent": "制造从地址到内容判断的认知转折",
+      "transition": "因此优秀爬虫需要同时理解队列、策略和边界",
+      "emotion": "tension",
+      "visual_plan": {"type": "comparison", "purpose": "区分地址去重与内容去重", "priority": "required", "source": "教学整理"},
+      "left_title": "地址层面",
+      "left_items": [{"text": "参数顺序不同"}, {"text": "跟踪参数不同"}, {"text": "路径形式不同"}],
+      "right_title": "内容层面",
+      "right_items": [{"text": "正文可能完全相同"}, {"text": "只存在轻微排序差异"}, {"text": "需要指纹或规范化判断"}]
+    },
+    {
+      "layout": "stat-highlight",
+      "eyebrow": "TAKEAWAY",
+      "num": "4",
+      "unit": " 类策略",
+      "title": "高效抓取来自持续权衡，而不是盲目下载",
+      "desc": "选择、重访、礼貌与并行共同塑造爬虫的行为。",
+      "main_point": "爬虫设计的本质是在覆盖范围、时效与成本之间权衡",
+      "story_role": "reveal",
+      "speaker_intent": "把技术细节收束为一个判断",
+      "transition": "回到开头的问题：下一步由策略决定",
+      "emotion": "surprise",
+      "visual_plan": {"type": "stat", "purpose": "视觉化核心数量", "priority": "required", "source": "本文分类"}
+    },
+    {
+      "layout": "closing",
+      "eyebrow": "END",
+      "title": "先理解选择，再开始抓取",
+      "subtitle": "好的爬虫不仅会发现页面，也知道何时停下。",
+      "story_role": "resolution",
+      "speaker_intent": "回扣开场问题并留下边界意识",
+      "emotion": "closure"
+    }
+  ]
+}

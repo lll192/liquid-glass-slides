@@ -47,7 +47,9 @@ Load only the references needed for the current task:
 - `references/source-intake.md` — conditional upload, source receipt, and content-coverage workflow for full or partial copy.
 - `references/source-manifest.md` — the `source-manifest.json` provenance and handling contract.
 - `references/narrative-planning.md` — deck-type selection and story structures.
+- `references/narrative-director.md` — story roles, audience questions, speaker intent, emotional pacing, and transitions.
 - `references/slide-archetypes.md` — semantic mapping from content to slide layouts.
+- `references/visual-coverage-planner.md` — meaningful visual coverage, evidence rules, and structured visual layouts.
 - `references/visual-dna.md` — Apple iOS 26 Liquid Glass visual system (CSS technique) and cross-page style-lock constants.
 - `references/composition-system.md` — default constructivist-minimal layout system: asymmetric grid, edge alignment, quiet space, shared planes, and anti-dashboard rules.
 - `references/layout-intelligence.md` — automatic composition variants, density classes, long-title handling, and overfull-warning response.
@@ -65,11 +67,11 @@ Load only the references needed for the current task:
 - `references/theme-palettes.md` — **topic → color theme**: curated 3-color palettes by mood (tech / academic / finance / health / nature / creative / energetic / luxury / calm), the rule that the 3 background blobs and the Three.js particles share the theme, and that body text stays near-black. Read this whenever choosing a deck's color theme.
 - `references/outline-schema.md` — the `outline.json` field spec for the one-click build path (`scripts/build.py`): every layout, its fields, and the `{{field}}` / `{{#items}}` placeholder contract.
 
-**Layout snippet library** (`templates/single-page/*.html`): 15 drop-in
+**Layout snippet library** (`templates/single-page/*.html`): 18 drop-in
 `<section class="slide">` fragments — `cover`, `toc`, `section-divider`,
 `bullets`, `two-column`, `grid-cards`, `big-quote`, `stat-highlight`,
 `kpi-grid`, `timeline`, `comparison`, `image-frame`, `object-float`, `closing`,
-`chart`. Each ships with demo data and `{{field}}` placeholders; compose a deck
+`chart`, `data-table`, `process-flow`, `concept-map`. Each ships with demo data and `{{field}}` placeholders; compose a deck
 by listing them in an outline and running `scripts/build.py`.
 
 **Engine** (`assets/engine.css`, `assets/engine.js`): the extracted viewport-fit
@@ -106,14 +108,15 @@ progress bar, dots, page index, reduced-motion). Clone its
    - Do not start the outline while a required source is unreadable, source priority is ambiguous, or a material conflict remains hidden.
 
 4. **Plan the deck narrative**
-   - Read `references/narrative-planning.md`.
+   - Read `references/narrative-planning.md` and `references/narrative-director.md`.
    - Classify the deck (teaching / persuasive / report / product / knowledge-card).
-   - Build a slide-by-slide spine: each slide must carry exactly one main point.
+   - Build a slide-by-slide spine: each slide carries one `main_point` and a deliberate `story_role`; add `audience_question`, `speaker_intent`, `transition`, and `emotion` for important beats.
    - Read `references/content-intelligence.md`; separate the audience-facing claim and essential evidence from spoken detail stored in `speaker_notes`.
 
 5. **Map each slide to an archetype**
-   - Read `references/slide-archetypes.md`.
+   - Read `references/slide-archetypes.md` and `references/visual-coverage-planner.md`.
    - Pick layouts from content semantics, not from a fixed template order. Vary archetypes for rhythm.
+   - Add a `visual_plan` to content slides. Use meaningful visuals for explanation or evidence; do not count ripple or Three.js atmosphere as information coverage.
    - Read `references/layout-intelligence.md`. Keep `variant:auto` unless semantics require a fixed reading order. Revise or split every slide reported as `overfull`.
 
 6. **Apply visual DNA (style-lock)**
@@ -151,6 +154,8 @@ progress bar, dots, page index, reduced-motion). Clone its
        i. **Visual intelligence is automatic**: image dimensions and ECharts series semantics adjust visual ratios and chart height. Resolve missing-asset, alt-text, and chart-takeaway warnings before delivery.
        j. **Quality intelligence is automatic**: resolve build-time rhythm warnings, then inspect `window.__LG_BUILD_REPORT__.runtime` at the delivery viewport. Add `?qa=1` only for the visible inspection badge.
        k. **Content intelligence is automatic**: resolve generic-title and long-display-block warnings. Use `main_point` for planning and `speaker_notes` for presenter-only explanation; press `N` to inspect notes.
+       l. **Narrative Director is automatic**: explicit or inferred story roles and emotions shape the arc; the presenter panel exposes audience questions, speaker intent, transitions, and main points. Resolve flat-role warnings intentionally.
+       m. **Visual Coverage Planner is automatic**: it checks required visual plans, chart/table provenance, meaningful visual coverage, and text-only runs. Use `data-table`, `process-flow`, and `concept-map` where their semantics fit.
 
 8. **Verify**
    - Read `references/output-quality.md`.
@@ -178,6 +183,8 @@ progress bar, dots, page index, reduced-motion). Clone its
 - Visual intelligence: enabled by default; orientation-aware image placement and semantic chart sizing remain subordinate to narrative order and factual accuracy.
 - Quality intelligence: enabled by default; build-time rhythm warnings and runtime geometry checks replace routine screenshot loops, but not editorial judgment.
 - Content intelligence: enabled by default; titles carry claims, screen copy stays concise, and detailed explanation belongs in hidden presenter notes.
+- Narrative Director: enabled by default; direct important slides with a story role, audience question, speaker intent, emotional cue, and transition.
+- Visual Coverage Planner: enabled by default; balance meaningful visuals with quiet pages, require chart/table provenance, and never use decorative motion as fake evidence.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
 - Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the operator does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**

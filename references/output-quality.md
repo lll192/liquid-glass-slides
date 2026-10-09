@@ -8,11 +8,15 @@ Verify before delivery.
 - Spelling / terminology consistent.
 - Resolve every `[copy]` warning. Replace generic labels with audience-facing claims, move spoken detail to `speaker_notes`, and preserve protected source wording.
 - Confirm presenter notes are hidden in the audience view and readable with the `N` panel when supplied.
+- Resolve `[narrative]` warnings or document why a deliberate repeated role serves the talk.
+- Confirm presenter cues reflect the actual slide claim and do not imply unsupported causality.
 
 ## Structure & rhythm
 - Cover present; takeaway present.
 - Archetype variety; no two heavy grids back-to-back.
 - Resolve `[rhythm]` warnings that indicate repeated layouts, long heavy runs, or missing breathing beats.
+- Resolve `[coverage]` warnings: required visuals must exist, charts/tables need provenance, and long text-only runs need an intentional diagram, image, evidence view, or editorial reset.
+- Check that meaningful visuals explain, compare, quantify, locate, or concretize content. Do not count ripple or Three.js atmosphere as information coverage.
 
 ## Visual consistency (Liquid Glass)
 - Background, glass parameters, accent, specular highlight, and edge-light treatment identical across slides.

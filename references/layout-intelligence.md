@@ -28,6 +28,9 @@ For cross-slide pacing and browser geometry checks, continue with
 | `comparison` | `compare-left`, `compare-right`, `compare-balanced` | side density |
 | `stat-highlight` | `number-left`, `number-right` | deterministic page rhythm |
 | `image-frame`, `chart` | `visual-left`, `visual-right` | deterministic alternation |
+| `data-table` | `table-balanced`, `table-compact` | row/column density |
+| `process-flow` | `flow-horizontal`, `flow-compact` | step count |
+| `concept-map` | `map-radial`, `map-bilateral` | node count and deterministic rhythm |
 
 Set a listed variant explicitly only when semantics demand a specific reading
 order. Do not manually alternate every page just for decoration.

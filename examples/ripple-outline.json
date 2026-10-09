@@ -7,6 +7,8 @@
   "visual_intelligence": true,
   "quality_intelligence": true,
   "content_intelligence": true,
+  "narrative_director": true,
+  "visual_coverage_planner": true,
   "theme": {
     "name": "water-optics",
     "colors": ["#0A84FF", "#64D2FF", "#30D5C8"],

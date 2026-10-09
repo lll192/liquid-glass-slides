@@ -656,6 +656,29 @@ def choose_cols(n):
     return 'g3'
 
 
+def data_table_markup(slide):
+    """Return escaped table header/body markup from structured JSON cells."""
+    columns = slide.get('columns') if isinstance(slide.get('columns'), list) else []
+    rows = slide.get('rows') if isinstance(slide.get('rows'), list) else []
+    highlights = {int(value) for value in slide.get('highlight_rows', [])
+                  if isinstance(value, int) or str(value).isdigit()}
+    head = ''.join('<th scope="col">%s</th>' % html.escape(_plain_text(cell)) for cell in columns)
+    body = []
+    for row_index, row in enumerate(rows):
+        cells = row.get('cells', []) if isinstance(row, dict) else row
+        if not isinstance(cells, list):
+            cells = [cells]
+        row_class = ' class="is-highlight"' if row_index in highlights or (
+            isinstance(row, dict) and row.get('highlight')) else ''
+        rendered_cells = []
+        for cell_index, cell in enumerate(cells):
+            tag = 'th scope="row"' if cell_index == 0 else 'td'
+            rendered_cells.append('<%s>%s</%s>' % (
+                tag, html.escape(_plain_text(cell)), tag.split()[0]))
+        body.append('<tr%s>%s</tr>' % (row_class, ''.join(rendered_cells)))
+    return head, ''.join(body)
+
+
 # ---------- layout intelligence ----------
 _TAG_RE = re.compile(r'<[^>]+>')
 _SPACE_RE = re.compile(r'\s+')
@@ -664,6 +687,7 @@ _LATIN_RE = re.compile(r'[A-Za-z]')
 _TEXT_FIELDS = (
     'eyebrow', 'title', 'subtitle', 'left', 'right', 'quote', 'by', 'desc',
     'note', 'takeaway', 'caption', 'items', 'left_items', 'right_items',
+    'columns', 'rows', 'center',
 )
 _DENSITY_LIMITS = {
     'cover': (85, 150), 'toc': (210, 340), 'section-divider': (100, 170),
@@ -673,6 +697,8 @@ _DENSITY_LIMITS = {
     'timeline': (310, 480), 'comparison': (300, 470),
     'image-frame': (125, 210), 'object-float': (145, 240),
     'closing': (105, 185), 'chart': (210, 340),
+    'data-table': (250, 390), 'process-flow': (260, 420),
+    'concept-map': (230, 370),
 }
 _LAYOUT_VARIANTS = {
     'toc': {'index-quadrant', 'index-matrix'},
@@ -685,6 +711,9 @@ _LAYOUT_VARIANTS = {
     'stat-highlight': {'number-left', 'number-right'},
     'image-frame': {'visual-left', 'visual-right'},
     'chart': {'visual-left', 'visual-right'},
+    'data-table': {'table-balanced', 'table-compact'},
+    'process-flow': {'flow-horizontal', 'flow-compact'},
+    'concept-map': {'map-radial', 'map-bilateral'},
 }
 
 _RHYTHM_FAMILIES = {
@@ -693,7 +722,31 @@ _RHYTHM_FAMILIES = {
     'image-frame': 'visual', 'object-float': 'visual', 'chart': 'evidence',
     'stat-highlight': 'emphasis', 'kpi-grid': 'evidence',
     'grid-cards': 'structure', 'timeline': 'structure',
+    'data-table': 'evidence', 'process-flow': 'explain', 'concept-map': 'synthesis',
     'bullets': 'explain', 'two-column': 'explain', 'comparison': 'explain',
+}
+
+_STORY_ROLES = {
+    'hook', 'orient', 'question', 'context', 'conflict', 'explain', 'example',
+    'evidence', 'contrast', 'reveal', 'synthesis', 'transition', 'resolution', 'pause',
+}
+_NARRATIVE_ROLE_BY_LAYOUT = {
+    'cover': 'hook', 'toc': 'orient', 'section-divider': 'transition',
+    'big-quote': 'pause', 'closing': 'resolution', 'chart': 'evidence',
+    'data-table': 'evidence', 'stat-highlight': 'reveal', 'kpi-grid': 'evidence',
+    'comparison': 'contrast', 'process-flow': 'explain', 'concept-map': 'synthesis',
+    'image-frame': 'example', 'object-float': 'example',
+}
+_EMOTION_BY_ROLE = {
+    'hook': 'curiosity', 'orient': 'clarity', 'question': 'curiosity',
+    'context': 'clarity', 'conflict': 'tension', 'explain': 'clarity',
+    'example': 'recognition', 'evidence': 'confidence', 'contrast': 'tension',
+    'reveal': 'surprise', 'synthesis': 'confidence', 'transition': 'reset',
+    'resolution': 'closure', 'pause': 'reflection',
+}
+_MEANINGFUL_VISUALS = {
+    'image', 'chart', 'data-table', 'process-flow', 'concept-map',
+    'comparison', 'kpi', 'stat', 'timeline', 'structured-grid',
 }
 
 _GENERIC_TITLES = {
@@ -808,6 +861,175 @@ def content_profile(slide):
     }
 
 
+def narrative_profile(slide, slide_index, slide_count):
+    """Resolve narrative intent while keeping authored prose under agent control."""
+    layout = slide.get('layout', '')
+    requested_role = _normalized_title(slide.get('story_role')).replace(' ', '-')
+    inferred_role = _NARRATIVE_ROLE_BY_LAYOUT.get(layout, 'explain')
+    if slide_index == 0 and layout != 'cover':
+        inferred_role = 'hook'
+    elif slide_index == slide_count - 1 and layout != 'closing':
+        inferred_role = 'resolution'
+    role = requested_role if requested_role in _STORY_ROLES else inferred_role
+    role_source = 'explicit' if requested_role in _STORY_ROLES else 'inferred'
+    emotion_raw = _normalized_title(slide.get('emotion')).replace(' ', '-') or _EMOTION_BY_ROLE.get(role, 'clarity')
+    emotion = re.sub(r'[^a-z0-9\-]+', '-', emotion_raw).strip('-') or 'clarity'
+    copy = content_profile(slide)
+    return {
+        'storyRole': role,
+        'storyRoleSource': role_source,
+        'invalidStoryRole': requested_role if requested_role and requested_role not in _STORY_ROLES else '',
+        'audienceQuestion': _plain_text(slide.get('audience_question')),
+        'speakerIntent': _plain_text(slide.get('speaker_intent')),
+        'transition': _plain_text(slide.get('transition')),
+        'emotion': emotion,
+        'mainPoint': copy['mainPoint'],
+        'explicitCueCount': sum(bool(_plain_text(slide.get(key))) for key in (
+            'story_role', 'audience_question', 'speaker_intent', 'transition', 'emotion', 'main_point')),
+    }
+
+
+def audit_narrative(slides):
+    profiles = [narrative_profile(slide, idx, len(slides)) for idx, slide in enumerate(slides)]
+    warnings = []
+    for idx, profile in enumerate(profiles):
+        if profile['invalidStoryRole']:
+            warnings.append({
+                'code': 'invalid-story-role', 'slides': [idx + 1, idx + 1],
+                'message': 'slide %d story_role "%s" is unsupported; inferred "%s"'
+                           % (idx + 1, profile['invalidStoryRole'], profile['storyRole']),
+            })
+    start = 0
+    while start < len(profiles):
+        end = start + 1
+        while end < len(profiles) and profiles[end]['storyRole'] == profiles[start]['storyRole']:
+            end += 1
+        if end - start >= 4:
+            warnings.append({
+                'code': 'flat-story-role', 'slides': [start + 1, end],
+                'message': 'slides %d-%d repeat story role "%s"; add evidence, example, contrast, or a reset'
+                           % (start + 1, end, profiles[start]['storyRole']),
+            })
+        start = end
+    n = len(profiles)
+    roles = {profile['storyRole'] for profile in profiles}
+    if n >= 8 and not roles.intersection({'evidence', 'example', 'contrast', 'reveal'}):
+        warnings.append({
+            'code': 'flat-story-arc', 'slides': [1, n],
+            'message': 'long deck lacks an evidence, example, contrast, or reveal beat',
+        })
+    return {'slides': profiles, 'warnings': warnings}
+
+
+def narrative_cues_html(profile):
+    labels = (
+        ('Main point', profile.get('mainPoint')),
+        ('Audience question', profile.get('audienceQuestion')),
+        ('Speaker intent', profile.get('speakerIntent')),
+        ('Transition', profile.get('transition')),
+    )
+    return ''.join(
+        '<p><strong>%s</strong>%s</p>' % (html.escape(label), html.escape(value))
+        for label, value in labels if value
+    )
+
+
+def _actual_visual_type(slide):
+    layout = slide.get('layout', '')
+    if isinstance(slide.get('chart'), dict):
+        return 'chart'
+    if slide_has_image(slide):
+        return 'image'
+    return {
+        'data-table': 'data-table', 'process-flow': 'process-flow',
+        'concept-map': 'concept-map', 'comparison': 'comparison',
+        'kpi-grid': 'kpi', 'stat-highlight': 'stat', 'timeline': 'timeline',
+        'grid-cards': 'structured-grid',
+    }.get(layout, 'decorative' if isinstance(slide.get('three'), dict) or slide.get('surface') else 'text')
+
+
+def visual_plan_profile(slide):
+    plan = slide.get('visual_plan') if isinstance(slide.get('visual_plan'), dict) else {}
+    planned = str(plan.get('type', 'auto')).strip().lower().replace('_', '-') or 'auto'
+    actual = _actual_visual_type(slide)
+    priority = str(plan.get('priority', 'optional')).strip().lower() or 'optional'
+    matches = planned in ('auto', actual)
+    if planned == 'table':
+        matches = actual == 'data-table'
+    elif planned in ('diagram', 'relationship'):
+        matches = actual in ('process-flow', 'concept-map')
+    elif planned == 'data-visualization':
+        matches = actual in ('chart', 'data-table', 'kpi', 'stat')
+    return {
+        'plannedType': planned,
+        'actualType': actual,
+        'purpose': _plain_text(plan.get('purpose')),
+        'priority': priority,
+        'source': _plain_text(plan.get('source')),
+        'meaningful': actual in _MEANINGFUL_VISUALS,
+        'matchesPlan': matches,
+    }
+
+
+def audit_visual_coverage(slides):
+    profiles = []
+    warnings = []
+    eligible = []
+    structural = {'cover', 'toc', 'section-divider', 'big-quote', 'closing'}
+    for idx, slide in enumerate(slides):
+        profile = dict({'slide': idx + 1, 'layout': slide.get('layout', '')}, **visual_plan_profile(slide))
+        profiles.append(profile)
+        if slide.get('layout') not in structural:
+            eligible.append(profile)
+        if profile['priority'] == 'required' and not profile['matchesPlan']:
+            warnings.append({
+                'code': 'required-visual-missing', 'slides': [idx + 1, idx + 1],
+                'message': 'slide %d requires visual "%s" but renders "%s"'
+                           % (idx + 1, profile['plannedType'], profile['actualType']),
+            })
+        if profile['actualType'] in ('chart', 'data-table') and not (
+                profile['source'] or _plain_text(slide.get('caption')) or _plain_text(slide.get('source'))):
+            warnings.append({
+                'code': 'visual-source-missing', 'slides': [idx + 1, idx + 1],
+                'message': 'slide %d %s has no source/caption; label scope and provenance'
+                           % (idx + 1, profile['actualType']),
+            })
+
+    meaningful_count = sum(profile['meaningful'] for profile in eligible)
+    coverage = meaningful_count / len(eligible) if eligible else 0
+    if len(eligible) >= 6 and coverage < .4:
+        warnings.append({
+            'code': 'low-visual-coverage', 'slides': [1, len(slides)],
+            'message': 'meaningful visual coverage is %d%%; target roughly 40-65%% when content supports it'
+                       % round(coverage * 100),
+        })
+    run = []
+    for profile in profiles:
+        if profile['layout'] not in structural and not profile['meaningful']:
+            run.append(profile['slide'])
+        else:
+            if len(run) >= 3:
+                warnings.append({
+                    'code': 'text-only-run', 'slides': [run[0], run[-1]],
+                    'message': 'slides %d-%d are consecutive text-only content pages; consider a diagram, table, image, or evidence view'
+                               % (run[0], run[-1]),
+                })
+            run = []
+    if len(run) >= 3:
+        warnings.append({
+            'code': 'text-only-run', 'slides': [run[0], run[-1]],
+            'message': 'slides %d-%d are consecutive text-only content pages; consider a diagram, table, image, or evidence view'
+                       % (run[0], run[-1]),
+        })
+    return {
+        'slides': profiles,
+        'eligibleSlides': len(eligible),
+        'meaningfulSlides': meaningful_count,
+        'coverage': round(coverage, 3),
+        'warnings': warnings,
+    }
+
+
 def slide_density(slide):
     """Return (density_class, score) without rewriting user-authored copy.
 
@@ -817,7 +1039,7 @@ def slide_density(slide):
     """
     layout = slide.get('layout', '')
     score = sum(_text_len(slide.get(key)) for key in _TEXT_FIELDS)
-    item_count = sum(len(slide.get(key, [])) for key in ('items', 'left_items', 'right_items')
+    item_count = sum(len(slide.get(key, [])) for key in ('items', 'left_items', 'right_items', 'rows')
                      if isinstance(slide.get(key), list))
     score += max(0, item_count - 4) * 24
     dense_at, overfull_at = _DENSITY_LIMITS.get(layout, (240, 390))
@@ -940,6 +1162,13 @@ def resolve_variant(slide, slide_index, media_shape='unknown', chart_family='non
         return 'feature-first' if n == 3 else ('kpi-strip' if n == 4 else 'matrix')
     if layout == 'timeline':
         return 'line-spacious' if n <= 4 else 'line-compact'
+    if layout == 'data-table':
+        rows = slide.get('rows') if isinstance(slide.get('rows'), list) else []
+        return 'table-compact' if len(rows) >= 6 else 'table-balanced'
+    if layout == 'process-flow':
+        return 'flow-compact' if n >= 6 else 'flow-horizontal'
+    if layout == 'concept-map':
+        return 'map-bilateral' if n <= 4 else 'map-radial'
     if layout == 'comparison':
         left = _text_len(slide.get('left_items'))
         right = _text_len(slide.get('right_items'))
@@ -984,11 +1213,26 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     visual_intelligence = outline.get('visual_intelligence', True) is not False
     quality_intelligence = outline.get('quality_intelligence', True) is not False
     content_intelligence = outline.get('content_intelligence', True) is not False
+    narrative_director = outline.get('narrative_director', True) is not False
+    visual_coverage_planner = outline.get('visual_coverage_planner', True) is not False
     rhythm_report = (audit_deck_rhythm(outline.get('slides', []))
                      if quality_intelligence else {'slides': [], 'warnings': []})
+    narrative_report = (audit_narrative(outline.get('slides', []))
+                        if narrative_director else {'slides': [], 'warnings': []})
+    coverage_report = (audit_visual_coverage(outline.get('slides', []))
+                       if visual_coverage_planner else {
+                           'slides': [], 'eligibleSlides': 0, 'meaningfulSlides': 0,
+                           'coverage': 0, 'warnings': [],
+                       })
     rhythm_by_slide = {item['slide']: item for item in rhythm_report['slides']}
+    narrative_by_slide = {idx + 1: item for idx, item in enumerate(narrative_report['slides'])}
+    coverage_by_slide = {item['slide']: item for item in coverage_report['slides']}
     for issue in rhythm_report['warnings']:
         sys.stderr.write('[rhythm] %s\n' % issue['message'])
+    for issue in narrative_report['warnings']:
+        sys.stderr.write('[narrative] %s\n' % issue['message'])
+    for issue in coverage_report['warnings']:
+        sys.stderr.write('[coverage] %s\n' % issue['message'])
 
     sp_dir = os.path.join(templates_dir, 'single-page')
     slides_out = []
@@ -1024,6 +1268,15 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             'mainPoint': '',
             'screenCharacters': 0, 'speakerNotesCharacters': 0, 'longBlocks': [],
         }
+        narrative = narrative_by_slide.get(idx + 1, {
+            'storyRole': 'unchecked', 'storyRoleSource': 'unchecked', 'invalidStoryRole': '',
+            'audienceQuestion': '', 'speakerIntent': '', 'transition': '',
+            'emotion': 'clarity', 'mainPoint': copy_profile['mainPoint'], 'explicitCueCount': 0,
+        })
+        coverage = coverage_by_slide.get(idx + 1, {
+            'plannedType': 'unchecked', 'actualType': 'text', 'purpose': '',
+            'priority': 'optional', 'source': '', 'meaningful': False, 'matchesPlan': True,
+        })
         content_profiles.append(dict({'slide': idx + 1, 'layout': layout}, **copy_profile))
         variant = (resolve_variant(slide, idx, media_shape, chart_family)
                    if layout_intelligence else 'default')
@@ -1059,6 +1312,11 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         elif layout == 'toc':
             n_items = len(data.get('items', []))
             data['cols'] = 'g2' if n_items <= 4 else 'g3'
+        elif layout == 'data-table':
+            data['table_head'], data['table_rows'] = data_table_markup(slide)
+            if len(data.get('columns', [])) > 5 or len(data.get('rows', [])) > 7:
+                sys.stderr.write('[visual] slide %d data-table is large; split it or move detail to an appendix\n'
+                                 % (idx + 1))
         # Collect chart declarations: a slide carrying a "chart" field gets a
         # unique container id; its ECharts option is emitted into the init script.
         if 'chart' in slide and isinstance(slide.get('chart'), dict):
@@ -1120,6 +1378,8 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             'title-size-' + title_size, 'script-' + title_script,
             'rhythm-' + rhythm['family'], 'weight-' + rhythm['weight'],
             'copy-title-' + copy_profile['titleQuality'],
+            'story-' + narrative['storyRole'], 'emotion-' + narrative['emotion'],
+            'visual-type-' + coverage['actualType'],
         ]
         if media_shape != 'none':
             intelligence_classes.append('media-' + media_shape)
@@ -1134,9 +1394,16 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         rendered = re.sub(
             r'(<section\b[^>]*>)',
             lambda m: m.group(1).rstrip('>') +
-            ' data-variant="%s" data-density="%s" data-media="%s" data-chart-profile="%s" data-rhythm="%s" data-weight="%s" data-title-quality="%s">'
-            % (variant, density, media_shape, chart_family, rhythm['family'], rhythm['weight'], copy_profile['titleQuality']),
+            ' data-variant="%s" data-density="%s" data-media="%s" data-chart-profile="%s" data-rhythm="%s" data-weight="%s" data-title-quality="%s" data-story-role="%s" data-emotion="%s" data-visual-type="%s">'
+            % (variant, density, media_shape, chart_family, rhythm['family'], rhythm['weight'],
+               copy_profile['titleQuality'], narrative['storyRole'], narrative['emotion'], coverage['actualType']),
             rendered, count=1)
+        cues_markup = narrative_cues_html(narrative)
+        if cues_markup:
+            rendered = re.sub(
+                r'</section>',
+                '<aside class="narrative-cues" hidden aria-label="Narrative cues">%s</aside></section>' % cues_markup,
+                rendered, count=1)
         notes_markup = speaker_notes_html(slide.get('speaker_notes', slide.get('notes')))
         if notes_markup:
             rendered = re.sub(
@@ -1178,11 +1445,15 @@ def build(outline_path, out_path, assets_dir, templates_dir):
                           for i, g in enumerate(glyphs))
 
     build_report = {
-        'version': 2,
+        'version': 3,
         'qualityIntelligence': quality_intelligence,
         'contentIntelligence': content_intelligence,
+        'narrativeDirector': narrative_director,
+        'visualCoveragePlanner': visual_coverage_planner,
         'rhythm': rhythm_report,
         'content': {'slides': content_profiles},
+        'narrative': narrative_report,
+        'visualCoverage': coverage_report,
     }
     report_js = 'window.__LG_BUILD_REPORT__=' + json.dumps(build_report, ensure_ascii=False) + ';\n'
     result = (deck

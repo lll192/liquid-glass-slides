@@ -1,0 +1,17 @@
+<section class="slide" data-layout="concept-map">
+  <div class="slide-content">
+    <div class="wrap composition-shell concept-shell">
+      {{#eyebrow}}<div class="eyebrow reveal" style="--i:0">{{eyebrow}}</div>{{/eyebrow}}
+      <h2 class="reveal" style="--i:1">{{title}}</h2>
+      <div class="concept-map reveal" style="--i:2">
+        <div class="concept-core glass"><span>{{center}}</span></div>
+        <div class="concept-nodes">
+          {{#items}}
+          <article class="concept-node glass" style="--i:{{i}}"><h3>{{item.label}}</h3><p>{{item.desc}}</p></article>
+          {{/items}}
+        </div>
+      </div>
+      {{#caption}}<p class="footnote reveal" style="--i:3">{{caption}}</p>{{/caption}}
+    </div>
+  </div>
+</section>

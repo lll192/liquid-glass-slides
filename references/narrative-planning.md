@@ -20,3 +20,5 @@ Choose a deck shape before laying out slides.
 - Sequence for rhythm: open with a cover, close with a takeaway.
 - Give every content page one `main_point`; make the title carry that claim when possible, and route delivery detail to `speaker_notes` rather than the visible slide.
 - Aim for a mix of archetypes (see slide-archetypes.md) so the deck breathes.
+- Read `narrative-director.md`, then assign a `story_role` to important beats and write the audience question, speaker intent, emotional cue, and transition where they improve delivery.
+- Read `visual-coverage-planner.md` after the story spine is stable. Choose visuals to answer the audience question—not merely to fill empty space.
