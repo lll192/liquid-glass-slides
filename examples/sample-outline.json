@@ -1,4 +1,6 @@
 {
+  "schema_version": "2.0",
+  "deck_id": "sample-outline",
   "title": "液态玻璃演示 · 示例 Deck",
   "lang": "zh-CN",
   "composition": "constructivist",
@@ -20,6 +22,7 @@
   },
   "slides": [
     {
+      "slide_id": "cover-ce50c070",
       "layout": "cover",
       "eyebrow": "LIQUID GLASS · DEMO",
       "title": "液态玻璃演示系统",
@@ -29,6 +32,7 @@
       }
     },
     {
+      "slide_id": "toc-8b0ce674",
       "layout": "toc",
       "eyebrow": "AGENDA",
       "title": "本场大纲",
@@ -52,12 +56,14 @@
       ]
     },
     {
+      "slide_id": "section-divider-fe502c7f",
       "layout": "section-divider",
       "num": "01",
       "title": "设计哲学",
       "subtitle": "玻璃之后，必须有彩色与虚化，才能折射出层次。"
     },
     {
+      "slide_id": "bullets-d6669511",
       "layout": "bullets",
       "eyebrow": "PRINCIPLES",
       "title": "三条铁律",
@@ -82,6 +88,7 @@
       ]
     },
     {
+      "slide_id": "two-column-8fb5b58c",
       "layout": "two-column",
       "eyebrow": "COMPOSE",
       "title": "左文右卡",
@@ -89,6 +96,7 @@
       "right": "<h3>玻璃卡内容</h3><p>这里可以放任何 HTML：列表、图表、引用。build.py 会原样注入。</p>"
     },
     {
+      "slide_id": "grid-cards-40d69585",
       "layout": "grid-cards",
       "eyebrow": "LIBRARY",
       "title": "版式组件库",
@@ -116,6 +124,7 @@
       ]
     },
     {
+      "slide_id": "stat-highlight-fca777f1",
       "layout": "stat-highlight",
       "eyebrow": "BY THE NUMBERS",
       "num": "14",
@@ -124,6 +133,7 @@
       "desc": "覆盖封面、分栏、统计、对比、结束页等常见结构。"
     },
     {
+      "slide_id": "kpi-grid-2737bc27",
       "layout": "kpi-grid",
       "eyebrow": "METRICS",
       "title": "关键指标",
@@ -143,6 +153,7 @@
       ]
     },
     {
+      "slide_id": "timeline-e257d851",
       "layout": "timeline",
       "eyebrow": "EVOLUTION",
       "title": "演进历程",
@@ -165,6 +176,7 @@
       ]
     },
     {
+      "slide_id": "vs",
       "layout": "comparison",
       "eyebrow": "VS",
       "title": "悬浮 vs 装框",
@@ -194,11 +206,13 @@
       ]
     },
     {
+      "slide_id": "big-quote",
       "layout": "big-quote",
       "quote": "整体，不等于各部分之和。",
       "by": "格式塔心理学 · 1912"
     },
     {
+      "slide_id": "image-frame-34cd45e0",
       "layout": "image-frame",
       "eyebrow": "PHOTO",
       "title": "照片装框（同心圆角）",
@@ -207,6 +221,7 @@
       "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='%23cfe3ff'/><circle cx='200' cy='150' r='90' fill='%230A84FF'/><text x='200' y='158' font-size='28' fill='white' text-anchor='middle' font-family='sans-serif'>PHOTO</text></svg>"
     },
     {
+      "slide_id": "object-float-7be3df5e",
       "layout": "object-float",
       "eyebrow": "OBJECT",
       "title": "透明对象悬浮",
@@ -215,6 +230,7 @@
       "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><circle cx='110' cy='110' r='100' fill='%230A84FF' opacity='0.85'/><text x='110' y='120' font-size='26' fill='white' text-anchor='middle' font-family='sans-serif'>OB</text></svg>"
     },
     {
+      "slide_id": "closing-21daa40b",
       "layout": "closing",
       "eyebrow": "THANK YOU",
       "title": "谢谢观看",

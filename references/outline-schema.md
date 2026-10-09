@@ -1,19 +1,64 @@
 # Outline Schema — one-click build path (`scripts/build.py`)
 
-`build.py` reads a single JSON file (`outline.json`) and emits one **self-contained HTML**
-deck. No external assets, no build step. Same engine as the hand-write path.
+`build.py` reads a v2 JSON file (`outline.json`) and emits one **self-contained HTML**
+deck. No external assets, no build step. Same engine as the hand-write path. The v2
+protocol gives the deck and every slide a stable identity so presenter notes, revisions,
+and future API/MCP operations survive page insertion and reordering.
 
 ```bash
+python scripts/validate_outline.py my-talk.json
 python scripts/build.py --outline my-talk.json --out my-talk.html
 # or positional:  python scripts/build.py my-talk.json
 ```
+
+Legacy outlines without `schema_version` still build with a migration warning. Persist
+their identities before further editing:
+
+```bash
+python scripts/migrate_outline.py old-outline.json --out outline-v2.json
+# or, after committing/backing up the file:
+python scripts/migrate_outline.py old-outline.json --in-place
+```
+
+## Stable identity contract
+
+```json
+{
+  "schema_version": "2.0",
+  "deck_id": "web-crawler-intro",
+  "title": "网络爬虫介绍",
+  "lang": "zh-CN",
+  "slides": [
+    {
+      "slide_id": "crawler-opening-question",
+      "layout": "cover",
+      "title": "爬虫从哪里开始"
+    }
+  ]
+}
+```
+
+- `schema_version` is required and currently fixed at `2.0`.
+- `deck_id` is a permanent deck identity, not a filename or page title.
+- `slide_id` is required and unique inside the deck. Keep it unchanged when copy,
+  layout, or page order changes. Use lowercase ASCII letters, numbers, and hyphens.
+- Page numbers remain display order only. Never use them as persistent identity.
+- Browser-edited presenter notes are keyed by `deck_id + slide_id`; the engine imports
+  an older page-number note the first time it finds one.
+- `references/deck-schema-v2.json` is the machine-readable contract. The zero-dependency
+  validator also checks duplicate IDs and returns exact field locations.
 
 ## Top-level object
 
 | Key | Type | Required | Meaning |
 |---|---|---|---|
-| `lang` | string | no | HTML `lang` attr. Default `zh-CN`. |
-| `title` | string | no | Browser tab title. Default `Liquid Glass Deck`. |
+| `schema_version` | string | **yes** | Deck protocol version. Must be `2.0`. |
+| `deck_id` | string | **yes** | Stable lowercase deck identity used by tools and presenter-note storage. |
+| `lang` | string | **yes** | HTML language tag, such as `zh-CN` or `en`. |
+| `title` | string | **yes** | Browser tab title. |
+| `brief` | object | no | Embedded or linked generation brief metadata for future orchestration. |
+| `sources` | array | no | Source/provenance descriptors available to future API and MCP clients. |
+| `output` | object | no | Requested output metadata; the current builder still emits self-contained HTML. |
 | `composition` | string | no | `constructivist` (default) or `classic`. The default uses an asymmetric editorial grid, strict alignment, shared glass planes, and restrained geometry. |
 | `layout_intelligence` | boolean | no | Default `true`. Automatically selects a content-aware variant and density class per slide. Disable only for exact legacy reproduction. |
 | `typography` | string | no | `editorial` (default) or `classic`. Editorial mode adds visual-length title classes, CJK-aware wrapping, script-aware tracking, and tabular figures. |
@@ -24,7 +69,7 @@ python scripts/build.py --outline my-talk.json --out my-talk.html
 | `visual_coverage_planner` | boolean | no | Default `true`. Audits meaningful visual coverage, required visual plans, text-only runs, and chart/table provenance. |
 | `theme` | object | no | Topic color theme — see below. `build.py` derives the 3 background blobs, the Three.js particle palette, the accent text color, and every glow/shadow from it. **Fully automatic: the AI picks the palette from the topic; the user never sets colors.** |
 | `auto_ripple` | boolean | no | Default `true`. Automatically adds a restrained ripple surface to slides that have no Three.js, ECharts, image, or explicit `surface`. |
-| `slides` | array | **yes** | Ordered list of slide objects. Each needs a `layout`. |
+| `slides` | array | **yes** | Ordered list of slide objects. Each needs a unique `slide_id` and a `layout`. |
 
 `constructivist` changes composition, not topic color. It does not force red/black,
 historic motifs, or diagonal decoration. Use `classic` only to reproduce the older
@@ -32,6 +77,8 @@ centered, card-forward layout treatment.
 
 ## Fields available on every slide
 
+- `slide_id` — required stable identity. It must remain unchanged when the page moves,
+  and must be unique within the deck.
 - `main_point` — optional planning-only statement of the one audience takeaway;
   it is included in the build report but not rendered.
 - `speaker_notes` — optional string or string array. Notes are HTML-escaped,

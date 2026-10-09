@@ -1,4 +1,6 @@
 {
+  "schema_version": "2.0",
+  "deck_id": "ripple-material-prototype",
   "lang": "zh-CN",
   "title": "Ripple Material · 涟漪材质原型",
   "composition": "constructivist",
@@ -11,11 +13,16 @@
   "visual_coverage_planner": true,
   "theme": {
     "name": "water-optics",
-    "colors": ["#0A84FF", "#64D2FF", "#30D5C8"],
+    "colors": [
+      "#0A84FF",
+      "#64D2FF",
+      "#30D5C8"
+    ],
     "accent": "#006FC9"
   },
   "slides": [
     {
+      "slide_id": "ripple-material-cover",
       "layout": "cover",
       "eyebrow": "RIPPLE MATERIAL SYSTEM",
       "title": "让玻璃内部产生水的记忆",
@@ -30,6 +37,7 @@
       }
     },
     {
+      "slide_id": "concentric-ripple",
       "layout": "section-divider",
       "num": "01",
       "title": "同心波：影响从一点扩散",
@@ -44,6 +52,7 @@
       }
     },
     {
+      "slide_id": "material-depth",
       "layout": "stat-highlight",
       "eyebrow": "OPTICAL DEPTH",
       "num": "3",
@@ -60,14 +69,24 @@
       }
     },
     {
+      "slide_id": "ripple-material-closing",
       "layout": "closing",
       "eyebrow": "MATERIAL, NOT EFFECT",
       "title": "让水纹成为材料，而不是特效",
       "subtitle": "克制、分区、可复现。",
       "contacts": [
-        {"icon": "◌", "text": "Rings"},
-        {"icon": "≈", "text": "Flow"},
-        {"icon": "✦", "text": "Caustic"}
+        {
+          "icon": "◌",
+          "text": "Rings"
+        },
+        {
+          "icon": "≈",
+          "text": "Flow"
+        },
+        {
+          "icon": "✦",
+          "text": "Caustic"
+        }
       ],
       "surface": {
         "kind": "ripple",

@@ -12,7 +12,9 @@
   let notesVisible = new URLSearchParams(location.search).has('notes');
   const isChinese = (document.documentElement.lang || '').toLowerCase().startsWith('zh');
   const sessionNotes = new Map();
-  const deckNoteKey = 'liquid-glass-notes:' + location.pathname + ':' + document.title + ':';
+  const deckIdentity = document.body.dataset.deckId || location.pathname + ':' + document.title;
+  const deckNoteKey = 'liquid-glass-notes:v2:' + deckIdentity + ':';
+  const legacyDeckNoteKey = 'liquid-glass-notes:' + location.pathname + ':' + document.title + ':';
 
   const notesPanel = document.createElement('aside');
   notesPanel.className = 'presenter-notes';
@@ -28,7 +30,10 @@
   const notesEditor = notesPanel.querySelector('.presenter-notes-editor');
   const notesStatus = notesPanel.querySelector('.presenter-notes-status');
 
-  function noteStorageKey(){ return deckNoteKey + String(current + 1); }
+  function currentSlideIdentity(){
+    return slides[current] ? (slides[current].dataset.slideId || String(current + 1)) : String(current + 1);
+  }
+  function noteStorageKey(){ return deckNoteKey + currentSlideIdentity(); }
   function sourceNoteText(){
     const source = slides[current] && slides[current].querySelector('.speaker-notes');
     if (!source) return '';
@@ -39,6 +44,11 @@
     try {
       const saved = localStorage.getItem(key);
       if (saved !== null) return saved;
+      const legacy = localStorage.getItem(legacyDeckNoteKey + String(current + 1));
+      if (legacy !== null) {
+        localStorage.setItem(key, legacy);
+        return legacy;
+      }
     } catch (error) {}
     return sessionNotes.has(key) ? sessionNotes.get(key) : sourceNoteText();
   }

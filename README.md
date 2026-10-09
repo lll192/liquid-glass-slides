@@ -28,6 +28,7 @@
 - **可复用设计简报**：把主题、目标、受众、内容归属、视觉偏好和约束固化为可校验的 `brief.json`，再进入故事板与渲染。
 - **条件式 Source Gate**：选择完整文案或部分素材时，支持附件、本地路径、粘贴文本及图文混合上传，自动确认主文案、辅助材料、图片用途、改写幅度和缺失内容。
 - **来源与补写可追踪**：通过 `source-manifest.json` 和 `content-map.md` 区分用户原文、辅助参考与 AI 补充，避免素材混用或静默改写。
+- **稳定 Deck Protocol v2**：用永久 `deck_id` 与唯一 `slide_id` 绑定页面、笔记和后续修改；提供标准库校验器、机器可读 JSON Schema 与旧版确定性迁移工具。
 
 ## 快速开始
 
@@ -43,12 +44,19 @@
    python scripts/validate_source_manifest.py source-manifest.json
    ```
    纯 AI 策划且没有附件时跳过此步。
-4. 根据简报和内容覆盖表编写 `outline.json`（字段规范见 `references/outline-schema.md` 与 `examples/sample-outline.json`）。
-5. 运行：
+4. 根据简报和内容覆盖表编写 v2 `outline.json`，为整套演示设置稳定的 `deck_id`，并为每页设置唯一 `slide_id`（字段规范见 `references/outline-schema.md`、`references/deck-schema-v2.json` 与 `examples/sample-outline.json`）。
+5. 校验并构建：
    ```bash
+   python scripts/validate_outline.py my-talk.json
    python scripts/build.py --outline my-talk.json --out my-talk.html
    ```
    仅依赖 Python 标准库，无需联网（AI 配图除外）。输出一个自包含 HTML 文件。
+
+旧版 outline 可以先迁移：
+
+```bash
+python scripts/migrate_outline.py old-outline.json --out outline-v2.json
+```
 
 ### 路径 A：手写（创意 / 探索）
 
@@ -70,6 +78,7 @@
 所有平台统一的入口命令（零依赖、无需联网）：
 
 ```bash
+python scripts/validate_outline.py my-talk.json
 python scripts/build.py --outline my-talk.json --out my-talk.html
 ```
 
@@ -93,6 +102,8 @@ liquid-glass-slides/
 ├── scripts/
 │   ├── validate_brief.py    # 设计简报校验器（仅标准库）
 │   ├── validate_source_manifest.py # 素材来源校验器（仅标准库）
+│   ├── validate_outline.py  # v2 Deck Schema 与稳定 ID 校验器
+│   ├── migrate_outline.py   # 旧版 outline → v2 确定性迁移
 │   └── build.py             # 一键构建器（仅标准库）
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
@@ -131,6 +142,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Reusable design brief** — captures intent, audience, content ownership, visual preferences, and constraints in a validated `brief.json` before storyboarding.
 - **Conditional Source Gate** — when full or partial copy is supplied, accepts attachments, local paths, pasted text, and mixed text/image input while recording source priority, image use, editing level, protected wording, and content gaps.
 - **Traceable AI additions** — `source-manifest.json` and `content-map.md` distinguish user copy, references, and AI-authored additions.
+- **Stable Deck Protocol v2** — permanent `deck_id` and unique `slide_id` values anchor pages, notes, and revisions, with a stdlib validator, machine-readable JSON Schema, and deterministic legacy migration.
 
 ## Quick start
 
@@ -139,6 +151,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 python scripts/validate_brief.py brief.json
 # When user material is supplied:
 python scripts/validate_source_manifest.py source-manifest.json
+python scripts/validate_outline.py my-talk.json
 python scripts/build.py --outline my-talk.json --out my-talk.html
 ```
 Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.

@@ -66,6 +66,7 @@ Load only the references needed for the current task:
 - `references/ripple-textures.md` — **when/what/where to add ripple material**: water caustics, concentric rings, and cast-acrylic flow textures; quiet-zone composition, per-slide `surface` fields, static fallback, and dynamic shared-canvas behavior. Read this when water, propagation, resonance, flow, or transparent-material cues serve the topic.
 - `references/theme-palettes.md` — **topic → color theme**: curated 3-color palettes by mood (tech / academic / finance / health / nature / creative / energetic / luxury / calm), the rule that the 3 background blobs and the Three.js particles share the theme, and that body text stays near-black. Read this whenever choosing a deck's color theme.
 - `references/outline-schema.md` — the `outline.json` field spec for the one-click build path (`scripts/build.py`): every layout, its fields, and the `{{field}}` / `{{#items}}` placeholder contract.
+- `references/deck-schema-v2.json` — the machine-readable v2 deck protocol shared by agents, validators, and future API/MCP clients.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in
 `<section class="slide">` fragments — `cover`, `toc`, `section-divider`,
@@ -137,12 +138,13 @@ progress bar, dots, page index, reduced-motion). Clone its
        d. Keep image elements `object-fit:contain` with a `max-height` so they never break the viewport.
        e. **If an image needs to be inserted (user-supplied OR AI-generated)**, follow `references/image-handling.md`. First apply the one-line decision rule: **transparent / cut-out / white-bg-convertible image → floating transparent-object placement (`.hero-orb`, no frame, no radius, drop-shadow); image WITH a real/complex background (photo) → concentric-rounded glass frame (`height` cap + `width:auto` fit / `object-fit:cover` + `border-radius:calc(var(--r)*.64)`, see §4b).** For AI-generated images, decide (or proactively ask the user) the intended placement *before* generating, and request the matching background (transparent/white for floating, photographic/scene for framing). Then inline as base64 (no external URLs or local paths), size correctly, and pick the matching placement pattern.
 
-     **Path B — one-click build (reproducible / batch).** Compose an `outline.json` and run the generator.
-       a. Read `references/outline-schema.md` for the full field spec. In short: a deck is `{ "title", "theme":{...}, "slides":[ { "layout":"<name>", ...fields } ] }`; each slide maps to a snippet in `templates/single-page/`.
+     **Path B — one-click build (reproducible / batch).** Compose a v2 `outline.json` and run the generator.
+       a. Read `references/outline-schema.md` and `references/deck-schema-v2.json`. Every deck requires stable `schema_version`, `deck_id`, and per-page `slide_id` values: `{ "schema_version":"2.0", "deck_id":"my-talk", "title":"...", "lang":"zh-CN", "slides":[ { "slide_id":"opening-question", "layout":"cover", ...fields } ] }`. Never derive identity from the current page number. Validate with `python scripts/validate_outline.py my-talk.json`; migrate older outlines with `python scripts/migrate_outline.py old.json --out new.json`.
        b. **Add AI imagery**: `cover` and `section-divider` accept an optional `hero` field (image path or data URI) + `hero_alt`. Decide which slides need images per `references/ai-imagery.md`, generate + cut out the backgrounds, save the transparent files under `images/`, and put the **local path** (e.g. `"hero": "images/cover-hero.png"`) in the outline. `build.py` reads the file and **auto-inlines it as a base64 data URI**, so the output stays a single self-contained file while the image also lives on disk.
           > **Offline / sandbox note:** `build.py` inlines `echarts.min.js` and `three.min.js` from `assets/` — no network is required at build time. For images, prefer **local file paths** (relative to the outline) or `data:` URIs; avoid `http(s)://` URLs unless the build environment has network access.
        c. Run:
           ```bash
+          python scripts/validate_outline.py my-talk.json
           python scripts/build.py --outline my-talk.json --out my-talk.html
           ```
           zero dependencies — only the Python standard library. Output is a single self-contained HTML file (engine CSS/JS inlined, same as Path A). Run `python scripts/build.py --help` for all options.

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lll192/liquid-glass-slides/blob/main/references/deck-schema-v2.json",
+  "title": "Liquid Glass Slides Deck Protocol",
+  "description": "Stable cross-agent interchange contract for a Liquid Glass Slides deck.",
+  "type": "object",
+  "required": ["schema_version", "deck_id", "title", "lang", "slides"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "deck_id": {"$ref": "#/$defs/id"},
+    "title": {"type": "string", "minLength": 1},
+    "lang": {"type": "string", "minLength": 2},
+    "brief": {"type": "object"},
+    "theme": {"type": "object"},
+    "sources": {"type": "array", "items": {"type": "object"}},
+    "output": {"type": "object"},
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {"$ref": "#/$defs/slide"}
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+    },
+    "notes": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      ]
+    },
+    "slide": {
+      "type": "object",
+      "required": ["slide_id", "layout"],
+      "properties": {
+        "slide_id": {"$ref": "#/$defs/id"},
+        "layout": {
+          "enum": [
+            "cover", "toc", "section-divider", "bullets", "two-column",
+            "grid-cards", "big-quote", "stat-highlight", "kpi-grid",
+            "timeline", "comparison", "image-frame", "object-float",
+            "closing", "chart", "data-table", "process-flow", "concept-map"
+          ]
+        },
+        "speaker_notes": {"$ref": "#/$defs/notes"},
+        "main_point": {"type": "string"},
+        "audience_question": {"type": "string"},
+        "speaker_intent": {"type": "string"},
+        "transition": {"type": "string"},
+        "emotion": {"type": "string"},
+        "visual_plan": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  }
+}

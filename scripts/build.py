@@ -13,12 +13,14 @@ Usage:
 
 Outline schema (see references/outline-schema.md):
   {
+    "schema_version": "2.0",
+    "deck_id": "my-talk",
     "lang": "zh-CN",
     "title": "Deck title",
     "theme": { "colors": ["#0A84FF","#5E5CE6","#30D158"], "accent": "#0A84FF" },  # optional: 3 blob/particle colors + 1 accent
     "slides": [
-      { "layout": "cover", "eyebrow": "...", "title": "...", "subtitle": "..." },
-      { "layout": "grid-cards", "items": [ {"num":"01","title":"..","desc":".."}, ... ] },
+      { "slide_id": "opening", "layout": "cover", "eyebrow": "...", "title": "...", "subtitle": "..." },
+      { "slide_id": "key-points", "layout": "grid-cards", "items": [ {"num":"01","title":"..","desc":".."}, ... ] },
       ...
     ]
   }
@@ -26,7 +28,7 @@ Outline schema (see references/outline-schema.md):
 Available layouts (templates/single-page/*.html):
   cover, toc, section-divider, bullets, two-column, grid-cards, big-quote,
   stat-highlight, kpi-grid, timeline, comparison, image-frame,
-  object-float, closing, chart
+  object-float, closing, chart, data-table, process-flow, concept-map
 
 A slide with a "chart" field renders the `chart` layout (split: text column on
 the left, chart card on the right — text never gets pushed to the edges) and
@@ -57,6 +59,13 @@ import os
 import re
 import sys
 from urllib.parse import unquote_to_bytes
+
+try:
+    from validate_outline import validate_outline
+    from migrate_outline import migrate_outline
+except ImportError:  # pragma: no cover - module execution fallback
+    from scripts.validate_outline import validate_outline
+    from scripts.migrate_outline import migrate_outline
 
 # ---------- tiny template engine ----------
 BLOCK_RE = re.compile(r'\{\{#(\w+)\}\}(.*?)\{\{/\1\}\}', re.S)
@@ -1196,6 +1205,18 @@ def resolve_variant(slide, slide_index, media_shape='unknown', chart_family='non
 def build(outline_path, out_path, assets_dir, templates_dir):
     with open(outline_path, encoding='utf-8') as f:
         outline = json.load(f)
+    schema_version = outline.get('schema_version') if isinstance(outline, dict) else None
+    if schema_version in (None, '1.0'):
+        sys.stderr.write('[schema] legacy outline detected; run migrate_outline.py to persist stable IDs\n')
+        outline, _migration_changes = migrate_outline(
+            outline, os.path.splitext(os.path.basename(outline_path))[0]
+        )
+    elif schema_version == '2.0':
+        schema_errors = validate_outline(outline)
+        if schema_errors:
+            raise ValueError('invalid v2 outline:\n- ' + '\n- '.join(schema_errors))
+    else:
+        raise ValueError('unsupported schema_version: %s' % schema_version)
     src_dir = os.path.dirname(os.path.abspath(outline_path))
 
     with open(os.path.join(assets_dir, 'engine.css'), encoding='utf-8') as f:
@@ -1244,9 +1265,11 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     chart_counter = 0
     three_scenes = []
     content_profiles = []
+    slide_identities = []
     auto_ripple_enabled = outline.get('auto_ripple', True) is not False
     for idx, slide in enumerate(outline.get('slides', [])):
         layout = slide.get('layout')
+        slide_id = slide.get('slide_id')
         snippet_path = os.path.join(sp_dir, layout + '.html')
         if not os.path.exists(snippet_path):
             sys.stderr.write('[warn] layout "%s" not found -> skipping slide %d\n' % (layout, idx + 1))
@@ -1281,7 +1304,11 @@ def build(outline_path, out_path, assets_dir, templates_dir):
             'plannedType': 'unchecked', 'actualType': 'text', 'purpose': '',
             'priority': 'optional', 'source': '', 'meaningful': False, 'matchesPlan': True,
         })
-        content_profiles.append(dict({'slide': idx + 1, 'layout': layout}, **copy_profile))
+        content_profiles.append(dict({'slide': idx + 1, 'slideId': slide_id, 'layout': layout}, **copy_profile))
+        slide_identities.append({
+            'slide': idx + 1, 'slideId': slide_id, 'layout': layout,
+            'title': _plain_text(slide.get('title')),
+        })
         variant = (resolve_variant(slide, idx, media_shape, chart_family)
                    if layout_intelligence else 'default')
         title_size, title_script, title_units = title_profile(slide.get('title'))
@@ -1376,7 +1403,12 @@ def build(outline_path, out_path, assets_dir, templates_dir):
         if three_scene:
             three_scenes.append(three_scene)
         rendered = render(tmpl, data)
-        rendered = re.sub(r'(<section\b)', r'\1 data-idx="%d"' % idx, rendered, count=1)
+        rendered = re.sub(
+            r'(<section\b)',
+            r'\1 data-idx="%d" data-slide-id="%s"' % (idx, slide_id),
+            rendered,
+            count=1,
+        )
         intelligence_classes = [
             'variant-' + variant, 'density-' + density,
             'title-size-' + title_size, 'script-' + title_script,
@@ -1449,7 +1481,10 @@ def build(outline_path, out_path, assets_dir, templates_dir):
                           for i, g in enumerate(glyphs))
 
     build_report = {
-        'version': 3,
+        'version': 4,
+        'schemaVersion': outline.get('schema_version'),
+        'deckId': outline.get('deck_id'),
+        'slides': slide_identities,
         'qualityIntelligence': quality_intelligence,
         'contentIntelligence': content_intelligence,
         'narrativeDirector': narrative_director,
@@ -1467,6 +1502,8 @@ def build(outline_path, out_path, assets_dir, templates_dir):
               .replace('<!--__GLYPHS__-->', glyphs_html)
               .replace('{{lang}}', outline.get('lang', 'zh-CN'))
               .replace('{{title}}', outline.get('title', 'Liquid Glass Deck'))
+              .replace('{{deck_id}}', outline.get('deck_id', 'liquid-glass-deck'))
+              .replace('{{schema_version}}', outline.get('schema_version', '2.0'))
               .replace('{{composition}}', composition)
               .replace('{{typography}}', typography)
               .replace('{{theme}}', theme_css))
@@ -1546,7 +1583,11 @@ def main():
     out_path = args.out or (os.path.splitext(os.path.basename(outline_path))[0] + '.html')
     out_path = os.path.abspath(out_path)
 
-    html = build(outline_path, out_path, args.assets, args.templates)
+    try:
+        html = build(outline_path, out_path, args.assets, args.templates)
+    except (ValueError, json.JSONDecodeError) as exc:
+        print('ERROR: %s' % exc, file=sys.stderr)
+        raise SystemExit(2)
     with open(out_path, 'w', encoding='utf-8') as f:
         f.write(html)
 
