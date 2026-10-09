@@ -20,7 +20,7 @@
 - **真实中文文字**：所有可读文字都是真正的 HTML 文本，绝不乱码、可直接编辑。
 - **零依赖单文件输出**：内联 CSS/JS，浏览器直接全屏播放，支持键盘 / 滚轮 / 触摸翻页与入场动画。
 - **ECharts 数据图表**：仅在页面确有真实可比数据时自动加入（趋势、对比、占比、雷达），并自动套用液态玻璃主题。
-- **Three.js 3D 背景**：在封面 / 章节页 / 关键概念页自动加入粒子、星云、玻璃实体等 3D 场景（单共享画布，按可见页切换）。
+- **Three.js 动态背景**：封面可使用粒子或星云；非封面仅在内容语义需要时使用关系网、花瓣或波形（单共享画布，按可见页切换）。
 - **自动涟漪兜底**：页面没有 Three.js、ECharts 或图片时，构建器自动加入克制的涟漪材质；信息密集页使用静态低对比纹理，稀疏页面可使用轻微动态。
 - **主题色自动系统**：根据主题自动派生 3 个背景晕染色 + 粒子色 + 1 个强调色，正文保持近黑以保证可读性。
 - **可选 AI 配图**：封面 / 章节分隔可自动生成透明背景的装饰插画（仅用于装饰，文字绝不进图）。
@@ -31,6 +31,7 @@
 - **稳定 Deck Protocol v2**：用永久 `deck_id` 与唯一 `slide_id` 绑定页面、笔记和后续修改；提供标准库校验器、机器可读 JSON Schema 与旧版确定性迁移工具。
 - **可恢复生产流水线**：一次运行生成故事板、视觉规划、HTML、QA 报告与任务状态；失败会记录精确阶段和错误，修正后可由同一或另一个 AI 继续执行。
 - **Content Director 内容导演**：自动输出逐页叙事、演讲备注、屏幕文案和信息视觉诊断；仅安全补全结构元数据，不擅自改写事实。
+- **统一 Agent CLI**：Codex、WorkBuddy、Claude、Gemini、Cursor、自动化脚本与未来 MCP 统一调用 `scripts/slides.py`；JSON 返回结构和退出码稳定，不再解析终端文案。
 
 ## 快速开始
 
@@ -39,18 +40,18 @@
 1. 根据 `references/intake.md` 完成生成前 Brief Gate，生成 `brief.json`（示例见 `examples/sample-brief.json`）。
 2. 校验简报：
    ```bash
-   python scripts/validate_brief.py brief.json
+   python scripts/slides.py --json validate brief.json
    ```
 3. 如果使用完整文案或部分素材，根据 `references/source-intake.md` 生成并校验来源清单：
    ```bash
-   python scripts/validate_source_manifest.py source-manifest.json
+   python scripts/slides.py --json validate source-manifest.json
    ```
    纯 AI 策划且没有附件时跳过此步。
 4. 根据简报和内容覆盖表编写 v2 `outline.json`，为整套演示设置稳定的 `deck_id`，并为每页设置唯一 `slide_id`（字段规范见 `references/outline-schema.md`、`references/deck-schema-v2.json` 与 `examples/sample-outline.json`）。
 5. 校验并构建：
    ```bash
-   python scripts/validate_outline.py my-talk.json
-   python scripts/build.py --outline my-talk.json --out my-talk.html
+   python scripts/slides.py --json validate my-talk.json
+   python scripts/slides.py --json build --outline my-talk.json --out my-talk.html
    ```
    仅依赖 Python 标准库，无需联网（AI 配图除外）。输出一个自包含 HTML 文件。
 
@@ -63,7 +64,7 @@ python scripts/migrate_outline.py old-outline.json --out outline-v2.json
 ### 生产流水线（推荐给多 AI 与持续迭代项目）
 
 ```bash
-python scripts/pipeline.py run \
+python scripts/slides.py --json run \
   --brief brief.json \
   --source-manifest source-manifest.json \
   --outline my-talk.json \
@@ -81,7 +82,7 @@ python scripts/pipeline.py run \
 查看状态：
 
 ```bash
-python scripts/pipeline.py status dist/my-talk.pipeline-state.json
+python scripts/slides.py --json status dist/my-talk.pipeline-state.json
 ```
 
 ### 路径 A：手写（创意 / 探索）
@@ -104,8 +105,8 @@ python scripts/pipeline.py status dist/my-talk.pipeline-state.json
 所有平台统一的入口命令（零依赖、无需联网）：
 
 ```bash
-python scripts/validate_outline.py my-talk.json
-python scripts/build.py --outline my-talk.json --out my-talk.html
+python scripts/slides.py --json doctor
+python scripts/slides.py --json build --outline my-talk.json --out my-talk.html
 ```
 
 ## 目录结构
@@ -132,6 +133,7 @@ liquid-glass-slides/
 │   ├── migrate_outline.py   # 旧版 outline → v2 确定性迁移
 │   ├── pipeline.py          # 可恢复的多阶段生产流水线与任务状态
 │   ├── content_director.py  # 逐页内容诊断与安全元数据补全
+│   ├── slides.py            # 统一 Agent CLI 与稳定 JSON 调用协议
 │   └── build.py             # 一键构建器（仅标准库）
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
@@ -162,7 +164,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Real, editable text** — all readable text is genuine HTML; Chinese never garbles.
 - **Zero-dependency single file** — inlined CSS/JS, fullscreen playback, keyboard/wheel/touch navigation with reveal animations.
 - **ECharts charts** — auto-added only where real quantitative data exists, themed to match the deck.
-- **Three.js 3D backgrounds** — particles / nebula / glass solids on cover, dividers and key-concept slides (one shared canvas, swapped by visible slide).
+- **Three.js motion backgrounds** — particles or nebula on covers, with network, petals, or waves reserved for semantically relevant non-cover pages (one shared canvas, swapped by visible slide).
 - **Automatic ripple fallback** — slides without Three.js, ECharts, or imagery receive a restrained ripple material automatically; dense layouts use a quiet static treatment.
 - **Auto color theme** — 3 background blobs + particle colors + 1 accent derived from the topic; body text stays near-black.
 - **Optional AI imagery** — transparent decorative hero/motif illustrations (text never baked into images).
@@ -173,16 +175,17 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Stable Deck Protocol v2** — permanent `deck_id` and unique `slide_id` values anchor pages, notes, and revisions, with a stdlib validator, machine-readable JSON Schema, and deterministic legacy migration.
 - **Recoverable production pipeline** — one run emits storyboard, visual-plan, HTML, QA, and task-state artifacts; failures identify the exact stage so the same or another AI can resume after correction.
 - **Content Director** — produces per-slide narrative, notes, copy, and information-visual diagnoses while limiting automatic edits to safe structural metadata.
+- **Unified Agent CLI** — Codex, WorkBuddy, Claude, Gemini, Cursor, automation, and future MCP clients call one stable command with a machine-readable JSON envelope and explicit exit codes.
 
 ## Quick start
 
 **Path B — one-click build (reproducible):**
 ```bash
-python scripts/validate_brief.py brief.json
+python scripts/slides.py --json validate brief.json
 # When user material is supplied:
-python scripts/validate_source_manifest.py source-manifest.json
-python scripts/validate_outline.py my-talk.json
-python scripts/pipeline.py run --outline my-talk.json --out dist/my-talk.html
+python scripts/slides.py --json validate source-manifest.json
+python scripts/slides.py --json validate my-talk.json
+python scripts/slides.py --json run --outline my-talk.json --out dist/my-talk.html
 ```
 Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.
 

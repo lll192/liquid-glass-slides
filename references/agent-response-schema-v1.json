@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lll192/liquid-glass-slides/blob/main/references/agent-response-schema-v1.json",
+  "title": "Liquid Glass Slides Agent CLI response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "command", "ok", "message", "data", "errors", "warnings"],
+  "properties": {
+    "api_version": { "const": "1.0" },
+    "command": {
+      "enum": ["doctor", "validate", "build", "run", "status", "mark-exported"]
+    },
+    "ok": { "type": "boolean" },
+    "message": { "type": "string" },
+    "data": { "type": "object" },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "warnings": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -51,7 +52,16 @@ def _atomic_write_text(path: Path, content: str) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     try:
         temporary.write_text(content, encoding="utf-8", newline="\n")
-        temporary.replace(path)
+        for attempt in range(5):
+            try:
+                temporary.replace(path)
+                break
+            except PermissionError:
+                if attempt == 4:
+                    raise
+                # Windows indexers and antivirus scanners may briefly hold the
+                # freshly written temp file. A bounded retry preserves atomicity.
+                time.sleep(0.05 * (attempt + 1))
     finally:
         if temporary.exists():
             temporary.unlink()

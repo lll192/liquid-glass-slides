@@ -70,6 +70,8 @@ Load only the references needed for the current task:
 - `references/production-pipeline.md` — the recoverable multi-stage CLI, artifact snapshots, status model, failure recovery, and delivery handoff.
 - `references/pipeline-state-schema-v1.json` — the machine-readable job-state contract for CLI, Web, API, and MCP clients.
 - `references/content-director.md` — deterministic narrative diagnosis, per-slide revision actions, deck metrics, and safe metadata completion.
+- `references/agent-cli.md` — stable cross-platform command contract, JSON response envelope, exit codes, and integration rules for AI clients.
+- `references/agent-response-schema-v1.json` — machine-readable JSON Schema for every Agent CLI response.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in
 `<section class="slide">` fragments — `cover`, `toc`, `section-divider`,
@@ -142,20 +144,20 @@ progress bar, dots, page index, reduced-motion). Clone its
        e. **If an image needs to be inserted (user-supplied OR AI-generated)**, follow `references/image-handling.md`. First apply the one-line decision rule: **transparent / cut-out / white-bg-convertible image → floating transparent-object placement (`.hero-orb`, no frame, no radius, drop-shadow); image WITH a real/complex background (photo) → concentric-rounded glass frame (`height` cap + `width:auto` fit / `object-fit:cover` + `border-radius:calc(var(--r)*.64)`, see §4b).** For AI-generated images, decide (or proactively ask the user) the intended placement *before* generating, and request the matching background (transparent/white for floating, photographic/scene for framing). Then inline as base64 (no external URLs or local paths), size correctly, and pick the matching placement pattern.
 
      **Path B — one-click build (reproducible / batch).** Compose a v2 `outline.json` and run the generator.
-       a. Read `references/outline-schema.md` and `references/deck-schema-v2.json`. Every deck requires stable `schema_version`, `deck_id`, and per-page `slide_id` values: `{ "schema_version":"2.0", "deck_id":"my-talk", "title":"...", "lang":"zh-CN", "slides":[ { "slide_id":"opening-question", "layout":"cover", ...fields } ] }`. Never derive identity from the current page number. Validate with `python scripts/validate_outline.py my-talk.json`; migrate older outlines with `python scripts/migrate_outline.py old.json --out new.json`.
+       a. Read `references/outline-schema.md` and `references/deck-schema-v2.json`. Every deck requires stable `schema_version`, `deck_id`, and per-page `slide_id` values: `{ "schema_version":"2.0", "deck_id":"my-talk", "title":"...", "lang":"zh-CN", "slides":[ { "slide_id":"opening-question", "layout":"cover", ...fields } ] }`. Never derive identity from the current page number. Validate with `python scripts/slides.py --json validate my-talk.json`; migrate older outlines with `python scripts/migrate_outline.py old.json --out new.json`.
        b. **Add AI imagery**: `cover` and `section-divider` accept an optional `hero` field (image path or data URI) + `hero_alt`. Decide which slides need images per `references/ai-imagery.md`, generate + cut out the backgrounds, save the transparent files under `images/`, and put the **local path** (e.g. `"hero": "images/cover-hero.png"`) in the outline. `build.py` reads the file and **auto-inlines it as a base64 data URI**, so the output stays a single self-contained file while the image also lives on disk.
           > **Offline / sandbox note:** `build.py` inlines `echarts.min.js` and `three.min.js` from `assets/` — no network is required at build time. For images, prefer **local file paths** (relative to the outline) or `data:` URIs; avoid `http(s)://` URLs unless the build environment has network access.
        c. Run:
           ```bash
-          python scripts/validate_outline.py my-talk.json
-          python scripts/build.py --outline my-talk.json --out my-talk.html
+          python scripts/slides.py --json validate my-talk.json
+          python scripts/slides.py --json build --outline my-talk.json --out my-talk.html
           ```
           For production or cross-agent work, prefer the recoverable pipeline described in `references/production-pipeline.md`:
           ```bash
-          python scripts/pipeline.py run --outline my-talk.json --out dist/my-talk.html
+          python scripts/slides.py --json run --outline my-talk.json --out dist/my-talk.html
           ```
           It materializes storyboard, visual-plan, QA-report, and pipeline-state JSON files beside the HTML. Continue from `needs_revision` by correcting the reported artifact and running the same command again.
-          zero dependencies — only the Python standard library. Output is a single self-contained HTML file (engine CSS/JS inlined, same as Path A). Run `python scripts/build.py --help` for all options.
+          zero dependencies — only the Python standard library. Output is a single self-contained HTML file (engine CSS/JS inlined, same as Path A). Read `references/agent-cli.md` for the stable JSON contract and exit codes.
        d. Layouts auto-handle repetition: pass a list under `items` and the snippet repeats it with staggered reveal; `grid-cards` / `kpi-grid` auto-pick `g2`/`g3`/`g4` by item count. `image-frame` and `object-float` take an image `src` (base64 or local path — build.py inlines it) and apply the concentric-rounded / floating rules above.
        e. **Add ECharts charts where the data earns it**: for any slide carrying a `"chart": { "option": {...} }` field (use layout `chart`), `build.py` inlines `assets/echarts.min.js` automatically and applies the liquid-glass theme (transparent canvas, iOS palette, frosted tooltip). Per `references/echarts-charts.md`, add a chart **only** where the page has real, comparable, quantitative data — never fabricate numbers, and never chart a page that is already text-only or visually complete (timeline, bullets, dividers). The `option` must be pure JSON (no JS functions).
        f. To iterate, edit the JSON and re-run — identical outline always yields an identical deck.
