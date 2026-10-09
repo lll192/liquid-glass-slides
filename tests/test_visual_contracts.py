@@ -33,9 +33,11 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('contentBox.scrollWidth > contentBox.clientWidth', JS)
         self.assertIn('contentBox.scrollHeight > contentBox.clientHeight', JS)
 
-    def test_presenter_cues_are_visible_and_discoverable(self):
-        self.assertIn("notesToggle.className = 'presenter-toggle'", JS)
-        self.assertIn("notesToggle.addEventListener('click'", JS)
+    def test_presenter_mode_docks_without_audience_controls(self):
+        self.assertNotIn('presenter-toggle', JS)
+        self.assertIn('.notes-visible .deck{ width:calc(100vw - var(--presenter-rail)); }', CSS)
+        self.assertIn('.notes-visible .slide{ width:calc(100vw - var(--presenter-rail)); }', CSS)
+        self.assertIn("e.key.toLowerCase() === 'n'", JS)
 
     def test_reference_deck_builds_with_all_three_layouts(self):
         with tempfile.TemporaryDirectory() as temp_dir:

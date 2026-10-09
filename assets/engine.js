@@ -17,15 +17,6 @@
   notesPanel.innerHTML = '<div class="presenter-notes-head"><span>Narrative Director</span><button type="button" aria-label="Close presenter cues">×</button></div><div class="presenter-notes-body"></div>';
   document.body.appendChild(notesPanel);
   notesPanel.querySelector('button').addEventListener('click', () => setNotesVisible(false));
-
-  const notesToggle = document.createElement('button');
-  const isChinese = (document.documentElement.lang || '').toLowerCase().startsWith('zh');
-  notesToggle.className = 'presenter-toggle';
-  notesToggle.type = 'button';
-  notesToggle.innerHTML = '<span>' + (isChinese ? '讲者提示' : 'Presenter cues') + '</span><kbd>N</kbd>';
-  notesToggle.setAttribute('aria-controls', 'presenter-notes');
-  notesToggle.addEventListener('click', () => setNotesVisible(!notesVisible));
-  document.body.appendChild(notesToggle);
   notesPanel.id = 'presenter-notes';
 
   function updateSpeakerNotes(){
@@ -42,8 +33,8 @@
     notesVisible = Boolean(value);
     document.body.classList.toggle('notes-visible', notesVisible);
     notesPanel.setAttribute('aria-hidden', notesVisible ? 'false' : 'true');
-    notesToggle.setAttribute('aria-pressed', notesVisible ? 'true' : 'false');
     if (notesVisible) updateSpeakerNotes();
+    updateProgress();
   }
   setNotesVisible(notesVisible);
 
@@ -147,6 +138,13 @@
   });
   const dots = Array.from(dotsWrap.children);
 
+  function updateProgress(){
+    const fraction = (current + 1) / slides.length;
+    progress.style.width = notesVisible
+      ? 'calc((100vw - var(--presenter-rail)) * ' + fraction + ')'
+      : (fraction * 100) + '%';
+  }
+
   function goTo(i){
     i = Math.max(0, Math.min(slides.length - 1, i));
     slides[i].scrollIntoView({ behavior: 'smooth' });
@@ -185,7 +183,7 @@
         slides.forEach((s) => s.classList.remove('active'));
         en.target.classList.add('active');
         dots.forEach((d, i) => d.classList.toggle('on', i === idx));
-        progress.style.width = ((idx + 1) / slides.length * 100) + '%';
+        updateProgress();
         counter.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
         if (notesVisible) updateSpeakerNotes();
       }

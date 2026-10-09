@@ -29,8 +29,9 @@ being answered, the speaker's intent, and the hand-off to the next page.
 
 All fields are optional. When `story_role` or `emotion` is absent, the builder infers a
 conservative default from the layout. Explicit direction is recommended for important
-beats. The hidden presenter panel (`N` or `?notes=1`) shows these cues above
-`speaker_notes`; the audience never sees them.
+beats. The presenter panel (`N` or `?notes=1`) docks in a separate right rail and shows
+these cues above `speaker_notes`; the slide narrows to remain fully visible. Audience
+mode contains no presenter button, label, or cue.
 
 ## Directing the arc
 
