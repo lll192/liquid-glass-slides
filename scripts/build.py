@@ -219,25 +219,38 @@ if(typeof THREE!=='undefined'){ (function(){
     return {scene:scene,camera:cam,update:function(t){ pts.rotation.y=t*0.04*(o.speed||1); pts.rotation.x=Math.sin(t*0.1)*0.08; }};
   }
   function objectScene(o){
+    // Swiss/Bauhaus kinetic composition: flat, right-biased, grid-aligned and
+    // deliberately quiet. The legacy shape suffix remains accepted as a stable
+    // scene key, but never brings back a literal wireframe polyhedron.
     o=o||{}; var scene=new THREE.Scene();
-    var cam=new THREE.PerspectiveCamera(55,1,0.1,2000); cam.position.set(o.x||2.6,o.y||0,o.camZ||7);
-    var makers={
-      icosahedron:function(r){ return new THREE.IcosahedronGeometry(r,1); },
-      dodecahedron:function(r){ return new THREE.DodecahedronGeometry(r,0); },
-      torusKnot:function(r){ return new THREE.TorusKnotGeometry(r*0.72,r*0.24,96,14); },
-      torus:function(r){ return new THREE.TorusGeometry(r*0.9,r*0.32,18,44); },
-      sphere:function(r){ return new THREE.SphereGeometry(r,32,24); }
-    };
-    var mk=makers[o.shape]||makers.icosahedron;
-    var geo=mk(o.r||2.2);
-    var mat=new THREE.MeshStandardMaterial({color:PALETTE[0],transparent:true,opacity:0.22,roughness:0.35,metalness:0.1});
-    var mesh=new THREE.Mesh(geo,mat);
-    var wire=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:PALETTE[0],wireframe:true,transparent:true,opacity:0.22}));
-    mesh.add(wire); scene.add(mesh);
-    var dl=new THREE.DirectionalLight(0xffffff,1.1); dl.position.set(5,6,8); scene.add(dl);
-    scene.add(new THREE.AmbientLight(0xffffff,0.6));
-    return {scene:scene,camera:cam,update:function(t){ mesh.rotation.y=t*0.3; mesh.rotation.x=t*0.15;
-      var s=1+Math.sin(t*0.8)*0.04; mesh.scale.set(s,s,s); }};
+    var cam=new THREE.OrthographicCamera(-16,16,9,-9,-100,100); cam.position.z=10;
+    var group=new THREE.Group(); group.position.set(7.0,0.25,0); scene.add(group);
+    function plane(w,h,color,opacity,x,y,z){
+      var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({
+        color:color,transparent:true,opacity:opacity,depthWrite:false,depthTest:false
+      })); m.position.set(x,y,z||0); group.add(m); return m;
+    }
+    var disc=new THREE.Mesh(new THREE.CircleGeometry(2.55,64),new THREE.MeshBasicMaterial({
+      color:PALETTE[0],transparent:true,opacity:0.14,depthWrite:false,depthTest:false
+    })); disc.position.set(1.7,0.85,0); group.add(disc);
+    var bar=plane(5.4,0.82,PALETTE[1]||PALETTE[0],0.18,-0.65,-1.45,0.1);
+    var square=plane(1.35,1.35,PALETTE[2]||PALETTE[0],0.23,-2.05,2.35,0.2);
+    var triangle=new THREE.Mesh(new THREE.CircleGeometry(1.45,3),new THREE.MeshBasicMaterial({
+      color:PALETTE[1]||PALETTE[0],transparent:true,opacity:0.13,depthWrite:false,depthTest:false
+    })); triangle.position.set(2.75,-2.25,0.15); triangle.rotation.z=0.52; group.add(triangle);
+    var rules=new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-3.5,0.35,0.3),new THREE.Vector3(4.15,0.35,0.3),
+      new THREE.Vector3(0.2,-3.3,0.3),new THREE.Vector3(0.2,3.55,0.3)
+    ]);
+    group.add(new THREE.LineSegments(rules,new THREE.LineBasicMaterial({
+      color:PALETTE[0],transparent:true,opacity:0.16,depthWrite:false,depthTest:false
+    })));
+    return {scene:scene,camera:cam,update:function(t){
+      group.position.y=0.25+Math.sin(t*0.32)*0.11;
+      square.rotation.z=Math.sin(t*0.24)*0.055;
+      bar.position.x=-0.65+Math.sin(t*0.2)*0.08;
+      triangle.rotation.z=0.52+Math.sin(t*0.18)*0.035;
+    }};
   }
   // Drifting petals / falling leaves: soft elongated motes sinking slowly with
   // a lateral sway — suits literary, historical and nature topics.
@@ -266,26 +279,33 @@ if(typeof THREE!=='undefined'){ (function(){
       geo.attributes.position.needsUpdate=true;
     }};
   }
-  // Glass bubbles: a few large translucent orbs floating slowly — calm and
-  // airy; pairs with dreamy, philosophical or festive atmosphere pages.
+  // Swiss kinetic circles: four flat discs locked to the right-side grid.
+  // They replace the old random glass-bubble cloud and its oversized orbit.
   function orbsScene(o){
-    o=o||{}; var n=o.count||9;
-    var scene=new THREE.Scene();
-    var cam=new THREE.PerspectiveCamera(55,1,0.1,2000); cam.position.z=o.camZ||16;
+    o=o||{}; var scene=new THREE.Scene();
+    var cam=new THREE.OrthographicCamera(-16,16,9,-9,-100,100); cam.position.z=10;
+    var group=new THREE.Group(); group.position.x=6.2; scene.add(group);
+    var specs=[[-1.2,1.45,2.25,0.13],[2.05,-0.95,1.55,0.16],[-2.75,-2.35,0.82,0.21],[3.45,2.75,0.62,0.24]];
     var orbs=[];
-    for(var i=0;i<n;i++){
-      var r=rand(1.1,3.1);
-      var m=new THREE.Mesh(new THREE.SphereGeometry(r,32,24),
-        new THREE.MeshStandardMaterial({color:PALETTE[i%PALETTE.length],transparent:true,opacity:0.15,roughness:0.18,metalness:0.05}));
-      m.position.set(rand(-11,11),rand(-6,6),rand(-6,4));
-      m.userData={by:m.position.y,ph:rand(0,6.28),sp:rand(0.25,0.55)};
-      scene.add(m); orbs.push(m);
-    }
-    var dl=new THREE.DirectionalLight(0xffffff,1.0); dl.position.set(5,6,8); scene.add(dl);
-    scene.add(new THREE.AmbientLight(0xffffff,0.75));
+    specs.forEach(function(s,i){
+      var m=new THREE.Mesh(new THREE.CircleGeometry(s[2],64),new THREE.MeshBasicMaterial({
+        color:PALETTE[i%PALETTE.length],transparent:true,opacity:s[3],depthWrite:false,depthTest:false
+      }));
+      m.position.set(s[0],s[1],i*0.05); m.userData={bx:s[0],by:s[1],ph:i*1.37};
+      group.add(m); orbs.push(m);
+    });
+    var ruleGeo=new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-4.1,-0.15,0.4),new THREE.Vector3(4.45,-0.15,0.4),
+      new THREE.Vector3(0.55,-3.55,0.4),new THREE.Vector3(0.55,3.75,0.4)
+    ]);
+    group.add(new THREE.LineSegments(ruleGeo,new THREE.LineBasicMaterial({
+      color:PALETTE[0],transparent:true,opacity:0.11,depthWrite:false,depthTest:false
+    })));
     return {scene:scene,camera:cam,update:function(t){
-      orbs.forEach(function(m){ m.position.y=m.userData.by+Math.sin(t*m.userData.sp+m.userData.ph)*1.3;
-        m.rotation.y=t*0.1; });
+      orbs.forEach(function(m,i){
+        m.position.y=m.userData.by+Math.sin(t*0.28+m.userData.ph)*0.12;
+        m.position.x=m.userData.bx+Math.cos(t*0.21+m.userData.ph)*0.07;
+      });
     }};
   }
   // Flowing wave lines: layered sine ribbons undulating gently — abstract,

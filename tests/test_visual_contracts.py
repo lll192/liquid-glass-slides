@@ -9,9 +9,37 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / 'assets' / 'engine.css').read_text(encoding='utf-8')
 JS = (ROOT / 'assets' / 'engine.js').read_text(encoding='utf-8')
+BUILD = (ROOT / 'scripts' / 'build.py').read_text(encoding='utf-8')
 
 
 class VisualContractTests(unittest.TestCase):
+    def test_calm_three_presets_use_swiss_flat_geometry(self):
+        object_scene = BUILD[BUILD.index('function objectScene'):BUILD.index('function petalsScene')]
+        orbs_scene = BUILD[BUILD.index('function orbsScene'):BUILD.index('function wavesScene')]
+        for scene in (object_scene, orbs_scene):
+            self.assertIn('OrthographicCamera', scene)
+            self.assertIn('MeshBasicMaterial', scene)
+            self.assertNotIn('MeshStandardMaterial', scene)
+            self.assertNotIn('SphereGeometry', scene)
+            self.assertNotIn('wireframe:true', scene)
+        self.assertIn('group.position.set(7.0,0.25,0)', object_scene)
+        self.assertIn('var specs=[', orbs_scene)
+        self.assertNotIn('Math.random', orbs_scene)
+
+    def test_bauhaus_motion_reference_builds_both_calm_presets(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / 'motion.html'
+            subprocess.run(
+                [sys.executable, str(ROOT / 'scripts' / 'build.py'),
+                 '--outline', str(ROOT / 'examples' / 'bauhaus-motion-outline.json'),
+                 '--out', str(output)],
+                check=True, cwd=ROOT, capture_output=True, text=True,
+            )
+            html = output.read_text(encoding='utf-8')
+            self.assertIn('data-three="object"', html)
+            self.assertIn('data-three="orbs"', html)
+            self.assertIn('Swiss/Bauhaus kinetic composition', html)
+
     def test_data_table_has_alternating_rows(self):
         self.assertIn('.data-table tbody tr:nth-child(odd) > *', CSS)
         self.assertIn('.data-table tbody tr:nth-child(even) > *', CSS)

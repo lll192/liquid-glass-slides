@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "deck_id": "bauhaus-motion-reference",
+  "title": "包豪斯动效参考",
+  "lang": "zh-CN",
+  "composition": "constructivist",
+  "typography": "editorial",
+  "auto_ripple": false,
+  "theme": {
+    "name": "swiss-coral",
+    "colors": ["#FF375F", "#FF9F0A", "#0A84FF"],
+    "accent": "#FF375F"
+  },
+  "slides": [
+    {
+      "slide_id": "bauhaus-object",
+      "layout": "section-divider",
+      "num": "01",
+      "eyebrow": "FORM / GRID",
+      "title": "几何服务于秩序",
+      "subtitle": "圆、方形与线条在右侧网格中建立克制张力。",
+      "story_role": "transition",
+      "emotion": "clarity",
+      "three": {"scene": "object"}
+    },
+    {
+      "slide_id": "swiss-circles",
+      "layout": "section-divider",
+      "num": "02",
+      "eyebrow": "RHYTHM / SPACE",
+      "title": "运动保持安静",
+      "subtitle": "固定构图仅作轻微漂移，正文区域始终留白。",
+      "story_role": "pause",
+      "emotion": "reflection",
+      "three": {"scene": "orbs"}
+    }
+  ]
+}
