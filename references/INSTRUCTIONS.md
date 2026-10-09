@@ -72,6 +72,7 @@ Load only the references needed for the current task:
 - `references/content-director.md` — deterministic narrative diagnosis, per-slide revision actions, deck metrics, and safe metadata completion.
 - `references/agent-cli.md` — stable cross-platform command contract, JSON response envelope, exit codes, and integration rules for AI clients.
 - `references/agent-response-schema-v1.json` — machine-readable JSON Schema for every Agent CLI response.
+- `references/mcp-server.md` — local MCP stdio server, six presentation tools, workspace boundary, and client configuration.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in
 `<section class="slide">` fragments — `cover`, `toc`, `section-divider`,

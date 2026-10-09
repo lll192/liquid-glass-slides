@@ -113,7 +113,7 @@ def command_doctor(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             "layouts": sorted(LAYOUTS),
             "capabilities": [
                 "validate", "build", "production-run", "status", "mark-exported",
-                "narrative-director", "visual-coverage-planner",
+                "narrative-director", "visual-coverage-planner", "mcp-stdio",
             ],
         },
         errors=[f"missing {name}" for name in missing]

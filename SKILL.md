@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "2.3.0"
+  version: "2.4.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -55,6 +55,7 @@ Load only the references needed for the current task:
 - `references/content-director.md` — deterministic narrative diagnosis, per-slide revision actions, deck metrics, and safe metadata completion.
 - `references/agent-cli.md` — stable cross-platform command contract, JSON response envelope, exit codes, and integration rules for AI clients.
 - `references/agent-response-schema-v1.json` — machine-readable JSON Schema for every Agent CLI response.
+- `references/mcp-server.md` — local MCP stdio server, six presentation tools, workspace boundary, and client configuration.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in `<section class="slide">` fragments — `cover`, `toc`, `section-divider`, `bullets`, `two-column`, `grid-cards`, `big-quote`, `stat-highlight`, `kpi-grid`, `timeline`, `comparison`, `image-frame`, `object-float`, `closing`, `chart`, `data-table`, `process-flow`, `concept-map`. Each ships with demo data and `{{field}}` placeholders; compose a deck by listing them in an outline and running `scripts/build.py`.
 

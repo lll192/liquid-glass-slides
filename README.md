@@ -32,6 +32,7 @@
 - **可恢复生产流水线**：一次运行生成故事板、视觉规划、HTML、QA 报告与任务状态；失败会记录精确阶段和错误，修正后可由同一或另一个 AI 继续执行。
 - **Content Director 内容导演**：自动输出逐页叙事、演讲备注、屏幕文案和信息视觉诊断；仅安全补全结构元数据，不擅自改写事实。
 - **统一 Agent CLI**：Codex、WorkBuddy、Claude、Gemini、Cursor、自动化脚本与未来 MCP 统一调用 `scripts/slides.py`；JSON 返回结构和退出码稳定，不再解析终端文案。
+- **本地 MCP 工具服务器**：支持 MCP 的 AI 可直接发现并调用 6 个 `slides_*` 工具，同时读取协议、说明和布局资源；所有文件访问限制在启动时指定的工作目录内。
 
 ## 快速开始
 
@@ -109,6 +110,14 @@ python scripts/slides.py --json doctor
 python scripts/slides.py --json build --outline my-talk.json --out my-talk.html
 ```
 
+支持 MCP 的客户端可直接启动本地工具服务器：
+
+```bash
+python scripts/mcp_server.py --workspace C:/path/to/presentation-project
+```
+
+配置示例和安全边界见 [`references/mcp-server.md`](references/mcp-server.md)。
+
 ## 目录结构
 
 ```
@@ -134,6 +143,7 @@ liquid-glass-slides/
 │   ├── pipeline.py          # 可恢复的多阶段生产流水线与任务状态
 │   ├── content_director.py  # 逐页内容诊断与安全元数据补全
 │   ├── slides.py            # 统一 Agent CLI 与稳定 JSON 调用协议
+│   ├── mcp_server.py        # 零依赖 MCP stdio 工具服务器
 │   └── build.py             # 一键构建器（仅标准库）
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
@@ -176,6 +186,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Recoverable production pipeline** — one run emits storyboard, visual-plan, HTML, QA, and task-state artifacts; failures identify the exact stage so the same or another AI can resume after correction.
 - **Content Director** — produces per-slide narrative, notes, copy, and information-visual diagnoses while limiting automatic edits to safe structural metadata.
 - **Unified Agent CLI** — Codex, WorkBuddy, Claude, Gemini, Cursor, automation, and future MCP clients call one stable command with a machine-readable JSON envelope and explicit exit codes.
+- **Local MCP tool server** — MCP-capable agents discover six `slides_*` tools plus schemas and instructions as read-only resources, while all file access stays inside an explicit workspace boundary.
 
 ## Quick start
 
@@ -188,6 +199,9 @@ python scripts/slides.py --json validate my-talk.json
 python scripts/slides.py --json run --outline my-talk.json --out dist/my-talk.html
 ```
 Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.
+
+MCP-capable clients can launch `python scripts/mcp_server.py --workspace <project-directory>`.
+See [`references/mcp-server.md`](references/mcp-server.md) for configuration and security boundaries.
 
 **Path A — hand-write:** start from `assets/template.html` or `templates/deck.html`, clone `<section class="slide">` blocks, fill real HTML. See `SKILL.md` for the full workflow.
 
