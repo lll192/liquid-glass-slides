@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lll192/liquid-glass-slides/blob/main/references/pipeline-state-schema-v1.json",
+  "title": "Liquid Glass Slides Pipeline State",
+  "type": "object",
+  "required": [
+    "pipeline_version", "project_id", "revision", "status", "updated_at",
+    "artifacts", "stages", "errors", "warnings"
+  ],
+  "properties": {
+    "pipeline_version": {"const": "1.0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "status": {
+      "enum": [
+        "draft", "planning", "generating", "validating",
+        "needs_revision", "ready", "exported"
+      ]
+    },
+    "updated_at": {"type": "string"},
+    "artifacts": {
+      "type": "object",
+      "required": [
+        "brief", "source_manifest", "outline", "storyboard",
+        "visual_plan", "deck", "qa_report"
+      ],
+      "additionalProperties": {"type": ["string", "null"]}
+    },
+    "stages": {
+      "type": "object",
+      "required": [
+        "intake", "sources", "narrative", "visual-planning",
+        "outline", "build", "quality", "delivery"
+      ],
+      "additionalProperties": {"$ref": "#/$defs/stage"}
+    },
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "stage": {
+      "type": "object",
+      "required": ["status", "message"],
+      "properties": {
+        "status": {"enum": ["pending", "complete", "skipped", "failed", "blocked"]},
+        "message": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

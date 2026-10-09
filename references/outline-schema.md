@@ -7,9 +7,12 @@ and future API/MCP operations survive page insertion and reordering.
 
 ```bash
 python scripts/validate_outline.py my-talk.json
-python scripts/build.py --outline my-talk.json --out my-talk.html
+python scripts/build.py --outline my-talk.json --out my-talk.html --report build-report.json
 # or positional:  python scripts/build.py my-talk.json
 ```
+
+For a recoverable production run with planning snapshots and task state, use
+`scripts/pipeline.py`; see `production-pipeline.md`.
 
 Legacy outlines without `schema_version` still build with a migration warning. Persist
 their identities before further editing:

@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "2.0.0"
+  version: "2.1.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -50,6 +50,8 @@ Load only the references needed for the current task:
 - `references/theme-palettes.md` — **topic → color theme**: curated 3-color palettes by mood (tech / academic / finance / health / nature / creative / energetic / luxury / calm), the rule that the 3 background blobs and the Three.js particles share the theme, and that body text stays near-black. Read this whenever choosing a deck's color theme.
 - `references/outline-schema.md` — the `outline.json` field spec for the one-click build path (`scripts/build.py`): every layout, its fields, and the `{{field}}` / `{{#items}}` placeholder contract.
 - `references/deck-schema-v2.json` — the machine-readable v2 deck protocol shared by agents, validators, and future API/MCP clients.
+- `references/production-pipeline.md` — the recoverable multi-stage CLI, artifact snapshots, status model, failure recovery, and delivery handoff.
+- `references/pipeline-state-schema-v1.json` — the machine-readable job-state contract for CLI, Web, API, and MCP clients.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in `<section class="slide">` fragments — `cover`, `toc`, `section-divider`, `bullets`, `two-column`, `grid-cards`, `big-quote`, `stat-highlight`, `kpi-grid`, `timeline`, `comparison`, `image-frame`, `object-float`, `closing`, `chart`, `data-table`, `process-flow`, `concept-map`. Each ships with demo data and `{{field}}` placeholders; compose a deck by listing them in an outline and running `scripts/build.py`.
 
@@ -116,6 +118,11 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
           python scripts/validate_outline.py my-talk.json
           python scripts/build.py --outline my-talk.json --out my-talk.html
           ```
+          For production or cross-agent work, prefer the recoverable pipeline described in `references/production-pipeline.md`:
+          ```bash
+          python scripts/pipeline.py run --outline my-talk.json --out dist/my-talk.html
+          ```
+          It materializes storyboard, visual-plan, QA-report, and pipeline-state JSON files beside the HTML. Continue from `needs_revision` by correcting the reported artifact and running the same command again.
           zero dependencies — only the Python standard library. Output is a single self-contained HTML file (engine CSS/JS inlined, same as Path A).
        d. Layouts auto-handle repetition: pass a list under `items` and the snippet repeats it with staggered reveal; `grid-cards` / `kpi-grid` auto-pick `g2`/`g3`/`g4` by item count. `image-frame` and `object-float` take an image `src` (base64 or local path — build.py inlines it) and apply the concentric-rounded / floating rules above.
        e. **Add ECharts charts where the data earns it**: for any slide carrying a `"chart": { "option": {...} }` field (use layout `chart`), `build.py` inlines `assets/echarts.min.js` automatically and applies the liquid-glass theme (transparent canvas, iOS palette, frosted tooltip). Per `references/echarts-charts.md`, add a chart **only** where the page has real, comparable, quantitative data — never fabricate numbers, and never chart a page that is already text-only or visually complete (timeline, bullets, dividers). The `option` must be pure JSON (no JS functions).

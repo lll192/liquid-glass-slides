@@ -70,6 +70,7 @@ class OutlineProtocolTests(unittest.TestCase):
     def test_build_stamps_stable_identity_into_dom_and_report(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir) / "deck.html"
+            report_path = Path(temp_dir) / "build-report.json"
             subprocess.run(
                 [
                     sys.executable,
@@ -78,6 +79,8 @@ class OutlineProtocolTests(unittest.TestCase):
                     str(ROOT / "examples" / "narrative-visual-outline.json"),
                     "--out",
                     str(output),
+                    "--report",
+                    str(report_path),
                 ],
                 check=True,
                 cwd=ROOT,
@@ -90,6 +93,9 @@ class OutlineProtocolTests(unittest.TestCase):
             self.assertIn('data-slide-id="crawler-loop"', html)
             self.assertIn('"schemaVersion": "2.0"', html)
             self.assertIn('"slideId": "crawler-loop"', html)
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["deckId"], "web-crawler-narrative")
+            self.assertEqual(report["slides"][1]["slideId"], "crawler-loop")
 
     def test_presenter_storage_uses_slide_identity(self):
         js = (ROOT / "assets" / "engine.js").read_text(encoding="utf-8")

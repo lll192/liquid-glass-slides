@@ -29,6 +29,7 @@
 - **条件式 Source Gate**：选择完整文案或部分素材时，支持附件、本地路径、粘贴文本及图文混合上传，自动确认主文案、辅助材料、图片用途、改写幅度和缺失内容。
 - **来源与补写可追踪**：通过 `source-manifest.json` 和 `content-map.md` 区分用户原文、辅助参考与 AI 补充，避免素材混用或静默改写。
 - **稳定 Deck Protocol v2**：用永久 `deck_id` 与唯一 `slide_id` 绑定页面、笔记和后续修改；提供标准库校验器、机器可读 JSON Schema 与旧版确定性迁移工具。
+- **可恢复生产流水线**：一次运行生成故事板、视觉规划、HTML、QA 报告与任务状态；失败会记录精确阶段和错误，修正后可由同一或另一个 AI 继续执行。
 
 ## 快速开始
 
@@ -56,6 +57,29 @@
 
 ```bash
 python scripts/migrate_outline.py old-outline.json --out outline-v2.json
+```
+
+### 生产流水线（推荐给多 AI 与持续迭代项目）
+
+```bash
+python scripts/pipeline.py run \
+  --brief brief.json \
+  --source-manifest source-manifest.json \
+  --outline my-talk.json \
+  --out dist/my-talk.html
+```
+
+如果没有外部文案，可省略 `--brief` 和 `--source-manifest`。流水线会在 HTML 旁生成：
+
+- `my-talk.storyboard.json`
+- `my-talk.visual-plan.json`
+- `my-talk.qa-report.json`
+- `my-talk.pipeline-state.json`
+
+查看状态：
+
+```bash
+python scripts/pipeline.py status dist/my-talk.pipeline-state.json
 ```
 
 ### 路径 A：手写（创意 / 探索）
@@ -104,6 +128,7 @@ liquid-glass-slides/
 │   ├── validate_source_manifest.py # 素材来源校验器（仅标准库）
 │   ├── validate_outline.py  # v2 Deck Schema 与稳定 ID 校验器
 │   ├── migrate_outline.py   # 旧版 outline → v2 确定性迁移
+│   ├── pipeline.py          # 可恢复的多阶段生产流水线与任务状态
 │   └── build.py             # 一键构建器（仅标准库）
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
@@ -143,6 +168,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Conditional Source Gate** — when full or partial copy is supplied, accepts attachments, local paths, pasted text, and mixed text/image input while recording source priority, image use, editing level, protected wording, and content gaps.
 - **Traceable AI additions** — `source-manifest.json` and `content-map.md` distinguish user copy, references, and AI-authored additions.
 - **Stable Deck Protocol v2** — permanent `deck_id` and unique `slide_id` values anchor pages, notes, and revisions, with a stdlib validator, machine-readable JSON Schema, and deterministic legacy migration.
+- **Recoverable production pipeline** — one run emits storyboard, visual-plan, HTML, QA, and task-state artifacts; failures identify the exact stage so the same or another AI can resume after correction.
 
 ## Quick start
 
@@ -152,7 +178,7 @@ python scripts/validate_brief.py brief.json
 # When user material is supplied:
 python scripts/validate_source_manifest.py source-manifest.json
 python scripts/validate_outline.py my-talk.json
-python scripts/build.py --outline my-talk.json --out my-talk.html
+python scripts/pipeline.py run --outline my-talk.json --out dist/my-talk.html
 ```
 Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.
 

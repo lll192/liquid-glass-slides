@@ -1202,7 +1202,7 @@ def resolve_variant(slide, slide_index, media_shape='unknown', chart_family='non
 
 
 # ---------- build ----------
-def build(outline_path, out_path, assets_dir, templates_dir):
+def build(outline_path, out_path, assets_dir, templates_dir, return_report=False):
     with open(outline_path, encoding='utf-8') as f:
         outline = json.load(f)
     schema_version = outline.get('schema_version') if isinstance(outline, dict) else None
@@ -1558,7 +1558,7 @@ def build(outline_path, out_path, assets_dir, templates_dir):
     result = result.replace('<!--__THREE_SCRIPTS__-->', three_scripts)
     # strip any unresolved placeholders for a clean output
     result = re.sub(r'\{\{[^}]*\}\}', '', result)
-    return result
+    return (result, build_report) if return_report else result
 
 
 def main():
@@ -1570,6 +1570,7 @@ def main():
     ap.add_argument('outline', nargs='?', help='path to outline JSON')
     ap.add_argument('--outline', dest='outline_opt', help='path to outline JSON')
     ap.add_argument('--out', help='output HTML path (default: <outline-name>.html)')
+    ap.add_argument('--report', help='optional build-report JSON path')
     ap.add_argument('--assets', default=default_assets, help='engine assets dir')
     ap.add_argument('--templates', default=default_templates, help='templates dir')
     args = ap.parse_args()
@@ -1584,12 +1585,19 @@ def main():
     out_path = os.path.abspath(out_path)
 
     try:
-        html = build(outline_path, out_path, args.assets, args.templates)
+        html, report = build(
+            outline_path, out_path, args.assets, args.templates, return_report=True
+        )
     except (ValueError, json.JSONDecodeError) as exc:
         print('ERROR: %s' % exc, file=sys.stderr)
         raise SystemExit(2)
     with open(out_path, 'w', encoding='utf-8') as f:
         f.write(html)
+    if args.report:
+        report_path = os.path.abspath(args.report)
+        with open(report_path, 'w', encoding='utf-8', newline='\n') as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+            f.write('\n')
 
     n_slides = len(re.findall(r'<section\b[^>]*class="[^"]*\bslide\b', html))
     print('OK  ->  %s  (%d slides, %d KB)' % (out_path, n_slides, len(html.encode('utf-8')) // 1024))
