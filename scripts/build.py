@@ -43,7 +43,7 @@ references/echarts-charts.md):
 A slide with a "three" field enables a Three.js scene on the shared background
 canvas (library inlined automatically only when used; see references/three-3d.md).
 The scene renders BEHIND the content and swaps in as the slide becomes visible:
-  { "layout":"cover", "title":"..", "three": { "scene": "field" } }  # field | nebula | object
+  { "layout":"cover", "title":"..", "three": { "scene": "field" } }  # field | nebula | network | petals | waves
 
 Snippet placeholders:
   {{field}}            scalar substitution
@@ -171,7 +171,7 @@ window.addEventListener('load',function(){ setTimeout(function(){ document.query
 '''
 
 # Liquid-glass Three.js layer: ONE shared WebGL canvas behind all content.
-# The active slide's scene (field / nebula / object) is swapped via IntersectionObserver,
+# The active slide's scene is swapped via IntersectionObserver,
 # so we never spawn more than one WebGL context. The library + this script are inlined
 # ONLY when a slide declares a "three" field (keeps dependency-free decks small).
 THREE_INIT_JS = r'''
@@ -218,40 +218,6 @@ if(typeof THREE!=='undefined'){ (function(){
     var pts=new THREE.Points(geo,mat); scene.add(pts);
     return {scene:scene,camera:cam,update:function(t){ pts.rotation.y=t*0.04*(o.speed||1); pts.rotation.x=Math.sin(t*0.1)*0.08; }};
   }
-  function objectScene(o){
-    // Swiss/Bauhaus kinetic composition: flat, right-biased, grid-aligned and
-    // deliberately quiet. The legacy shape suffix remains accepted as a stable
-    // scene key, but never brings back a literal wireframe polyhedron.
-    o=o||{}; var scene=new THREE.Scene();
-    var cam=new THREE.OrthographicCamera(-16,16,9,-9,-100,100); cam.position.z=10;
-    var group=new THREE.Group(); group.position.set(7.0,0.25,0); scene.add(group);
-    function plane(w,h,color,opacity,x,y,z){
-      var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({
-        color:color,transparent:true,opacity:opacity,depthWrite:false,depthTest:false
-      })); m.position.set(x,y,z||0); group.add(m); return m;
-    }
-    var disc=new THREE.Mesh(new THREE.CircleGeometry(2.55,64),new THREE.MeshBasicMaterial({
-      color:PALETTE[0],transparent:true,opacity:0.14,depthWrite:false,depthTest:false
-    })); disc.position.set(1.7,0.85,0); group.add(disc);
-    var bar=plane(5.4,0.82,PALETTE[1]||PALETTE[0],0.18,-0.65,-1.45,0.1);
-    var square=plane(1.35,1.35,PALETTE[2]||PALETTE[0],0.23,-2.05,2.35,0.2);
-    var triangle=new THREE.Mesh(new THREE.CircleGeometry(1.45,3),new THREE.MeshBasicMaterial({
-      color:PALETTE[1]||PALETTE[0],transparent:true,opacity:0.13,depthWrite:false,depthTest:false
-    })); triangle.position.set(2.75,-2.25,0.15); triangle.rotation.z=0.52; group.add(triangle);
-    var rules=new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-3.5,0.35,0.3),new THREE.Vector3(4.15,0.35,0.3),
-      new THREE.Vector3(0.2,-3.3,0.3),new THREE.Vector3(0.2,3.55,0.3)
-    ]);
-    group.add(new THREE.LineSegments(rules,new THREE.LineBasicMaterial({
-      color:PALETTE[0],transparent:true,opacity:0.16,depthWrite:false,depthTest:false
-    })));
-    return {scene:scene,camera:cam,update:function(t){
-      group.position.y=0.25+Math.sin(t*0.32)*0.11;
-      square.rotation.z=Math.sin(t*0.24)*0.055;
-      bar.position.x=-0.65+Math.sin(t*0.2)*0.08;
-      triangle.rotation.z=0.52+Math.sin(t*0.18)*0.035;
-    }};
-  }
   // Drifting petals / falling leaves: soft elongated motes sinking slowly with
   // a lateral sway — suits literary, historical and nature topics.
   function petalsScene(o){
@@ -277,35 +243,6 @@ if(typeof THREE!=='undefined'){ (function(){
         p[i*3+1]=y; p[i*3]=baseX[i]+Math.sin(t*0.55+phase[i])*3.4;
       }
       geo.attributes.position.needsUpdate=true;
-    }};
-  }
-  // Swiss kinetic circles: four flat discs locked to the right-side grid.
-  // They replace the old random glass-bubble cloud and its oversized orbit.
-  function orbsScene(o){
-    o=o||{}; var scene=new THREE.Scene();
-    var cam=new THREE.OrthographicCamera(-16,16,9,-9,-100,100); cam.position.z=10;
-    var group=new THREE.Group(); group.position.x=6.2; scene.add(group);
-    var specs=[[-1.2,1.45,2.25,0.13],[2.05,-0.95,1.55,0.16],[-2.75,-2.35,0.82,0.21],[3.45,2.75,0.62,0.24]];
-    var orbs=[];
-    specs.forEach(function(s,i){
-      var m=new THREE.Mesh(new THREE.CircleGeometry(s[2],64),new THREE.MeshBasicMaterial({
-        color:PALETTE[i%PALETTE.length],transparent:true,opacity:s[3],depthWrite:false,depthTest:false
-      }));
-      m.position.set(s[0],s[1],i*0.05); m.userData={bx:s[0],by:s[1],ph:i*1.37};
-      group.add(m); orbs.push(m);
-    });
-    var ruleGeo=new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-4.1,-0.15,0.4),new THREE.Vector3(4.45,-0.15,0.4),
-      new THREE.Vector3(0.55,-3.55,0.4),new THREE.Vector3(0.55,3.75,0.4)
-    ]);
-    group.add(new THREE.LineSegments(ruleGeo,new THREE.LineBasicMaterial({
-      color:PALETTE[0],transparent:true,opacity:0.11,depthWrite:false,depthTest:false
-    })));
-    return {scene:scene,camera:cam,update:function(t){
-      orbs.forEach(function(m,i){
-        m.position.y=m.userData.by+Math.sin(t*0.28+m.userData.ph)*0.12;
-        m.position.x=m.userData.bx+Math.cos(t*0.21+m.userData.ph)*0.07;
-      });
     }};
   }
   // Flowing wave lines: layered sine ribbons undulating gently — abstract,
@@ -414,10 +351,8 @@ if(typeof THREE!=='undefined'){ (function(){
   }
   var FACTORY={'field':function(){return particleScene({count:1100,spread:80,size:0.95,opacity:0.9,speed:1,camZ:72});},
               'nebula':function(){return particleScene({count:1700,spread:54,size:1.15,opacity:0.95,speed:1.7,camZ:62});},
-              'object':function(arg){return objectScene({shape:arg});},
               'network':function(){return networkScene({count:30,spread:15});},
               'petals':function(){return petalsScene({});},
-              'orbs':function(){return orbsScene({});},
               'waves':function(){return wavesScene({});},
               'ripple':function(pattern,zone,intensity,seed){return rippleScene(pattern,zone,intensity,seed);}};
   // Scene name may carry an argument: "object:torusKnot" -> FACTORY.object('torusKnot')
@@ -452,7 +387,8 @@ if(typeof THREE!=='undefined'){ (function(){
 # clean. The cover is guaranteed to carry the storm (auto-added if missing).
 PARTICLE_STORM = {'field', 'nebula'}
 COVER_STORM = 'field'
-CALM_FALLBACK = 'orbs'
+CALM_FALLBACK = None
+REMOVED_THREE_SCENES = {'object', 'orbs'}
 RIPPLE_PATTERNS = {'rings', 'flow', 'caustic'}
 RIPPLE_ZONES = {'bottom', 'bottom-right', 'edge', 'full'}
 RIPPLE_INTENSITIES = {'subtle', 'hero'}
@@ -1411,7 +1347,11 @@ def build(outline_path, out_path, assets_dir, templates_dir, return_report=False
                                      'using three + static ripple fallback\n' % (idx + 1))
                     ripple_dynamic = False
                 base = sc.split(':')[0]
-                if base in PARTICLE_STORM:
+                if base in REMOVED_THREE_SCENES:
+                    sys.stderr.write('[three] slide %d scene "%s" is retired; rendering no 3D scene\n'
+                                     % (idx + 1, base))
+                    three_scene = None
+                elif base in PARTICLE_STORM:
                     three_scene = COVER_STORM if layout == 'cover' else CALM_FALLBACK
                 else:
                     three_scene = sc

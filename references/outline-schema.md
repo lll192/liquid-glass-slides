@@ -232,12 +232,14 @@ name the relationships rather than filling nodes with paragraphs.
 Add a live 3D scene **behind any existing slide** by adding a `three` field to that slide object.
 It does NOT need its own layout — the 3D plays behind the slide's own text.
 ```json
-"three": { "scene": "field" }     // field | nebula | object | network
+"three": { "scene": "field" }     // field | nebula | network | petals | waves
 ```
 - `field`   — calm floating colored bokeh (good for cover / opening / closing).
 - `nebula`  — denser, faster particles (energy / scale / ecosystem).
-- `object`  — slow-rotating wireframe icosahedron (structure / mechanism / core idea).
 - `network` — connected nodes + links (community / relations / ecosystem / comparison).
+- `petals`  — restrained falling fragments for humanistic or emotional transitions.
+- `waves`   — layered sine waves for flow, time, or rhythm.
+- `object`, `object:*`, and `orbs` are retired and render nothing when old outlines are rebuilt.
 Only ONE shared WebGL canvas is ever created; `build.py` swaps the active scene by visible slide
 and inlines `assets/three.min.js` automatically (dependency-free decks stay small). If WebGL is
 unavailable, the slide silently falls back to the static light gradient — no error.

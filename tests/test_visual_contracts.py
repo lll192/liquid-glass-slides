@@ -13,32 +13,28 @@ BUILD = (ROOT / 'scripts' / 'build.py').read_text(encoding='utf-8')
 
 
 class VisualContractTests(unittest.TestCase):
-    def test_calm_three_presets_use_swiss_flat_geometry(self):
-        object_scene = BUILD[BUILD.index('function objectScene'):BUILD.index('function petalsScene')]
-        orbs_scene = BUILD[BUILD.index('function orbsScene'):BUILD.index('function wavesScene')]
-        for scene in (object_scene, orbs_scene):
-            self.assertIn('OrthographicCamera', scene)
-            self.assertIn('MeshBasicMaterial', scene)
-            self.assertNotIn('MeshStandardMaterial', scene)
-            self.assertNotIn('SphereGeometry', scene)
-            self.assertNotIn('wireframe:true', scene)
-        self.assertIn('group.position.set(7.0,0.25,0)', object_scene)
-        self.assertIn('var specs=[', orbs_scene)
-        self.assertNotIn('Math.random', orbs_scene)
-
-    def test_bauhaus_motion_reference_builds_both_calm_presets(self):
+    def test_retired_object_and_orbs_scenes_render_nothing(self):
+        self.assertNotIn('function objectScene', BUILD)
+        self.assertNotIn('function orbsScene', BUILD)
+        self.assertIn("REMOVED_THREE_SCENES = {'object', 'orbs'}", BUILD)
         with tempfile.TemporaryDirectory() as temp_dir:
+            outline = json.loads(
+                (ROOT / 'examples' / 'narrative-visual-outline.json').read_text(encoding='utf-8')
+            )
+            outline['slides'][1]['three'] = {'scene': 'object'}
+            outline['slides'][2]['three'] = {'scene': 'orbs'}
+            source = Path(temp_dir) / 'outline.json'
+            source.write_text(json.dumps(outline, ensure_ascii=False), encoding='utf-8')
             output = Path(temp_dir) / 'motion.html'
             subprocess.run(
                 [sys.executable, str(ROOT / 'scripts' / 'build.py'),
-                 '--outline', str(ROOT / 'examples' / 'bauhaus-motion-outline.json'),
+                 '--outline', str(source),
                  '--out', str(output)],
                 check=True, cwd=ROOT, capture_output=True, text=True,
             )
             html = output.read_text(encoding='utf-8')
-            self.assertIn('data-three="object"', html)
-            self.assertIn('data-three="orbs"', html)
-            self.assertIn('Swiss/Bauhaus kinetic composition', html)
+            self.assertNotIn('data-three="object"', html)
+            self.assertNotIn('data-three="orbs"', html)
 
     def test_data_table_has_alternating_rows(self):
         self.assertIn('.data-table tbody tr:nth-child(odd) > *', CSS)

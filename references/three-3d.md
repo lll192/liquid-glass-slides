@@ -17,10 +17,10 @@
 **密集粒子云（预设 `field` / `nebula`）就是用户说的「粒子风暴」——上千个漂浮光点铺满整页，在内容页上显得杂乱。** 因此硬性规则：
 
 - `field` / `nebula` **只能出现在封面（layout = `cover`）**；
-- 任何**非封面**页面若写了 `field` / `nebula`，`build.py` 会自动改成像 `orbs` 这类安静预设，不会真的渲染粒子风暴；
+- 任何**非封面**页面若写了 `field` / `nebula`，`build.py` 会直接忽略该场景，不渲染 3D；
 - 封面若完全没有 `three` 字段，`build.py` 会自动补上 `field`，保证首页一定带粒子风暴。
 
-非封面页想要背景动效时，请改用语义更安静、更克制的预设：`orbs`（瑞士网格圆形构成）/ `petals`（花瓣飘落）/ `waves`（正弦波）/ `object`（包豪斯几何构成）/ `network`（关系网，仅限内容本身是关系/网络时）。它们配合全局已有的光斑漂移，足够让非封面页保有节奏而不抢正文。
+非封面页只有在动效具有明确叙事意义时，才使用 `petals`（花瓣飘落）/ `waves`（正弦波）/ `network`（关系网，仅限内容本身是关系/网络时）。`object`、`object:*` 与 `orbs` 已停用，构建时不会渲染。
 
 ## 1. 实现机制（为什么可靠）
 
@@ -37,41 +37,36 @@
 
 **应该加（信号）**
 - 封面（cover）：第一眼的「空间纵深感」与品牌氛围——**这是唯一允许使用粒子风暴（`field` / `nebula`）的地方**。
-- 章节分隔（section-divider）/ 关键概念页 / 收尾页（closing）：主题升华处，用**安静**预设铺垫仪式感——`orbs`（瑞士圆形构成）/ `petals`（花瓣）/ `waves`（正弦波）/ `object`（包豪斯几何构成）；**绝不用 `field` / `nebula`**。
+- 章节分隔（section-divider）/ 关键概念页 / 收尾页（closing）：只有动效确实增强叙事时，才使用 `petals`、`waves` 或语义明确的 `network`；**绝不用 `field` / `nebula`**。
 
 **不应该加（信号）**
 - 纯信息页：bullets / grid-cards / kpi-grid / comparison / two-column / timeline /
   stat-highlight / chart —— 内容本身已清晰，加 3D 只会增加噪声、拖慢性能。
 - 一页已有大图（hero）又要在同一处加实体 → 二选一，避免视觉打架。
-- **非封面页绝不使用 `field` / `nebula`（粒子风暴）**——这是硬约束，`build.py` 会自动把这类误用改成像 `orbs` 的安静预设，但请从源头就选对。
+- **非封面页绝不使用 `field` / `nebula`（粒子风暴）**——这是硬约束，`build.py` 会直接忽略这类误用。
 
-## 3. 场景类型速查（build.py 内置预设，共 7 种）
+## 3. 场景类型速查（build.py 当前支持 5 种）
 
 | 预设 `scene` | 效果 | 适用 | 主题气质 |
 |---|---|---|---|
 | `field` | **粒子风暴**：缓慢漂浮的彩色柔光点（bokeh，低透明度） | **仅封面**（首页唯一允许的风暴） | 中性 |
 | `nebula` | **粒子风暴**：更密、更快的粒子星云，冲击更强 | **仅封面**（需要「哇」一下时） | 科技 / 数据 |
-| `object` | 右侧网格中的圆、方形、三角形、横条与细线，只有极轻微位移 | 结构 / 机制 / 核心概念页 | 包豪斯 / 瑞士构成 |
 | `network` | 节点 + 连线的关系网（缓慢自转） | **仅限内容本身就是关系/网络/生态**的页；不要压在普通文字页上（散点会像污渍） | 科技 / 数据 |
 | `petals` | 拉长柔光「花瓣」缓缓下落 + 横向摆动 | 文学 / 历史 / 人文 / 自然 / 抒情氛围页 | 人文 / 诗意 |
-| `orbs` | 四个确定位置与尺度的平面圆形，沿瑞士网格轻微漂移 | 留白多的分隔页 / 收尾页 | 克制 / 编辑感 |
 | `waves` | 4 条彩色正弦波线层叠起伏 | 叙事流 / 时间 / 情绪流等抽象母题 | 抽象 / 优雅 |
 
 ### 3.1 按主题气质选型（AI 必读）
 
 先判主题，再选预设，**气质不符的预设一律不用**：
 
-- **人文 / 文学 / 历史 / 艺术**（如《红楼梦》、诗词、美学）：首选 `petals`、`orbs`、`waves`；
-  `object` 仅在页面讨论形式、结构或现代主义时使用，`network` 仅用于真实关系网络。
-- **科技 / 数据 / 工程**：封面可用 `field` / `nebula`（粒子风暴）；非封面页用 `object` / `network` / `orbs` / `petals` / `waves`。
-- **拿不准时**：非封面页用 `orbs` 最安全（安静、通用、不抢戏）。
+- **人文 / 文学 / 历史 / 艺术**（如《红楼梦》、诗词、美学）：首选 `petals`、`waves`；`network` 仅用于真实关系网络。
+- **科技 / 数据 / 工程**：封面可用 `field` / `nebula`（粒子风暴）；非封面页只在有明确语义时用 `network` / `petals` / `waves`。
+- **拿不准时**：不使用 Three.js，优先用留白、静态几何、图表、图片或涟漪背景。
 - 同一 deck 内 3D 预设不宜超过 3 种，保持视觉语言统一。
 
-### 3.2 `object` 旧参数兼容
+### 3.2 已停用场景
 
-旧项目中的 `object:icosahedron`、`object:dodecahedron`、`object:torusKnot`、
-`object:torus` 和 `object:sphere` 仍可正常加载，但统一渲染为新版包豪斯平面构成。
-这样既保留场景键和历史文件兼容性，也不会重新出现遮挡文字的大型线框模型。
+`object`、`object:*` 和 `orbs` 已从产品中移除。旧大纲不需要手工修复；重新构建时这些字段会被安全忽略。已经生成的 HTML 是独立文件，不会自动变化，必须重新生成才能去掉旧效果。
 
 > 所有预设配色自动取自 deck 主题色（outline.theme.colors），
 > 浅色、柔和、慢动，与液态玻璃风格天然一致。粒子在浅底上以 **NormalBlending + 生成式柔光 sprite**
@@ -80,8 +75,6 @@
 ## 4. 放置位置
 
 - 3D **永远在文字背后**（z-index 介于光斑与内容之间），不另开布局、不挤占正文。
-- `object` 与 `orbs` 都锁定在画面右侧约 4 列，保留左侧 7–8 列正文空间；
-  使用正交相机、确定性位置和低透明度平面材质，避免透视膨胀、随机堆叠和巨大外圈。
 - 动画幅度不超过小范围漂移与约 3° 摆动；不做持续自转、缩放呼吸或随机穿越正文。
 - 窄屏 / 低端机：WebGL 仍会渲染，但粒子数已控制；如担心性能，优先少量页使用。
 
@@ -89,13 +82,12 @@
 
 ```json
 { "layout": "cover", "title": "Lean 形式化证明", "three": { "scene": "field" } }          # 粒子风暴仅封面
-{ "layout": "section-divider", "num": "01", "title": "什么是 Lean", "three": { "scene": "orbs" } }
-{ "layout": "section-divider", "num": "02", "title": "核心机制", "three": { "scene": "object" } }
-{ "layout": "stat-highlight", "num": "100", "unit": "万行", "title": "Mathlib 代码体量", "three": { "scene": "orbs" } }
+{ "layout": "section-divider", "num": "01", "title": "什么是 Lean", "three": { "scene": "waves" } }
+{ "layout": "content", "num": "02", "title": "节点如何协同", "three": { "scene": "network" } }
 { "layout": "closing", "title": "让机器成为你的证明搭档", "three": { "scene": "petals" } }
 ```
 
-- `scene` 取值：`field` | `nebula` | `object[:形状]` | `network` | `petals` | `orbs` | `waves`。
+- `scene` 取值：`field` | `nebula` | `network` | `petals` | `waves`。
 - 不写 `three` 字段的页：画布对该页透明，仅显示 CSS 光斑背景。
 
 ## 5.1 背景装饰字形（glyphs）随主题走
@@ -115,8 +107,8 @@
 ## 6. 自检清单
 
 - [ ] 该页是否真的属于「氛围 / 关键概念」类，而非纯信息页？（否 → 不加）
-- [ ] **粒子风暴（`field` / `nebula`）是否只出现在封面？** 非封面页一律用 `orbs` / `petals` / `waves` / `object` / `network`。
-- [ ] 选的场景是否与页面分量匹配？（封面可用 field/nebula；非封面用 orbs/petals 等安静预设）
-- [ ] `object` / `orbs` 是否保持在右侧网格，并给标题留下完整留白？
+- [ ] **粒子风暴（`field` / `nebula`）是否只出现在封面？** 非封面页只在有明确语义时用 `petals` / `waves` / `network`。
+- [ ] 选的场景是否与页面内容匹配？（拿不准就不加）
+- [ ] 是否没有继续生成已经停用的 `object` / `orbs`？
 - [ ] 全 deck 3D 页是否「克制」（不是每页都加）？
 - [ ] 重建后 `grep -c 'lg-three'` ≥ 2（canvas 元素 + 初始化），且 `three.min.js` 仅在用到时内联。
