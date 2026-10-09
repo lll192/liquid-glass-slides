@@ -28,6 +28,10 @@ python scripts/api_server.py --workspace C:/project --token local-development-to
 | `GET` | `/health` | No | Liveness check |
 | `GET` | `/openapi.json` | No | OpenAPI 3.1 description |
 | `GET` | `/v1/capabilities` | Bearer | Engine self-check and capability discovery |
+| `POST` | `/v1/session` | Bearer | Exchange a token for the console's HttpOnly local session |
+| `DELETE` | `/v1/session` | No | Clear the local console session |
+| `GET` | `/v1/workspace` | Bearer or session | List recognized outlines, briefs, manifests, states, and decks |
+| `GET` | `/preview?path=...` | Bearer or session | Preview an existing workspace HTML deck |
 | `POST` | `/v1/validate` | Bearer | Validate a brief, manifest, or outline |
 | `POST` | `/v1/build` | Bearer | Build a self-contained HTML deck |
 | `POST` | `/v1/run` | Bearer | Run the recoverable production pipeline |
@@ -74,6 +78,7 @@ outcome; `ok`, `errors`, and `warnings` communicate product outcome.
 - The default host is `127.0.0.1`.
 - Binding to another interface requires `--allow-remote`.
 - Bearer authentication is always active.
+- The local console can exchange the bearer token for an HttpOnly, same-site session cookie; the token is not stored in project files or browser local storage.
 - Request bodies are limited to 1 MiB.
 - API responses disable caching and content-type sniffing.
 - Files remain inside the explicit workspace boundary.

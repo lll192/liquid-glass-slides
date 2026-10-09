@@ -5,6 +5,7 @@ import threading
 import unittest
 import urllib.error
 import urllib.request
+from http.cookiejar import CookieJar
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -64,6 +65,48 @@ class ApiServerTests(unittest.TestCase):
         status, payload = self._request("/v1/capabilities", token=None)
         self.assertEqual(status, 401)
         self.assertFalse(payload["ok"])
+
+    def test_console_is_public_and_session_cookie_unlocks_workspace(self):
+        response = urllib.request.urlopen(self.base + "/", timeout=10)
+        page = response.read().decode("utf-8")
+        self.assertIn("Production Console", page)
+        self.assertIn("/console/app.js", page)
+
+        jar = CookieJar()
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+        request = urllib.request.Request(
+            self.base + "/v1/session",
+            data=b"",
+            headers={"Authorization": f"Bearer {TOKEN}"},
+            method="POST",
+        )
+        session = opener.open(request, timeout=10)
+        self.assertEqual(session.status, 200)
+        inventory = json.loads(opener.open(self.base + "/v1/workspace", timeout=10).read())
+        self.assertTrue(inventory["ok"])
+        self.assertEqual(inventory["data"]["files"][0]["kind"], "outline")
+
+    def test_inventory_and_authenticated_preview(self):
+        status, built = self._request(
+            "/v1/build", "POST",
+            {"outline": "outline.json", "output": "dist/deck.html"},
+        )
+        self.assertEqual(status, 200)
+        status, workspace = self._request("/v1/workspace")
+        self.assertEqual(status, 200)
+        self.assertEqual(workspace["data"]["decks"][0]["path"], "dist/deck.html")
+        request = urllib.request.Request(
+            self.base + "/preview?path=dist%2Fdeck.html",
+            headers={"Authorization": f"Bearer {TOKEN}"},
+        )
+        response = urllib.request.urlopen(request, timeout=10)
+        self.assertEqual(response.status, 200)
+        self.assertIn(b"<!doctype html>", response.read().lower())
+
+    def test_preview_rejects_non_html_files(self):
+        status, payload = self._request("/preview?path=outline.json")
+        self.assertEqual(status, 400)
+        self.assertIn("HTML", payload["errors"][0])
 
     def test_validate_and_build(self):
         status, validated = self._request(

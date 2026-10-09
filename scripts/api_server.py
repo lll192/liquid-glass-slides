@@ -5,13 +5,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import mimetypes
 import secrets
 import sys
 import uuid
+from http.cookies import CookieError, SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 try:
     from agent_service import AgentService, ServiceError
@@ -22,6 +24,8 @@ except ImportError:  # pragma: no cover
 API_VERSION = "1.0"
 MAX_BODY_BYTES = 1024 * 1024
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
+ROOT = Path(__file__).resolve().parents[1]
+CONSOLE_DIR = ROOT / "console"
 
 
 def openapi_document() -> dict[str, Any]:
@@ -33,6 +37,18 @@ def openapi_document() -> dict[str, Any]:
         "/health": {"get": {"summary": "Liveness check", "responses": {"200": {"description": "Healthy"}}}},
         "/v1/capabilities": {
             "get": {"summary": "Discover engine capabilities", "security": [{"bearerAuth": []}]}
+        },
+        "/v1/workspace": {
+            "get": {"summary": "List production inputs and outputs", "security": [{"bearerAuth": []}]}
+        },
+        "/v1/session": {
+            "post": {
+                "summary": "Exchange bearer token for a local HttpOnly session cookie",
+                "security": [{"bearerAuth": []}],
+            }
+        },
+        "/preview": {
+            "get": {"summary": "Preview a generated HTML deck", "security": [{"bearerAuth": []}]}
         },
     }
     for name in ("validate", "build", "run", "status", "mark-exported"):
@@ -77,6 +93,17 @@ def _server_payload(command: str, message: str, errors: list[str]) -> dict[str, 
     }
 
 
+def _session_cookie(value: str, *, clear: bool = False) -> str:
+    cookie = SimpleCookie()
+    cookie["lg_session"] = "" if clear else value
+    cookie["lg_session"]["httponly"] = True
+    cookie["lg_session"]["samesite"] = "Strict"
+    cookie["lg_session"]["path"] = "/"
+    if clear:
+        cookie["lg_session"]["max-age"] = 0
+    return cookie.output(header="").strip()
+
+
 def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         server_version = "LiquidGlassSlidesAPI/1.0"
@@ -86,19 +113,35 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
 
         def _send(self, status: int, payload: dict[str, Any]) -> None:
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+            self._send_bytes(status, body, "application/json; charset=utf-8")
+
+        def _send_bytes(
+            self, status: int, body: bytes, content_type: str,
+            extra_headers: dict[str, str] | None = None,
+        ) -> None:
             self.send_response(status)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("X-Request-Id", str(uuid.uuid4()))
+            for name, value in (extra_headers or {}).items():
+                self.send_header(name, value)
             self.end_headers()
             self.wfile.write(body)
 
         def _authorized(self) -> bool:
             supplied = self.headers.get("Authorization", "")
             expected = f"Bearer {token}"
-            return secrets.compare_digest(supplied, expected)
+            if secrets.compare_digest(supplied, expected):
+                return True
+            cookie = SimpleCookie()
+            try:
+                cookie.load(self.headers.get("Cookie", ""))
+                session = cookie.get("lg_session")
+                return bool(session and secrets.compare_digest(session.value, token))
+            except CookieError:
+                return False
 
         def _require_auth(self) -> bool:
             if self._authorized():
@@ -126,7 +169,14 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
             return value
 
         def do_GET(self) -> None:
-            path = urlparse(self.path).path
+            parsed = urlparse(self.path)
+            path = parsed.path
+            if path == "/" or path == "/index.html":
+                self._serve_console("index.html")
+                return
+            if path.startswith("/console/"):
+                self._serve_console(path.removeprefix("/console/"))
+                return
             if path == "/health":
                 self._send(200, {
                     "api_version": API_VERSION,
@@ -144,12 +194,61 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                 _, payload = service.invoke("doctor", {})
                 self._send(200, payload)
                 return
+            if path == "/v1/workspace":
+                if not self._require_auth():
+                    return
+                self._send(200, {
+                    "api_version": API_VERSION,
+                    "ok": True,
+                    "data": service.inventory(),
+                    "errors": [],
+                    "warnings": [],
+                })
+                return
+            if path == "/preview":
+                if not self._require_auth():
+                    return
+                values = parse_qs(parsed.query).get("path", [])
+                try:
+                    deck = service.path(values[0] if values else "", "path")
+                    if deck.suffix.lower() != ".html" or not deck.is_file():
+                        raise ServiceError("preview path must be an existing HTML file")
+                    self._send_bytes(
+                        200, deck.read_bytes(), "text/html; charset=utf-8",
+                        {"Content-Security-Policy": "frame-ancestors 'self'"},
+                    )
+                except (OSError, ServiceError) as exc:
+                    self._send(400, _server_payload("preview", "invalid preview", [str(exc)]))
+                return
             self._send(404, _server_payload("http", "route not found", [path]))
+
+        def _serve_console(self, relative: str) -> None:
+            candidate = (CONSOLE_DIR / relative).resolve()
+            try:
+                candidate.relative_to(CONSOLE_DIR.resolve())
+            except ValueError:
+                self._send(404, _server_payload("console", "asset not found", [relative]))
+                return
+            if not candidate.is_file():
+                self._send(404, _server_payload("console", "asset not found", [relative]))
+                return
+            content_type = mimetypes.guess_type(candidate.name)[0] or "application/octet-stream"
+            if content_type.startswith("text/") or content_type in {"application/javascript", "application/json"}:
+                content_type += "; charset=utf-8"
+            self._send_bytes(200, candidate.read_bytes(), content_type)
 
         def do_POST(self) -> None:
             if not self._require_auth():
                 return
             path = urlparse(self.path).path
+            if path == "/v1/session":
+                self._send_bytes(
+                    200,
+                    json.dumps({"api_version": API_VERSION, "ok": True}).encode("utf-8"),
+                    "application/json; charset=utf-8",
+                    {"Set-Cookie": _session_cookie(token)},
+                )
+                return
             operation = {
                 "/v1/validate": "validate",
                 "/v1/build": "build",
@@ -168,6 +267,17 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                 return
             status = 200 if code == 0 else (422 if code == 1 else 400)
             self._send(status, payload)
+
+        def do_DELETE(self) -> None:
+            if urlparse(self.path).path != "/v1/session":
+                self._send(404, _server_payload("http", "route not found", [self.path]))
+                return
+            self._send_bytes(
+                200,
+                json.dumps({"api_version": API_VERSION, "ok": True}).encode("utf-8"),
+                "application/json; charset=utf-8",
+                {"Set-Cookie": _session_cookie(token, clear=True)},
+            )
 
     return Handler
 

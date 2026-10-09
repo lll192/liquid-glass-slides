@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Liquid Glass Slides · Production Console</title>
+  <link rel="stylesheet" href="/console/app.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="Liquid Glass Slides 首页">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>LIQUID GLASS<br>SLIDES</span>
+      </a>
+      <div class="edition">PRODUCTION CONSOLE <strong>2.6</strong></div>
+      <button id="logout" class="text-button" type="button">锁定</button>
+    </header>
+
+    <aside class="control-rail" aria-label="生产控制">
+      <div class="rail-index">01 / INPUT</div>
+      <h1>从大纲到<br><span>可演示成品</span></h1>
+      <p class="lede">选择工作目录内的大纲。验证、构建、完整生产和预览都在这一页完成。</p>
+
+      <label for="outline">演示大纲</label>
+      <div class="select-wrap">
+        <select id="outline"><option value="">等待连接…</option></select>
+      </div>
+
+      <label for="output">输出文件</label>
+      <input id="output" type="text" value="dist/deck.html" spellcheck="false">
+
+      <details>
+        <summary>生产选项</summary>
+        <label for="brief">设计简报（可选）</label>
+        <select id="brief"><option value="">不使用</option></select>
+        <label for="source">来源清单（可选）</label>
+        <select id="source"><option value="">不使用</option></select>
+      </details>
+
+      <div class="actions">
+        <button class="secondary" data-action="validate" type="button">验证大纲</button>
+        <button class="primary" data-action="build" type="button">快速构建</button>
+        <button class="primary ink" data-action="run" type="button">完整生产</button>
+      </div>
+      <p class="shortcut">⌘ / Ctrl + Enter · 完整生产</p>
+    </aside>
+
+    <main class="stage">
+      <div class="stage-head">
+        <div>
+          <span class="rail-index">02 / PREVIEW</span>
+          <h2 id="preview-title">尚未生成</h2>
+        </div>
+        <div class="stage-actions">
+          <button id="refresh" class="icon-button" type="button" aria-label="刷新文件列表">↻</button>
+          <a id="open-preview" class="text-button disabled" target="_blank" rel="noopener">新窗口打开 ↗</a>
+        </div>
+      </div>
+      <div class="preview-frame" id="preview-frame">
+        <iframe id="preview" title="演示文稿预览"></iframe>
+        <div class="empty-state" id="empty-state">
+          <span class="cross" aria-hidden="true"></span>
+          <strong>等待第一份成品</strong>
+          <p>验证不会生成文件。选择“快速构建”或“完整生产”后，预览会自动出现。</p>
+        </div>
+      </div>
+    </main>
+
+    <aside class="inspector" aria-live="polite">
+      <div class="rail-index">03 / REPORT</div>
+      <div class="status-line">
+        <span id="status-dot" class="status-dot idle"></span>
+        <strong id="status-title">准备就绪</strong>
+      </div>
+      <p id="status-message">连接控制台后，这里会显示验证结果、构建警告和流水线状态。</p>
+      <dl class="metrics">
+        <div><dt>大纲</dt><dd id="metric-outlines">—</dd></div>
+        <div><dt>成品</dt><dd id="metric-decks">—</dd></div>
+        <div><dt>耗时</dt><dd id="metric-time">—</dd></div>
+      </dl>
+      <section class="report-section">
+        <h3>错误</h3>
+        <ol id="errors"><li class="muted">暂无</li></ol>
+      </section>
+      <section class="report-section">
+        <h3>警告与建议</h3>
+        <ol id="warnings"><li class="muted">暂无</li></ol>
+      </section>
+      <section class="report-section raw-section">
+        <details>
+          <summary>查看机器返回</summary>
+          <pre id="raw">{}</pre>
+        </details>
+      </section>
+    </aside>
+  </div>
+
+  <div class="auth-gate" id="auth-gate" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <form id="auth-form" class="auth-panel">
+      <span class="rail-index">LOCAL / SECURE</span>
+      <h2 id="auth-title">连接生产内核</h2>
+      <p>把启动窗口里显示的 Bearer token 粘贴到这里。凭据只会交换为本机 HttpOnly 会话，不写入项目文件。</p>
+      <label for="token">访问令牌</label>
+      <input id="token" type="password" autocomplete="off" required autofocus>
+      <button class="primary ink" type="submit">进入控制台</button>
+      <p id="auth-error" class="auth-error" role="alert"></p>
+    </form>
+  </div>
+
+  <script src="/console/app.js" defer></script>
+</body>
+</html>

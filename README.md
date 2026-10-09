@@ -34,6 +34,7 @@
 - **统一 Agent CLI**：Codex、WorkBuddy、Claude、Gemini、Cursor、自动化脚本与未来 MCP 统一调用 `scripts/slides.py`；JSON 返回结构和退出码稳定，不再解析终端文案。
 - **本地 MCP 工具服务器**：支持 MCP 的 AI 可直接发现并调用 6 个 `slides_*` 工具，同时读取协议、说明和布局资源；所有文件访问限制在启动时指定的工作目录内。
 - **安全 HTTP API**：网页、自动化平台和远程智能体可通过 Bearer Token 调用同一生产内核；默认仅监听本机，并提供 OpenAPI 3.1 描述。
+- **本地生产控制台**：无需编写命令即可选择大纲、验证、快速构建、运行完整流水线、查看错误与警告，并在同一页面预览成品。
 
 ## 快速开始
 
@@ -125,7 +126,7 @@ python scripts/mcp_server.py --workspace C:/path/to/presentation-project
 python scripts/api_server.py --workspace C:/path/to/presentation-project
 ```
 
-服务器会生成 Bearer Token；接口说明见 [`references/http-api.md`](references/http-api.md)。
+打开终端显示的 `http://127.0.0.1:8765` 即可进入生产控制台，把同一窗口里的 Bearer Token 粘贴一次完成连接。服务器仍可供其他网页或自动化平台调用；接口说明见 [`references/http-api.md`](references/http-api.md)，控制台说明见 [`references/production-console.md`](references/production-console.md)。
 
 ## 目录结构
 
@@ -156,6 +157,7 @@ liquid-glass-slides/
 │   ├── mcp_server.py        # 零依赖 MCP stdio 工具服务器
 │   ├── api_server.py        # 带认证和工作目录隔离的 HTTP API
 │   └── build.py             # 一键构建器（仅标准库）
+├── console/                 # 零依赖本地生产控制台
 ├── references/              # 各模块参考文档
 └── examples/                # 示例 outline 与成品
 ```
@@ -199,6 +201,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Unified Agent CLI** — Codex, WorkBuddy, Claude, Gemini, Cursor, automation, and future MCP clients call one stable command with a machine-readable JSON envelope and explicit exit codes.
 - **Local MCP tool server** — MCP-capable agents discover six `slides_*` tools plus schemas and instructions as read-only resources, while all file access stays inside an explicit workspace boundary.
 - **Secure HTTP API** — web tools, automation platforms, and remote agents call the same production core through bearer authentication, loopback-only defaults, and an OpenAPI 3.1 description.
+- **Local production console** — select an outline, validate, build, run the recoverable pipeline, inspect errors and warnings, and preview the result without writing commands.
 
 ## Quick start
 
@@ -216,7 +219,7 @@ MCP-capable clients can launch `python scripts/mcp_server.py --workspace <projec
 See [`references/mcp-server.md`](references/mcp-server.md) for configuration and security boundaries.
 
 Web and automation clients can launch `python scripts/api_server.py --workspace <project-directory>`.
-See [`references/http-api.md`](references/http-api.md) for endpoints and deployment safety.
+Open `http://127.0.0.1:8765`, then paste the generated bearer token once to use the production console. See [`references/http-api.md`](references/http-api.md) for endpoints and deployment safety, and [`references/production-console.md`](references/production-console.md) for the visual workflow.
 
 **Path A — hand-write:** start from `assets/template.html` or `templates/deck.html`, clone `<section class="slide">` blocks, fill real HTML. See `SKILL.md` for the full workflow.
 

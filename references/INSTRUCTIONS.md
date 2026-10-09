@@ -74,6 +74,7 @@ Load only the references needed for the current task:
 - `references/agent-response-schema-v1.json` — machine-readable JSON Schema for every Agent CLI response.
 - `references/mcp-server.md` — local MCP stdio server, six presentation tools, workspace boundary, and client configuration.
 - `references/http-api.md` — authenticated local HTTP API, OpenAPI discovery, endpoint contract, workspace boundary, and deployment safety.
+- `references/production-console.md` — local human review surface for validation, production, reports, and deck preview.
 
 **Layout snippet library** (`templates/single-page/*.html`): 18 drop-in
 `<section class="slide">` fragments — `cover`, `toc`, `section-divider`,
