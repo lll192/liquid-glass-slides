@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 import tempfile
@@ -39,6 +40,18 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('.notes-visible .slide{ width:calc(100vw - var(--presenter-rail)); }', CSS)
         self.assertIn("e.key.toLowerCase() === 'n'", JS)
 
+    def test_presenter_notes_are_editable_and_persist_locally(self):
+        self.assertIn('presenter-notes-editor', JS)
+        self.assertIn("notesEditor.addEventListener('input', saveNote)", JS)
+        self.assertIn('localStorage.setItem(key, value)', JS)
+
+    def test_narrative_example_has_natural_length_speaker_notes(self):
+        outline = json.loads((ROOT / 'examples' / 'narrative-visual-outline.json').read_text(encoding='utf-8'))
+        for page, slide in enumerate(outline['slides'], 1):
+            note = ''.join(slide.get('speaker_notes', []))
+            self.assertGreaterEqual(len(note), 70, 'slide %d note is too short' % page)
+            self.assertLessEqual(len(note), 150, 'slide %d note is too long' % page)
+
     def test_reference_deck_builds_with_all_three_layouts(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             output = Path(temp_dir) / 'deck.html'
@@ -54,8 +67,10 @@ class VisualContractTests(unittest.TestCase):
             html = output.read_text(encoding='utf-8')
             for layout in ('data-table', 'comparison', 'closing'):
                 self.assertIn('data-layout="%s"' % layout, html)
-            self.assertIn('<strong>故事角色</strong>', html)
-            self.assertIn('<strong>情绪节拍</strong>', html)
+            self.assertIn('<strong>核心结论</strong>', html)
+            self.assertIn('<strong>转场提示</strong>', html)
+            for redundant in ('故事角色', '情绪节拍', '观众问题', '讲述意图'):
+                self.assertNotIn('<strong>%s</strong>' % redundant, html)
 
 
 if __name__ == '__main__':

@@ -44,9 +44,16 @@ examples, transitions, caveats, definitions, and delivery cues in
 }
 ```
 
+For each substantive page, combine the explanation into natural spoken prose of about
+80–130 Chinese characters (target roughly 100). Mention the visual evidence or example
+on that page, add one useful interpretation or caveat, and connect naturally to the next
+idea. Do not turn planning labels into a script, repeat the title verbatim, or invent
+facts. The presenter panel is directly editable and auto-saves browser-local revisions;
+those revisions do not modify the outline file.
+
 The builder escapes notes and embeds them as hidden content. Press `N` during
-playback, or append `?notes=1`, to open the presenter panel. Notes never affect
-slide density or appear in the audience view by default.
+playback, or append `?notes=1`, to open the presenter panel and edit the current page's
+note. Notes never affect slide density or appear in the audience view by default.
 
 ## 3. Long-block warnings
 

@@ -10,22 +10,58 @@
   const counter = document.querySelector('.counter');
   let current = 0, wheelLock = false;
   let notesVisible = new URLSearchParams(location.search).has('notes');
+  const isChinese = (document.documentElement.lang || '').toLowerCase().startsWith('zh');
+  const sessionNotes = new Map();
+  const deckNoteKey = 'liquid-glass-notes:' + location.pathname + ':' + document.title + ':';
 
   const notesPanel = document.createElement('aside');
   notesPanel.className = 'presenter-notes';
   notesPanel.setAttribute('aria-live', 'polite');
-  notesPanel.innerHTML = '<div class="presenter-notes-head"><span>Narrative Director</span><button type="button" aria-label="Close presenter cues">×</button></div><div class="presenter-notes-body"></div>';
+  notesPanel.innerHTML = '<div class="presenter-notes-head"><span>Narrative Director</span><button type="button" aria-label="Close presenter cues">×</button></div>' +
+    '<div class="presenter-notes-body"><div class="presenter-cues"></div>' +
+    '<div class="presenter-editor"><label for="presenter-notes-editor">' + (isChinese ? '演讲者笔记' : 'Speaker notes') + '</label>' +
+    '<textarea id="presenter-notes-editor" class="presenter-notes-editor" spellcheck="true"></textarea>' +
+    '<p class="presenter-notes-status" aria-live="polite"></p></div></div>';
   document.body.appendChild(notesPanel);
   notesPanel.querySelector('button').addEventListener('click', () => setNotesVisible(false));
   notesPanel.id = 'presenter-notes';
+  const notesEditor = notesPanel.querySelector('.presenter-notes-editor');
+  const notesStatus = notesPanel.querySelector('.presenter-notes-status');
+
+  function noteStorageKey(){ return deckNoteKey + String(current + 1); }
+  function sourceNoteText(){
+    const source = slides[current] && slides[current].querySelector('.speaker-notes');
+    if (!source) return '';
+    return Array.from(source.querySelectorAll('p')).map((p) => p.textContent.trim()).filter(Boolean).join('\n\n') || source.textContent.trim();
+  }
+  function readNote(){
+    const key = noteStorageKey();
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved !== null) return saved;
+    } catch (error) {}
+    return sessionNotes.has(key) ? sessionNotes.get(key) : sourceNoteText();
+  }
+  function saveNote(){
+    const key = noteStorageKey();
+    const value = notesEditor.value;
+    sessionNotes.set(key, value);
+    let persisted = false;
+    try { localStorage.setItem(key, value); persisted = true; } catch (error) {}
+    notesStatus.textContent = persisted
+      ? (isChinese ? '已自动保存到本机浏览器' : 'Saved locally in this browser')
+      : (isChinese ? '已保存在本次会话' : 'Saved for this session');
+  }
+  notesEditor.addEventListener('input', saveNote);
 
   function updateSpeakerNotes(){
-    const source = slides[current] && slides[current].querySelector('.speaker-notes');
     const cues = slides[current] && slides[current].querySelector('.narrative-cues');
-    const body = notesPanel.querySelector('.presenter-notes-body');
-    const cueHTML = cues && cues.innerHTML ? '<div class="presenter-cues">' + cues.innerHTML + '</div>' : '';
-    const noteHTML = source && source.innerHTML ? source.innerHTML : '<p class="notes-empty">No speaker notes on this slide.</p>';
-    body.innerHTML = cueHTML + noteHTML;
+    const cueBox = notesPanel.querySelector('.presenter-cues');
+    cueBox.innerHTML = cues && cues.innerHTML ? cues.innerHTML : '';
+    cueBox.hidden = !cueBox.innerHTML;
+    notesEditor.value = readNote();
+    notesEditor.placeholder = isChinese ? '在这里直接补充或修改本页讲稿……' : 'Add or edit notes for this slide…';
+    notesStatus.textContent = isChinese ? '输入内容会自动保存' : 'Changes are saved automatically';
     notesPanel.dataset.slide = String(current + 1);
     notesPanel.dataset.role = slides[current] ? (slides[current].dataset.storyRole || '') : '';
   }

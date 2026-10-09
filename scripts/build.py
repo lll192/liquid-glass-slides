@@ -924,20 +924,12 @@ def audit_narrative(slides):
 def narrative_cues_html(profile, lang='en'):
     if str(lang).lower().startswith('zh'):
         labels = (
-            ('故事角色', profile.get('storyRole')),
-            ('情绪节拍', profile.get('emotion')),
             ('核心结论', profile.get('mainPoint')),
-            ('观众问题', profile.get('audienceQuestion')),
-            ('讲述意图', profile.get('speakerIntent')),
             ('转场提示', profile.get('transition')),
         )
     else:
         labels = (
-            ('Story role', profile.get('storyRole')),
-            ('Emotion', profile.get('emotion')),
             ('Main point', profile.get('mainPoint')),
-            ('Audience question', profile.get('audienceQuestion')),
-            ('Speaker intent', profile.get('speakerIntent')),
             ('Transition', profile.get('transition')),
         )
     return ''.join(

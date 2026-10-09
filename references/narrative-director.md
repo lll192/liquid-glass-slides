@@ -30,8 +30,30 @@ being answered, the speaker's intent, and the hand-off to the next page.
 All fields are optional. When `story_role` or `emotion` is absent, the builder infers a
 conservative default from the layout. Explicit direction is recommended for important
 beats. The presenter panel (`N` or `?notes=1`) docks in a separate right rail and shows
-these cues above `speaker_notes`; the slide narrows to remain fully visible. Audience
-mode contains no presenter button, label, or cue.
+only the two cues needed during delivery: `main_point` and `transition`. The other fields
+still guide planning and narrative audits, but do not clutter the live panel. The slide
+narrows to remain fully visible. Audience mode contains no presenter button, label, or
+cue.
+
+## Speaker-note voice
+
+Write `speaker_notes` for every substantive slide as a short piece of spoken language,
+normally **80–130 Chinese characters (target about 100)** or roughly 45–80 English
+words. It should sound like something a person would naturally say, not metadata or a
+second slide.
+
+- Refer to the visible diagram, table, example, or contrast on that page.
+- Explain one concrete relationship, implication, caveat, or example instead of merely
+  repeating the title and labels.
+- Lead naturally toward the recorded `transition`; avoid canned “首先、其次、最后”
+  patterns, slogans, and unexplained jargon.
+- Use only facts supported by the user material or traceable sources. Never invent a
+  number or detail to make the note sound more specific.
+
+The presenter can edit notes directly in the panel. Edits are automatically stored in
+that browser on that device (with an in-session fallback when local storage is blocked).
+They do not rewrite the source outline or generated HTML; update the outline and rebuild
+when an edit must travel with the deck.
 
 ## Directing the arc
 

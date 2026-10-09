@@ -898,16 +898,27 @@ body{ --presenter-rail:min(430px,34vw); }
   font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
 }
 .presenter-notes-head button{ border:0; background:transparent; color:#475467; font-size:20px; line-height:1; cursor:pointer; }
-.presenter-notes-body{ padding:.8rem .95rem 1rem; }
+.presenter-notes-body{ padding:.9rem 1rem 1rem; }
 .presenter-notes-body p{ margin:.25rem 0 .65rem; color:#202329; font-size:14px; line-height:1.55; }
-.presenter-notes-body .notes-empty{ color:#7a808a; font-style:italic; }
-.presenter-cues{ margin:-.1rem 0 .85rem; padding:0 0 .65rem; border-bottom:1px solid rgba(0,0,0,.08); }
-.presenter-cues p{ display:grid; grid-template-columns:8.5rem 1fr; gap:.55rem; margin:.25rem 0; }
+.presenter-cues{ margin:0 0 1rem; padding:0 0 .8rem; border-bottom:1px solid rgba(0,0,0,.08); }
+.presenter-cues[hidden]{ display:none; }
+.presenter-cues p{ display:grid; grid-template-columns:5.2rem 1fr; gap:.65rem; margin:.25rem 0 .6rem; }
 .presenter-cues strong{ color:var(--accent,#0A84FF); font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
+.presenter-editor label{ display:block; margin:0 0 .5rem; color:#17181a; font-size:12px; font-weight:750; letter-spacing:.06em; }
+.presenter-notes-editor{
+  display:block; width:100%; min-height:clamp(210px,42vh,480px); resize:vertical;
+  padding:.8rem .85rem; color:#202329; background:rgba(248,250,253,.9);
+  border:1px solid rgba(20,32,52,.15); border-radius:12px; outline:none;
+  font:400 15px/1.7 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+  box-shadow:inset 0 1px 2px rgba(22,35,60,.04); transition:border-color .18s,box-shadow .18s;
+}
+.presenter-notes-editor:focus{ border-color:rgba(var(--accent-rgb),.55); box-shadow:0 0 0 3px rgba(var(--accent-rgb),.10); }
+.presenter-notes-editor::placeholder{ color:#8a919d; }
+.presenter-notes-status{ min-height:1.2rem; margin:.4rem .15rem 0!important; color:#7a808a!important; font-size:11px!important; }
 
 @media (max-width:900px){
   body{ --presenter-rail:min(360px,44vw); }
-  .presenter-cues p{ grid-template-columns:6.5rem 1fr; }
+  .presenter-cues p{ grid-template-columns:4.8rem 1fr; }
 }
 
 /* ============ STRUCTURED VISUALS（表格 / 流程 / 概念关系）============ */

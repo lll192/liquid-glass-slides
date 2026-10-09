@@ -36,12 +36,15 @@ centered, card-forward layout treatment.
   it is included in the build report but not rendered.
 - `speaker_notes` — optional string or string array. Notes are HTML-escaped,
   excluded from density calculations, hidden from the audience, and available
-  through the `N` presenter panel or `?notes=1`.
+  through the `N` presenter panel or `?notes=1`. For substantive pages, write natural,
+  page-specific spoken prose of about 80–130 Chinese characters (target about 100).
+  Presenter edits auto-save in the local browser but do not rewrite this outline.
 - `story_role` — optional narrative role: `hook`, `orient`, `question`, `context`,
   `conflict`, `explain`, `example`, `evidence`, `contrast`, `reveal`, `synthesis`,
   `transition`, `resolution`, or `pause`.
 - `audience_question`, `speaker_intent`, `transition`, `emotion` — optional
-  Narrative Director cues shown only in the presenter panel.
+  Narrative Director planning cues. The live presenter panel intentionally shows only
+  `main_point` and `transition`; all fields remain available to narrative audits.
 - `visual_plan` — optional object with `type`, `purpose`, `priority`
   (`required`/`optional`), and `source`. See `visual-coverage-planner.md`.
 

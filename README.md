@@ -14,8 +14,8 @@
 - **中文与中英混排优化**：按视觉长度自动区分短、中、长标题，启用中文严格换行、标题平衡换行、脚本感知字距和表格数字，并提示需要改写的超长标题。
 - **图片与图表智能编排**：识别横图、竖图、方图及趋势、比较、占比、雷达、分布图，自动调整图文比例和图表高度，并检查替代文本与数据结论。
 - **整套节奏与自动质检**：构建时发现连续重复版式、页面重量失衡和缺失的呼吸页；浏览器端无需截图即可检测溢出、越界、标题过度换行和过小字号。
-- **文案与演讲备注分层**：识别空泛标题和过长屏幕文案，用 `main_point` 固定每页核心结论，用 `speaker_notes` 保存演讲者说明，播放时按 `N` 查看。
-- **Narrative Director**：为每页指定故事角色、观众问题、讲述意图、情绪节拍和自然转场；演讲者视图直接显示提示，并检测连续平铺、缺少证据或反差的故事弧。
+- **文案与演讲备注分层**：识别空泛标题和过长屏幕文案，用 `main_point` 固定每页核心结论，用 `speaker_notes` 保存约 100 字的自然讲稿；播放时按 `N` 可直接编辑并自动保存到本机浏览器。
+- **Narrative Director**：为每页规划故事角色、观众问题、讲述意图、情绪节拍和自然转场；演讲者视图只保留核心结论与转场提示，并检测连续平铺、缺少证据或反差的故事弧。
 - **Visual Coverage Planner**：区分“解释信息的视觉”与纯装饰，规划图片、图表、数据表、流程图和概念图；检测视觉缺失、连续纯文字页与图表/表格来源缺失。
 - **真实中文文字**：所有可读文字都是真正的 HTML 文本，绝不乱码、可直接编辑。
 - **零依赖单文件输出**：内联 CSS/JS，浏览器直接全屏播放，支持键盘 / 滚轮 / 触摸翻页与入场动画。
@@ -117,8 +117,8 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Editorial CJK and mixed-script typography** — visual-length title profiles, strict Chinese line breaking, balanced headings, script-aware tracking, tabular figures, and warnings for titles that should be rewritten.
 - **Visual intelligence** — profiles landscape/portrait/square imagery and trend/comparison/proportion/radar/distribution charts, then adjusts visual ratios and bounded chart height while checking alt text and takeaways.
 - **Deck rhythm and automatic QA** — reports repetitive layout/weight sequences at build time, then measures overflow, boundaries, title wrapping, and minimum readable type in the real browser viewport without routine screenshot loops.
-- **Content and presenter-note intelligence** — flags generic titles and oversized display blocks, preserves one `main_point` per page, and keeps detailed `speaker_notes` in an `N`-toggle presenter panel.
-- **Narrative Director** — assigns story roles, audience questions, speaker intent, emotional beats, and transitions; presenter cues are visible in rehearsal while flat story arcs are reported.
+- **Content and presenter-note intelligence** — flags generic titles and oversized display blocks, preserves one `main_point` per page, and keeps natural, page-specific `speaker_notes` in an editable, locally auto-saved `N`-toggle presenter panel.
+- **Narrative Director** — plans story roles, audience questions, speaker intent, emotional beats, and transitions; the live panel keeps only the main point and transition while flat story arcs are reported.
 - **Visual Coverage Planner** — distinguishes explanatory visuals from decoration, plans images/charts/tables/flows/maps, and reports missing required visuals, provenance, or long text-only runs.
 - **Real, editable text** — all readable text is genuine HTML; Chinese never garbles.
 - **Zero-dependency single file** — inlined CSS/JS, fullscreen playback, keyboard/wheel/touch navigation with reveal animations.
