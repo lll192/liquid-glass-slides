@@ -136,6 +136,23 @@ def validate_outline(outline: Any) -> list[str]:
         ):
             errors.append(f"{prefix}.hero_position must look like 50% 50%")
 
+        for field in ("background_image", "background_alt", "decorative_image", "decorative_alt",
+                      "support_image", "support_alt"):
+            if not _optional_string(slide.get(field)):
+                errors.append(f"{prefix}.{field} must be a string when provided")
+        for field in ("decorative_side", "support_side"):
+            if slide.get(field) not in (None, "left", "right"):
+                errors.append(f"{prefix}.{field} must be left or right")
+        if slide.get("support_fit") not in (None, "contain", "cover"):
+            errors.append(f"{prefix}.support_fit must be contain or cover")
+        for field in ("background_position", "support_position"):
+            value = slide.get(field)
+            if value is not None and (
+                not isinstance(value, str)
+                or not re.fullmatch(r"\d{1,3}%\s+\d{1,3}%", value.strip())
+            ):
+                errors.append(f"{prefix}.{field} must look like 50% 50%")
+
     return errors
 
 

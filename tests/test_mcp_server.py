@@ -83,7 +83,7 @@ class McpServerTests(unittest.TestCase):
         self.assertEqual(result["resultType"], "complete")
         self.assertTrue(result["structuredContent"]["ok"])
         self.assertEqual(
-            result["_meta"]["io.modelcontextprotocol/serverInfo"]["version"], "1.1.0"
+            result["_meta"]["io.modelcontextprotocol/serverInfo"]["version"], "1.2.0"
         )
 
     def test_initialize_and_list_tools(self):
@@ -95,7 +95,7 @@ class McpServerTests(unittest.TestCase):
         names = [tool["name"] for tool in responses[1]["result"]["tools"]]
         self.assertEqual(
             names,
-            ["slides_doctor", "slides_validate", "slides_build", "slides_run",
+            ["slides_doctor", "slides_validate", "slides_build", "slides_source_images", "slides_run",
              "slides_status", "slides_mark_exported"],
         )
 
@@ -107,6 +107,7 @@ class McpServerTests(unittest.TestCase):
                     request("resources/list", 2, {}),
                     request("resources/read", 3, {"uri": "slides://schema/deck-v2"}),
                     request("resources/read", 4, {"uri": "slides://layouts"}),
+                    request("resources/read", 5, {"uri": "slides://schema/media-plan-v1"}),
                 ],
             )
         uris = [resource["uri"] for resource in responses[1]["result"]["resources"]]
@@ -115,6 +116,8 @@ class McpServerTests(unittest.TestCase):
         self.assertEqual(schema["properties"]["schema_version"]["const"], "2.0")
         layouts = json.loads(responses[3]["result"]["contents"][0]["text"])
         self.assertIn("concept-map", layouts["layouts"])
+        media_plan = json.loads(responses[4]["result"]["contents"][0]["text"])
+        self.assertEqual(media_plan["properties"]["schema_version"]["const"], "1.0")
 
     def test_doctor_returns_structured_content(self):
         with tempfile.TemporaryDirectory() as temp_dir:

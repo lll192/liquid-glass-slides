@@ -191,7 +191,7 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Automatic ripple fallback** — slides without Three.js, ECharts, or imagery receive a restrained ripple material automatically; dense layouts use a quiet static treatment.
 - **Auto color theme** — 3 background blobs + particle colors + 1 accent derived from the topic; body text stays near-black.
 - **Optional AI imagery** — transparent decorative hero/motif illustrations (text never baked into images).
-- **Web image sourcing** — searches reusable photography, archives, and artwork before generating substitutes, then validates source, author, license, slide use, alt text, fit, and focal point in `media-manifest.json`.
+- **Executable web-first image sourcing** — `source-images` searches Openverse in parallel, downloads reusable real-world photography, records author/license provenance, and requires visual review before the files are inserted as backgrounds, side images, or decoration. ImageGen fills only the remaining gaps.
 - **Production profiles** — `fast`, `balanced`, and `premium` budgets control AI-image count, sourced-image targets, and visual QA depth without weakening content checks.
 - **Crop-safe cover media** — transparent heroes float automatically; `contain` preserves complete artwork by default, while explicit `cover` plus a focal point enables intentional photographic crops.
 - **Adaptive Brief Gate** — inventories what the user already supplied, asks one compact six-field form only when needed, and avoids redundant questions.

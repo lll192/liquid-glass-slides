@@ -1,10 +1,10 @@
 ---
 name: liquid-glass-slides
-description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (presentations) from articles, outlines, notes, Markdown, or rough ideas. Use when the user asks to make a PPT / 幻灯片 / 演示 / 演讲 / 路演 / pitch deck / 课件 / keynote with a liquid-glass / 液态玻璃 / frosted-glass / 玻璃质感 aesthetic (translucent material, backdrop blur and refraction, specular highlights, light-reactive depth), optionally with AI-generated hero or cover illustrations. Produces a single self-contained HTML file that plays fullscreen in a browser with keyboard/wheel/touch navigation and reveal animations. Not for editable PPTX or hand-drawn raster images.
+description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (presentations) from articles, outlines, notes, Markdown, or rough ideas. Use when the user asks to make a PPT / 幻灯片 / 演示 / 演讲 / 路演 / pitch deck / 课件 / keynote with a liquid-glass / 液态玻璃 / frosted-glass / 玻璃质感 aesthetic. Sources reusable real-world photography first and uses AI-generated visuals only for bespoke art or unresolved gaps. Produces a single self-contained HTML file that plays fullscreen in a browser with keyboard/wheel/touch navigation and reveal animations. Not for editable PPTX or hand-drawn raster images.
 license: MIT
 metadata:
   agent_created: true
-  version: "2.7.0"
+  version: "2.8.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -114,7 +114,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
    - For production, choose ONE of two paths:
 
      **Path A — hand-write (creative / exploratory).** Full control, best for bespoke layouts.
-       a. **Decide AI imagery first** (see `references/ai-imagery.md`): cover almost always gets a floating hero; each `section-divider` usually gets a small floating motif; data-dense slides (timeline / comparison / bullets) usually get none. Generate with the image model, then **cut out the background** if the PNG came back as RGB (flood-fill, never naive white→alpha), and inline as base64 `<img>`. Never put required reading text into the image.
+       a. **Run the web-first image gate before ImageGen**: batch concrete people/place/object/atmosphere needs into `media-plan.json`, run `scripts/slides.py --json source-images`, inspect the downloaded candidates, and record rejection reasons for unresolved requests. Only then use `references/ai-imagery.md` for bespoke cover art, fictional scenes, or concepts that cannot be sourced. Never put required reading text into an image.
        b. Start from `assets/template.html`. Clone `<section class="slide">` blocks, apply `theme-tokens.json`, and fill each slide with real HTML text and semantic structure.
        c. Respect the mandatory viewport-fit base: every `.slide` is `height:100dvh; overflow:hidden`; all type/spacing use `clamp()`; no internal scroll.
        d. Keep image elements `object-fit:contain` with a `max-height` so they never break the viewport.
@@ -122,7 +122,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 
      **Path B — one-click build (reproducible / batch).** Compose a v2 `outline.json` and run the generator.
        a. Read `references/outline-schema.md` and `references/deck-schema-v2.json`. Every deck requires stable `schema_version`, `deck_id`, and per-page `slide_id` values: `{ "schema_version":"2.0", "deck_id":"my-talk", "title":"...", "lang":"zh-CN", "slides":[ { "slide_id":"opening-question", "layout":"cover", ...fields } ] }`. Never derive identity from the current page number. Validate with `python scripts/slides.py --json validate my-talk.json`; migrate older outlines with `python scripts/migrate_outline.py old.json --out new.json`.
-       b. **Add sourced and AI imagery**: use web search first for concrete subjects and authentic atmosphere, following `references/web-imagery.md`; reserve ImageGen for bespoke cover language or concepts that cannot be sourced. Save every selected asset under `images/`, validate `media-manifest.json`, and use local paths in the outline. For cover images, `hero_fit` defaults to `contain`; use `cover` only when cropping is intentional, with `hero_position` protecting the focal subject. `build.py` auto-inlines local assets.
+       b. **Add sourced and AI imagery**: the fixed order is web search → candidate review → outline insertion → AI gap fill. Save every selected asset under `images/`, validate `media-manifest.json`, and use `background_image`, `support_image`, `decorative_image`, `hero`, or `image` in the outline. Do not claim web sourcing ran unless downloaded web assets actually appear in the outline. For cover images, `hero_fit` defaults to `contain`; use `cover` only when cropping is intentional, with `hero_position` protecting the focal subject. `build.py` auto-inlines local assets.
        c. Run the stable agent-facing CLI:
           ```bash
           python scripts/slides.py --json validate my-talk.json
@@ -175,7 +175,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 - Narrative Director: enabled by default — direct the story with one role, audience question, speaker intent, emotional cue, and transition per important slide; use the hidden presenter panel for rehearsal.
 - Visual Coverage Planner: enabled by default — target a purposeful mix of meaningful visuals across content slides, require provenance for charts/tables, and never count ripple or Three.js atmosphere as evidence.
 - Accent: vivid system tint (default iOS blue `#0A84FF`); allow a single brand tint on request.
-- Illustrations: **proactively add AI-generated images** where they break monotony — a floating hero on the `cover` and a small floating motif on each `section-divider` by default; data-dense layouts (timeline / comparison / bullets) stay text/CSS-only. Decide placement *before* generating and cut out backgrounds when the model ignores transparency (see `references/ai-imagery.md`).
+- Images: **prefer reviewed web photography for real places, people, objects, and atmosphere**. Use AI-generated imagery only for bespoke art direction or unresolved visual gaps after search. A deck must not report web sourcing as complete when no web asset is referenced by a slide.
 - Charts: **proactively add ECharts visualizations only where a slide carries real, comparable, quantitative data** (trends, category comparisons, proportions, multi-dimension ability radar). Scan every page; add charts selectively, never on every slide. All charts auto-inherit the liquid-glass theme. Do not invent numbers to fill a chart (see `references/echarts-charts.md`). **This is fully automatic for the user: the AI does the scanning, decides placement, writes the `chart` fields into the outline, and runs build.py — the user never writes code or fields.**
 - 3D / Three.js: **add live backgrounds only where they carry meaning** — `petals` for literary atmosphere, `waves` for flow/time, `network` only for an actual relationship network, and `field` / `nebula` on the cover only. `object` and `orbs` are retired and render nothing. Non-cover misuse of particle storms also renders no 3D scene. Never add motion merely to fill empty space (see `references/three-3d.md`).
 - 3D scenes: reserve motion for a few atmosphere or concept pages. Never use them on pure-information slides or on every slide. All supported scenes render behind text through one shared canvas.

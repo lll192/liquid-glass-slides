@@ -110,6 +110,15 @@ class AgentService:
                 assets=None,
                 templates=None,
             ))
+        if operation == "source-images":
+            return slides.command_source_images(argparse.Namespace(
+                json=True,
+                plan=self.path(arguments.get("plan"), "plan"),
+                project_dir=self.path(arguments.get("projectDir", "."), "projectDir"),
+                manifest=self.path(arguments.get("manifest"), "manifest"),
+                reviewed=bool(arguments.get("reviewed", False)),
+                workers=int(arguments.get("workers", 4)),
+            ))
         if operation == "run":
             return slides.command_run(argparse.Namespace(
                 json=True,

@@ -85,6 +85,13 @@ class VisualContractTests(unittest.TestCase):
             image.write_bytes(b'\x89PNG\r\n\x1a\n' + b'\0' * 17 + bytes([6]))
             self.assertTrue(image_has_alpha('hero.png', temp_dir))
 
+    def test_sourced_images_have_non_obstructive_layout_contracts(self):
+        self.assertIn('.slide-web-background', CSS)
+        self.assertIn('.slide-web-scrim', CSS)
+        self.assertIn('.slide-support-image', CSS)
+        self.assertIn('.slide.has-support-image.support-right .slide-content', CSS)
+        self.assertIn("universal_media_markup(slide)", BUILD)
+
     def test_narrative_example_has_natural_length_speaker_notes(self):
         outline = json.loads((ROOT / 'examples' / 'narrative-visual-outline.json').read_text(encoding='utf-8'))
         for page, slide in enumerate(outline['slides'], 1):

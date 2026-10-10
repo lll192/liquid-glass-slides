@@ -397,7 +397,7 @@ AUTO_RIPPLE_DENSE_LAYOUTS = {
     'bullets', 'grid-cards', 'kpi-grid', 'comparison', 'two-column',
     'timeline', 'toc',
 }
-IMAGE_FIELDS = {'hero', 'image'}
+IMAGE_FIELDS = {'hero', 'image', 'background_image', 'decorative_image', 'support_image'}
 
 
 def normalize_ripple(surface, slide_number):
@@ -455,11 +455,57 @@ def slide_has_image(slide):
 
 def slide_image_source(slide):
     """Return the primary image source declared by a stock layout."""
-    for key in ('hero', 'image'):
+    for key in ('hero', 'image', 'support_image', 'background_image', 'decorative_image'):
         value = slide.get(key)
         if isinstance(value, str) and value.strip():
             return value.strip(), key
     return None, None
+
+
+def universal_media_markup(slide):
+    """Render optional sourced background, decorative, and side-support images."""
+    parts = []
+    background = str(slide.get('background_image', '')).strip()
+    if background:
+        alt = html.escape(str(slide.get('background_alt', '')).strip(), quote=True)
+        position = str(slide.get('background_position', '50% 50%')).strip()
+        if not re.fullmatch(r'\d{1,3}%\s+\d{1,3}%', position):
+            position = '50% 50%'
+        parts.append(
+            '<div class="slide-web-background" aria-hidden="true">'
+            '<img src="%s" alt="%s" style="object-position:%s"></div>'
+            '<div class="slide-web-scrim" aria-hidden="true"></div>'
+            % (html.escape(background, quote=True), alt, position)
+        )
+    decorative = str(slide.get('decorative_image', '')).strip()
+    if decorative:
+        alt = html.escape(str(slide.get('decorative_alt', '')).strip(), quote=True)
+        side = str(slide.get('decorative_side', 'right')).strip().lower()
+        if side not in ('left', 'right'):
+            side = 'right'
+        parts.append(
+            '<figure class="slide-web-decor decor-%s" aria-label="%s">'
+            '<img src="%s" alt="%s"></figure>'
+            % (side, alt, html.escape(decorative, quote=True), alt)
+        )
+    support = str(slide.get('support_image', '')).strip()
+    if support:
+        alt = html.escape(str(slide.get('support_alt', '')).strip(), quote=True)
+        side = str(slide.get('support_side', 'right')).strip().lower()
+        if side not in ('left', 'right'):
+            side = 'right'
+        fit = str(slide.get('support_fit', 'cover')).strip().lower()
+        if fit not in ('contain', 'cover'):
+            fit = 'cover'
+        position = str(slide.get('support_position', '50% 50%')).strip()
+        if not re.fullmatch(r'\d{1,3}%\s+\d{1,3}%', position):
+            position = '50% 50%'
+        parts.append(
+            '<figure class="slide-support-image support-%s support-fit-%s">'
+            '<img src="%s" alt="%s" style="object-position:%s"></figure>'
+            % (side, fit, html.escape(support, quote=True), alt, position)
+        )
+    return ''.join(parts)
 
 
 def _local_or_data_bytes(src, src_dir):
@@ -1311,7 +1357,13 @@ def build(outline_path, out_path, assets_dir, templates_dir, return_report=False
                 sys.stderr.write('[copy] slide %d %s is long (%d>%d chars); move detail to speaker_notes or split it\n'
                                  % (idx + 1, block['field'], block['length'], block['limit']))
         if visual_intelligence and image_src:
-            alt_key = 'hero_alt' if image_field == 'hero' else 'alt'
+            alt_key = {
+                'hero': 'hero_alt',
+                'image': 'alt',
+                'support_image': 'support_alt',
+                'background_image': 'background_alt',
+                'decorative_image': 'decorative_alt',
+            }.get(image_field, 'alt')
             if not str(slide.get(alt_key, '')).strip():
                 sys.stderr.write('[visual] slide %d (%s) is missing %s text\n'
                                  % (idx + 1, layout, alt_key))
@@ -1414,6 +1466,15 @@ def build(outline_path, out_path, assets_dir, templates_dir, return_report=False
             r'(<section\b[^>]*class=")([^"]*)(")',
             lambda m: m.group(1) + m.group(2) + ' ' + ' '.join(intelligence_classes) + m.group(3),
             rendered, count=1)
+        support_image = str(slide.get('support_image', '')).strip()
+        if support_image:
+            support_side = str(slide.get('support_side', 'right')).strip().lower()
+            if support_side not in ('left', 'right'):
+                support_side = 'right'
+            rendered = re.sub(
+                r'(<section\b[^>]*class=")([^"]*)(")',
+                lambda m: m.group(1) + m.group(2) + ' has-support-image support-' + support_side + m.group(3),
+                rendered, count=1)
         rendered = re.sub(
             r'(<section\b[^>]*>)',
             lambda m: m.group(1).rstrip('>') +
@@ -1454,6 +1515,11 @@ def build(outline_path, out_path, assets_dir, templates_dir, return_report=False
             rendered = re.sub(r'(<section\b[^>]*>)',
                               r'\1\n  <div class="ripple-surface" aria-hidden="true"></div>',
                               rendered, count=1)
+        media_markup = universal_media_markup(slide)
+        if media_markup:
+            rendered = re.sub(
+                r'(<section\b[^>]*>)', r'\1\n  ' + media_markup, rendered, count=1
+            )
         slides_out.append(rendered)
 
     slides_html = '\n\n  '.join(slides_out)

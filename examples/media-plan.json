@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "deck_id": "example-deck",
+  "image_dir": "images/web",
+  "requests": [
+    {
+      "asset_id": "real-world-context",
+      "query": "community library reading group",
+      "role": "content",
+      "slide_ids": ["discussion"],
+      "alt": "读者在图书馆讨论书籍",
+      "fit": "cover",
+      "focal_point": "50% 45%"
+    }
+  ]
+}

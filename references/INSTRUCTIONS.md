@@ -144,7 +144,7 @@ progress bar, dots, page index, reduced-motion). Clone its
    - For production, choose ONE of two paths:
 
      **Path A — hand-write (creative / exploratory).** Full control, best for bespoke layouts.
-       a. **Decide AI imagery first** (see `references/ai-imagery.md`): cover almost always gets a floating hero; each `section-divider` usually gets a small floating motif; data-dense slides (timeline / comparison / bullets) usually get none. Generate with the image model, then **cut out the background** if the PNG came back as RGB (flood-fill, never naive white→alpha), and inline as base64 `<img>`. Never put required reading text into the image.
+       a. **Run the web-first image gate before ImageGen**: create `media-plan.json`, run `scripts/slides.py --json source-images`, inspect every downloaded candidate, and document unresolved requests. Use AI generation only for bespoke art direction, fictional scenes, or gaps that remain after search.
        b. Start from `assets/template.html`. Clone `<section class="slide">` blocks, apply `theme-tokens.json`, and fill each slide with real HTML text and semantic structure.
        c. Respect the mandatory viewport-fit base: every `.slide` is `height:100dvh; overflow:hidden`; all type/spacing use `clamp()`; no internal scroll.
        d. Keep image elements `object-fit:contain` with a `max-height` so they never break the viewport.
@@ -152,7 +152,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 
      **Path B — one-click build (reproducible / batch).** Compose a v2 `outline.json` and run the generator.
        a. Read `references/outline-schema.md` and `references/deck-schema-v2.json`. Every deck requires stable `schema_version`, `deck_id`, and per-page `slide_id` values: `{ "schema_version":"2.0", "deck_id":"my-talk", "title":"...", "lang":"zh-CN", "slides":[ { "slide_id":"opening-question", "layout":"cover", ...fields } ] }`. Never derive identity from the current page number. Validate with `python scripts/slides.py --json validate my-talk.json`; migrate older outlines with `python scripts/migrate_outline.py old.json --out new.json`.
-       b. **Add sourced and AI imagery**: use web search first for concrete subjects and authentic atmosphere, following `references/web-imagery.md`; reserve ImageGen for bespoke cover language or concepts that cannot be sourced. Save every selected asset under `images/`, validate `media-manifest.json`, and use local paths in the outline. For cover images, `hero_fit` defaults to `contain`; use `cover` only when cropping is intentional, with `hero_position` protecting the focal subject. `build.py` auto-inlines local assets.
+       b. **Add sourced and AI imagery**: follow web search → review → outline insertion → AI gap fill. Use `background_image`, `support_image`, or `decorative_image` to enrich an existing layout without covering text. Do not report web sourcing as complete unless the outline actually references the downloaded files.
           > **Offline / sandbox note:** `build.py` inlines `echarts.min.js` and `three.min.js` from `assets/` — no network is required at build time. For images, prefer **local file paths** (relative to the outline) or `data:` URIs; avoid `http(s)://` URLs unless the build environment has network access.
        c. Run:
           ```bash

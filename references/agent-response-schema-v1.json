@@ -8,7 +8,7 @@
   "properties": {
     "api_version": { "const": "1.0" },
     "command": {
-      "enum": ["doctor", "validate", "build", "run", "status", "mark-exported"]
+      "enum": ["doctor", "validate", "build", "source-images", "run", "status", "mark-exported"]
     },
     "ok": { "type": "boolean" },
     "message": { "type": "string" },

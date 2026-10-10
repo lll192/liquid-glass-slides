@@ -147,6 +147,12 @@ Optional crop controls: `hero_mode` (`auto`, `float`, `frame`), `hero_fit`
 (`contain`, `cover`), and `hero_position` (`50% 50%`). `contain` is the default.
 `auto` floats PNG/WebP assets whose headers declare alpha and frames other images.
 
+Every layout can also receive sourced photography without rewriting its template:
+
+- `background_image`, `background_alt`, `background_position` — full-slide atmosphere with a reading-safe scrim.
+- `decorative_image`, `decorative_alt`, `decorative_side` — nonessential edge decoration.
+- `support_image`, `support_alt`, `support_side`, `support_fit`, `support_position` — a dedicated side image rail that reserves space instead of covering text.
+
 ### `toc`
 `eyebrow`, `title`; `items: [{ label, desc }]`. Renders as one indexed composition
 field with separators and auto zero-padded numbers (01, 02, …).

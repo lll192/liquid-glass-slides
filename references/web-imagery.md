@@ -29,6 +29,25 @@ Never copy a search-result thumbnail, hotlink an image, or infer permission from
 absence of a watermark. Avoid low-resolution assets, screenshots of other presentations,
 and decorative images whose license cannot be verified.
 
+## Web-first gate
+
+For concrete people, places, objects, events, books, architecture, nature, or authentic
+atmosphere, web search is the default first action. Do not start ImageGen until the
+search plan has run and each unresolved request has a rejection reason such as
+`no reusable license`, `results are factually wrong`, or `bespoke scene required`.
+
+Create `media-plan.json` with one focused English query per asset, then run:
+
+```bash
+python scripts/slides.py --json source-images \
+  --plan media-plan.json --project-dir . --manifest media-manifest.json
+```
+
+The command searches reusable Openverse licenses (`PDM`, `CC0`, `CC BY`, `CC BY-SA`),
+downloads files locally, and records provenance. It leaves `reviewed:false` on purpose.
+Inspect every candidate for visual relevance and crop safety. Search ranking is not visual
+judgment. Refine a weak query or pin a reviewed result with `openverse_id`.
+
 ## Workflow
 
 1. From the visual plan, write 2–4 concrete search queries in one batch. Include subject,
@@ -49,6 +68,10 @@ and decorative images whose license cannot be verified.
    license requires it.
 6. Pass `--media-manifest media-manifest.json` to the production pipeline so provenance
    is checked with the other inputs.
+
+Use `background_image` for atmosphere, `support_image` for a meaningful side photograph,
+and `decorative_image` only when it can disappear without changing the argument. All
+three work on any layout and are embedded into the self-contained HTML.
 
 ## Media manifest example
 

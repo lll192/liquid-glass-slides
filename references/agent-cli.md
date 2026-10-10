@@ -53,6 +53,16 @@ Validate and build a single self-contained deck:
 python scripts/slides.py --json build --outline outline.json --out dist/deck.html
 ```
 
+Search Openverse in parallel, download reusable real-world images, and create an
+unreviewed provenance manifest:
+
+```bash
+python scripts/slides.py --json source-images --plan media-plan.json --project-dir . --manifest media-manifest.json
+```
+
+Review every candidate before setting `reviewed:true`; search relevance alone does not
+approve an image.
+
 Run the recoverable production pipeline:
 
 ```bash

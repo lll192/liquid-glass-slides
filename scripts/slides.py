@@ -23,6 +23,7 @@ try:
     from validate_media_manifest import validate_media_manifest
     from validate_outline import LAYOUTS, SCHEMA_VERSION, validate_outline
     from validate_source_manifest import validate_manifest
+    from source_web_images import SourceError, source_images
 except ImportError:  # pragma: no cover
     from scripts.build import build
     from scripts.pipeline import PIPELINE_VERSION, _read_json, mark_exported, run_pipeline
@@ -30,6 +31,7 @@ except ImportError:  # pragma: no cover
     from scripts.validate_media_manifest import validate_media_manifest
     from scripts.validate_outline import LAYOUTS, SCHEMA_VERSION, validate_outline
     from scripts.validate_source_manifest import validate_manifest
+    from scripts.source_web_images import SourceError, source_images
 
 
 CLI_VERSION = "1.0"
@@ -190,6 +192,27 @@ def command_build(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     )
 
 
+def command_source_images(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
+    try:
+        manifest = source_images(
+            args.plan.resolve(), args.project_dir.resolve(), args.manifest.resolve(),
+            reviewed=args.reviewed, workers=args.workers,
+        )
+    except (OSError, ValueError, json.JSONDecodeError, SourceError) as exc:
+        return 2, _result("source-images", False, "web image sourcing failed", errors=[str(exc)])
+    return 0, _result(
+        "source-images", True, "web images downloaded for review",
+        data={
+            "manifest": str(args.manifest.resolve()),
+            "assets": len(manifest.get("assets", [])),
+            "reviewed": manifest.get("reviewed", False),
+        },
+        warnings=[] if manifest.get("reviewed") else [
+            "Review every downloaded image for relevance and crop safety, then set reviewed=true."
+        ],
+    )
+
+
 def command_run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     forwarded = argparse.Namespace(
         outline=args.outline,
@@ -276,6 +299,16 @@ def parser() -> argparse.ArgumentParser:
     build_parser.add_argument("--assets", type=Path)
     build_parser.add_argument("--templates", type=Path)
     build_parser.set_defaults(handler=command_build)
+
+    source_parser = commands.add_parser(
+        "source-images", help="search and download reusable real-world images"
+    )
+    source_parser.add_argument("--plan", type=Path, required=True)
+    source_parser.add_argument("--project-dir", type=Path, required=True)
+    source_parser.add_argument("--manifest", type=Path, required=True)
+    source_parser.add_argument("--reviewed", action="store_true")
+    source_parser.add_argument("--workers", type=int, default=4)
+    source_parser.set_defaults(handler=command_source_images)
 
     run = commands.add_parser("run", help="run the recoverable production pipeline")
     run.add_argument("--outline", type=Path, required=True)

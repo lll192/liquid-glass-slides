@@ -55,6 +55,17 @@
         "hero_mode": {"enum": ["auto", "float", "frame"]},
         "hero_fit": {"enum": ["contain", "cover"]},
         "hero_position": {"type": "string", "pattern": "^\\d{1,3}%\\s+\\d{1,3}%$"},
+        "background_image": {"type": "string"},
+        "background_alt": {"type": "string"},
+        "background_position": {"type": "string", "pattern": "^\\d{1,3}%\\s+\\d{1,3}%$"},
+        "decorative_image": {"type": "string"},
+        "decorative_alt": {"type": "string"},
+        "decorative_side": {"enum": ["left", "right"]},
+        "support_image": {"type": "string"},
+        "support_alt": {"type": "string"},
+        "support_side": {"enum": ["left", "right"]},
+        "support_fit": {"enum": ["contain", "cover"]},
+        "support_position": {"type": "string", "pattern": "^\\d{1,3}%\\s+\\d{1,3}%$"},
         "visual_plan": {"type": "object"}
       },
       "additionalProperties": true

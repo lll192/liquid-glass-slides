@@ -24,8 +24,9 @@ accept longer generation time.
 ## Time-saving rules
 
 1. Finish the brief, narrative spine, and image search plan before starting image work.
-2. Use one batch of focused web-image queries for multiple slides. Generate an AI image
-   only when a sourced image cannot express the required concept or art direction.
+2. Run `source-images` once with one batch of focused web-image queries. Review the
+   downloaded candidates. Generate an AI image only for requests explicitly rejected
+   after search or for bespoke cover art.
 3. If the environment permits concurrency, run independent fact research, web-image
    search, and the first AI image request together. Never start several speculative image
    generations and decide their use afterward.

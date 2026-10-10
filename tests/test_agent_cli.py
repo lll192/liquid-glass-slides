@@ -35,6 +35,7 @@ class AgentCliTests(unittest.TestCase):
         schema = json.loads(Path(payload["data"]["response_schema"]).read_text(encoding="utf-8"))
         self.assertEqual(schema["properties"]["api_version"]["const"], "1.0")
         self.assertIn("build", schema["properties"]["command"]["enum"])
+        self.assertIn("source-images", schema["properties"]["command"]["enum"])
 
     def test_validate_auto_detects_outline(self):
         result = self._run("validate", EXAMPLE)

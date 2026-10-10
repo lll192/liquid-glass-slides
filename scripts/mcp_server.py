@@ -18,7 +18,7 @@ except ImportError:  # pragma: no cover
 
 
 SERVER_NAME = "liquid-glass-slides"
-SERVER_VERSION = "1.1.0"
+SERVER_VERSION = "1.2.0"
 LATEST_PROTOCOL = "2026-07-28"
 LATEST_LEGACY_PROTOCOL = "2025-11-25"
 LEGACY_PROTOCOLS = {"2024-11-05", "2025-03-26", "2025-06-18", LATEST_LEGACY_PROTOCOL}
@@ -77,6 +77,20 @@ TOOLS = [
         ),
     },
     {
+        "name": "slides_source_images",
+        "description": "Search Openverse for reusable real-world images and download them for visual review.",
+        "inputSchema": _schema(
+            {
+                "plan": {"type": "string"},
+                "projectDir": {"type": "string", "default": "."},
+                "manifest": {"type": "string"},
+                "reviewed": {"type": "boolean", "default": False},
+                "workers": {"type": "integer", "minimum": 1, "maximum": 6, "default": 4},
+            },
+            ["plan", "manifest"],
+        ),
+    },
+    {
         "name": "slides_run",
         "description": "Run the recoverable production pipeline and emit planning, deck, QA, and state artifacts.",
         "inputSchema": _schema(
@@ -126,6 +140,12 @@ RESOURCES = [
         "mimeType": "application/schema+json",
     },
     {
+        "uri": "slides://schema/media-plan-v1",
+        "name": "Web image sourcing plan schema",
+        "description": "Machine-readable request contract for web-first image sourcing.",
+        "mimeType": "application/schema+json",
+    },
+    {
         "uri": "slides://instructions",
         "name": "Presentation production instructions",
         "description": "Model-neutral planning, generation, and verification workflow.",
@@ -164,6 +184,7 @@ class Server:
             "slides_doctor": "doctor",
             "slides_validate": "validate",
             "slides_build": "build",
+            "slides_source_images": "source-images",
             "slides_run": "run",
             "slides_status": "status",
             "slides_mark_exported": "mark-exported",
@@ -252,6 +273,10 @@ class Server:
                 ),
                 "slides://schema/agent-response-v1": (
                     slides.ROOT / "references" / "agent-response-schema-v1.json",
+                    "application/schema+json",
+                ),
+                "slides://schema/media-plan-v1": (
+                    slides.ROOT / "references" / "media-plan-schema-v1.json",
                     "application/schema+json",
                 ),
                 "slides://instructions": (

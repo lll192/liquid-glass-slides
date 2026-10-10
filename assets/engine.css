@@ -71,6 +71,35 @@ body{ background:linear-gradient(160deg,#eef2f8,#f6f7fb); color:var(--ink);
 .deck{ position:relative; z-index:2; }
 .slide-content{ position:relative; z-index:2; }
 
+/* Sourced web imagery. Backgrounds stay atmospheric; support images reserve a
+   dedicated rail so they never sit on top of readable content. */
+.slide-web-background{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.slide-web-background img{ width:100%; height:100%; max-height:none; object-fit:cover; filter:saturate(.82) contrast(.92); }
+.slide-web-scrim{ position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(90deg,rgba(246,247,251,.96) 0 42%,rgba(246,247,251,.78) 64%,rgba(246,247,251,.5)); }
+.slide-web-decor{ position:absolute; z-index:1; bottom:-5vh; width:min(29vw,430px); height:min(48vh,430px);
+  margin:0; pointer-events:none; opacity:.72; overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 82%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 82%,transparent 100%); }
+.slide-web-decor.decor-right{ right:2vw; }
+.slide-web-decor.decor-left{ left:2vw; }
+.slide-web-decor img{ width:100%; height:100%; max-height:none; object-fit:contain; }
+.slide-support-image{ position:absolute; z-index:2; top:8vh; bottom:8vh; width:min(31vw,470px); margin:0;
+  overflow:hidden; border:1px solid rgba(255,255,255,.72); border-radius:var(--glass-radius);
+  box-shadow:0 18px 52px rgba(36,46,70,.16); background:rgba(255,255,255,.3); }
+.slide-support-image.support-right{ right:5vw; }
+.slide-support-image.support-left{ left:5vw; }
+.slide-support-image img{ width:100%; height:100%; max-height:none; }
+.slide-support-image.support-fit-cover img{ object-fit:cover; }
+.slide-support-image.support-fit-contain img{ object-fit:contain; padding:1.2rem; box-sizing:border-box; }
+.slide.has-support-image.support-right .slide-content{ padding-right:max(39vw,520px); }
+.slide.has-support-image.support-left .slide-content{ padding-left:max(39vw,520px); }
+@media(max-width:900px){
+  .slide-support-image{ width:32vw; top:12vh; bottom:12vh; }
+  .slide.has-support-image.support-right .slide-content{ padding-right:38vw; }
+  .slide.has-support-image.support-left .slide-content{ padding-left:38vw; }
+}
+
 /* ============ RIPPLE MATERIAL（静态回退 + 动态场景的低成本底纹）============ */
 /*
    The ripple layer belongs to the material, never to the readable content.
