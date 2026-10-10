@@ -14,10 +14,10 @@ from typing import Any
 
 try:
     import slides
-    from source_web_images import source_images
+    from source_web_images import SourceError, source_images
 except ImportError:  # pragma: no cover
     from scripts import slides
-    from scripts.source_web_images import source_images
+    from scripts.source_web_images import SourceError, source_images
 
 
 class ServiceError(ValueError):
@@ -148,6 +148,44 @@ class AgentService:
                     "hint": "每行一项；同一行的不同部分用 ｜ 分隔。",
                 })
         return fields
+
+    @staticmethod
+    def _image_search_query(query: str) -> str:
+        """Turn common Chinese visual phrases into Openverse-friendly English queries."""
+        if not re.search(r"[\u3400-\u9fff]", query):
+            return query
+        replacements = [
+            ("白人老男人", "white elderly man"), ("老男人", "elderly man"),
+            ("老年男人", "elderly man"), ("老年女人", "elderly woman"),
+            ("白人", "white"), ("老人", "elderly person"), ("男人", "man"),
+            ("女人", "woman"), ("人物", "person"), ("优雅", "elegant"),
+            ("肖像", "portrait"), ("真实", "realistic"), ("照片", "photograph"),
+            ("北欧", "Nordic"), ("冬日", "winter"), ("街道", "street"),
+            ("房屋", "house"), ("读书会", "book club"), ("阅读", "reading"),
+            ("书籍", "books"), ("书", "book"), ("猫", "cat"),
+            ("修理", "repair"), ("工具", "tools"), ("社区", "community"),
+            ("邻居", "neighbors"), ("温暖", "warm"), ("悲伤", "sad"),
+        ]
+        translated = query
+        for chinese, english in replacements:
+            translated = translated.replace(chinese, f" {english} ")
+        translated = re.sub(r"[\u3400-\u9fff]+", " ", translated)
+        translated = re.sub(r"\s+", " ", translated).strip()
+        return f"{translated} portrait photograph" if translated else "editorial portrait photograph"
+
+    @classmethod
+    def _image_search_queries(cls, query: str) -> list[str]:
+        exact = cls._image_search_query(query)
+        tokens = exact.split()
+        modifiers = {
+            "white", "elegant", "realistic", "photograph", "photo", "editorial",
+            "warm", "sad", "Nordic",
+        }
+        subject = [token for token in tokens if token not in modifiers and token != "portrait"]
+        candidates = [exact]
+        if subject:
+            candidates.extend([" ".join(subject + ["portrait"]), " ".join(subject)])
+        return list(dict.fromkeys(candidate for candidate in candidates if candidate.strip()))
 
     def inspect_project(self, outline_value: Any, manifest_value: Any = None) -> dict[str, Any]:
         """Return a bounded, UI-ready view of one deck project."""
@@ -325,6 +363,7 @@ class AgentService:
             manifest_path = self.path(arguments.get("manifest"), "manifest")
             manifest = self._read_object(manifest_path, "manifest")
             query = str(arguments.get("query", "")).strip()
+            search_queries = self._image_search_queries(query)
             role = str(arguments.get("role", "content")).strip()
             slide_id = str(arguments.get("slideId", "")).strip()
             if not query:
@@ -338,7 +377,7 @@ class AgentService:
             plan = {
                 "deck_id": manifest.get("deck_id"), "image_dir": "images/web",
                 "requests": [{
-                    "asset_id": asset_id, "query": query, "role": role,
+                    "asset_id": asset_id, "query": search_queries[0], "role": role,
                     "slide_ids": [slide_id], "alt": query, "fit": "cover",
                     "focal_point": "50% 50%",
                 }],
@@ -350,10 +389,28 @@ class AgentService:
                     mode="w", encoding="utf-8", suffix=".json", prefix="media-plan-",
                     dir=self.workspace, delete=False,
                 ) as handle:
-                    json.dump(plan, handle, ensure_ascii=False)
                     temp_plan = Path(handle.name)
                 temp_manifest = self.workspace / f".media-extra-{uuid.uuid4().hex}.json"
-                added = source_images(temp_plan, self.workspace, temp_manifest, reviewed=False, workers=1)
+                added = None
+                last_error: Exception | None = None
+                used_query = search_queries[0]
+                for candidate_query in search_queries:
+                    plan["requests"][0]["query"] = candidate_query
+                    temp_plan.write_text(
+                        json.dumps(plan, ensure_ascii=False), encoding="utf-8"
+                    )
+                    try:
+                        added = source_images(
+                            temp_plan, self.workspace, temp_manifest, reviewed=False, workers=1
+                        )
+                        used_query = candidate_query
+                        break
+                    except (OSError, ValueError, json.JSONDecodeError, SourceError) as exc:
+                        last_error = exc
+                if added is None:
+                    raise ServiceError(
+                        "没有找到合适且许可清晰的图片，请换一个主体更明确的关键词"
+                    ) from last_error
                 current_assets = manifest.get("assets")
                 if not isinstance(current_assets, list):
                     raise ServiceError("manifest assets must be an array")
@@ -370,7 +427,8 @@ class AgentService:
                 "api_version": "1.0", "command": "add-media", "ok": True,
                 "message": "image added for review", "errors": [], "warnings": [],
                 "data": {"manifest": str(manifest_path), "asset_id": asset_id,
-                         "assets": len(manifest.get("assets", [])), "reviewed": False},
+                         "assets": len(manifest.get("assets", [])), "reviewed": False,
+                         "search_query": used_query},
             }
         if operation == "review-media":
             manifest_path = self.path(arguments.get("manifest"), "manifest")

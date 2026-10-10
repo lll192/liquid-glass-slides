@@ -9,8 +9,10 @@ import urllib.request
 from http.cookiejar import CookieJar
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
 from scripts.api_server import create_server
+from scripts.source_web_images import SourceError
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -126,6 +128,7 @@ class ApiServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(inspected["data"]["deck"]["deck_id"], "web-crawler-narrative")
         self.assertEqual(inspected["data"]["metrics"]["web_assets"], 1)
+        self.assertIn("content_fields", inspected["data"]["slides"][0])
         asset_path = inspected["data"]["media"]["assets"][0]["asset_path"]
         request = urllib.request.Request(
             self.base + "/asset?path=" + urllib.parse.quote(asset_path),
@@ -150,6 +153,43 @@ class ApiServerTests(unittest.TestCase):
         self.assertEqual(updated["data"]["slide_id"], first_slide_id)
         saved = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
         self.assertEqual(saved["slides"][0]["main_point"], "控制台已完成精确修改")
+
+    def test_add_media_translates_chinese_search_and_keeps_connection(self):
+        manifest = {
+            "schema_version": "1.0", "deck_id": "web-crawler-narrative",
+            "reviewed": True, "assets": [],
+        }
+        (self.workspace / "media-manifest.json").write_text(
+            json.dumps(manifest, ensure_ascii=False), encoding="utf-8"
+        )
+        captured = {"queries": []}
+
+        def fake_source(plan_path, project_dir, manifest_path, reviewed=False, workers=1):
+            plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            candidate = plan["requests"][0]["query"]
+            captured["queries"].append(candidate)
+            if "elegant" in candidate:
+                raise SourceError("exact query returned no results")
+            return {"assets": [{
+                "asset_id": plan["requests"][0]["asset_id"], "origin": "web",
+                "role": "content", "local_path": "images/web/result.jpg",
+                "slide_ids": ["opening"], "alt": "优雅老人", "fit": "cover",
+                "focal_point": "50% 50%", "source_url": "https://example.com",
+                "license_url": "https://example.com/license", "license": "CC0",
+                "author": "Example",
+            }]}
+
+        with mock.patch("scripts.agent_service.source_images", side_effect=fake_source):
+            status, payload = self._request(
+                "/v1/add-media", "POST",
+                {"manifest": "media-manifest.json", "query": "白人老男人优雅",
+                 "slideId": "opening", "role": "content"},
+            )
+        self.assertEqual(status, 200)
+        self.assertTrue(payload["ok"])
+        self.assertIn("elegant", captured["queries"][0])
+        self.assertEqual(captured["queries"][1], "elderly man portrait")
+        self.assertEqual(payload["data"]["search_query"], "elderly man portrait")
 
     def test_preview_rejects_non_html_files(self):
         status, payload = self._request("/preview?path=outline.json")

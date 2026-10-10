@@ -323,6 +323,7 @@ async function run(action) {
   if (running) return;
   const started = performance.now();
   try {
+    if (action === 'run') await ensureMediaReviewed();
     const body = argumentsFor(action);
     running = true;
     $$('[data-action]').forEach((button) => button.disabled = true);
@@ -352,6 +353,21 @@ async function run(action) {
     ui.time.textContent = `${((performance.now() - started) / 1000).toFixed(1)}s`;
     $$('[data-action]').forEach((button) => button.disabled = false);
   }
+}
+
+async function ensureMediaReviewed() {
+  if (!project?.media?.manifest || project.media.reviewed) return;
+  const checkboxes = $$('[data-asset-id]');
+  const selected = checkboxes.length
+    ? checkboxes.filter((input) => input.checked).map((input) => input.dataset.assetId)
+    : project.media.assets.map((asset) => asset.asset_id);
+  if (!selected.length) throw new Error('请至少保留一张图片，再生成成品。');
+  setStatus('busy', '正在保存图片选择', '生成前先确认当前保留的图片。');
+  await api('/v1/review-media', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ manifest: project.media.manifest, selectedAssetIds: selected }),
+  });
+  project.media.reviewed = true;
 }
 
 function switchView(view) {

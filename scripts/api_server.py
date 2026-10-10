@@ -306,6 +306,11 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
             except ServiceError as exc:
                 self._send(400, _server_payload(operation, "invalid request", [str(exc)]))
                 return
+            except Exception as exc:  # keep the local UI connected even when a provider fails
+                self._send(500, _server_payload(
+                    operation, "operation failed", [f"后台操作未完成：{exc}"]
+                ))
+                return
             status = 200 if code == 0 else (422 if code == 1 else 400)
             self._send(status, payload)
 
