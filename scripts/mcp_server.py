@@ -18,7 +18,7 @@ except ImportError:  # pragma: no cover
 
 
 SERVER_NAME = "liquid-glass-slides"
-SERVER_VERSION = "1.2.0"
+SERVER_VERSION = "1.4.0"
 LATEST_PROTOCOL = "2026-07-28"
 LATEST_LEGACY_PROTOCOL = "2025-11-25"
 LEGACY_PROTOCOLS = {"2024-11-05", "2025-03-26", "2025-06-18", LATEST_LEGACY_PROTOCOL}
@@ -77,6 +77,17 @@ TOOLS = [
         ),
     },
     {
+        "name": "slides_inspect_project",
+        "description": "Inspect slide narrative, visual coverage, media provenance, and production reports.",
+        "inputSchema": _schema(
+            {
+                "outline": {"type": "string", "description": "Outline JSON path inside the workspace."},
+                "mediaManifest": {"type": "string", "description": "Optional media manifest to inspect."},
+            },
+            ["outline"],
+        ),
+    },
+    {
         "name": "slides_source_images",
         "description": "Search Openverse for reusable real-world images and download them for visual review.",
         "inputSchema": _schema(
@@ -88,6 +99,38 @@ TOOLS = [
                 "workers": {"type": "integer", "minimum": 1, "maximum": 6, "default": 4},
             },
             ["plan", "manifest"],
+        ),
+    },
+    {
+        "name": "slides_review_media",
+        "description": "Approve reviewed media candidates and optionally keep only selected asset ids.",
+        "inputSchema": _schema(
+            {
+                "manifest": {"type": "string"},
+                "selectedAssetIds": {"type": "array", "items": {"type": "string"}},
+            },
+            ["manifest"],
+        ),
+    },
+    {
+        "name": "slides_update_slide",
+        "description": "Update user-editable copy for one stable slide id without rewriting the deck.",
+        "inputSchema": _schema(
+            {
+                "outline": {"type": "string"},
+                "slideId": {"type": "string"},
+                "patch": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string"},
+                        "main_point": {"type": "string"},
+                        "transition": {"type": "string"},
+                        "speaker_notes": {"type": "string"},
+                    },
+                    "additionalProperties": False,
+                },
+            },
+            ["outline", "slideId", "patch"],
         ),
     },
     {
@@ -184,7 +227,10 @@ class Server:
             "slides_doctor": "doctor",
             "slides_validate": "validate",
             "slides_build": "build",
+            "slides_inspect_project": "inspect-project",
             "slides_source_images": "source-images",
+            "slides_review_media": "review-media",
+            "slides_update_slide": "update-slide",
             "slides_run": "run",
             "slides_status": "status",
             "slides_mark_exported": "mark-exported",

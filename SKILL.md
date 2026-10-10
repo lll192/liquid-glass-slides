@@ -4,7 +4,7 @@ description: Create Apple iOS 26 Liquid Glass style animated HTML slide decks (p
 license: MIT
 metadata:
   agent_created: true
-  version: "2.8.0"
+  version: "3.0.0"
   author: lll192
   homepage: https://github.com/lll192/liquid-glass-slides
 ---
@@ -57,7 +57,7 @@ Load only the references needed for the current task:
 - `references/content-director.md` — deterministic narrative diagnosis, per-slide revision actions, deck metrics, and safe metadata completion.
 - `references/agent-cli.md` — stable cross-platform command contract, JSON response envelope, exit codes, and integration rules for AI clients.
 - `references/agent-response-schema-v1.json` — machine-readable JSON Schema for every Agent CLI response.
-- `references/mcp-server.md` — local MCP stdio server, six presentation tools, workspace boundary, and client configuration.
+- `references/mcp-server.md` — local MCP stdio server, ten presentation tools, workspace boundary, and client configuration.
 - `references/http-api.md` — authenticated local HTTP API, OpenAPI discovery, endpoint contract, workspace boundary, and deployment safety.
 - `references/production-console.md` — local visual production console for selecting outlines, validating, building, running the pipeline, reading reports, and previewing decks.
 
@@ -154,6 +154,7 @@ Use `assets/template.html` as the starter scaffold: it already contains the mand
 9. **Deliver**
    - Report the HTML file path, companion brief path, source manifest/content map when created, slide count, deck type, any assumptions, and verification performed.
    - Remind the user the deck is editable: text lives in the HTML, and the theme can be retuned by editing the `:root` variables.
+   - When the user wants to inspect or refine the project visually, launch `python scripts/api_server.py --workspace <project-directory> --open`. The local Engine Cockpit exposes the Narrative Director, Visual Coverage Planner, reviewed media library, build reports, and deck preview without requiring JSON editing.
 
 ## Defaults
 

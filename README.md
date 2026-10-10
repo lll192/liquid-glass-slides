@@ -32,9 +32,19 @@
 - **可恢复生产流水线**：一次运行生成故事板、视觉规划、HTML、QA 报告与任务状态；失败会记录精确阶段和错误，修正后可由同一或另一个 AI 继续执行。
 - **Content Director 内容导演**：自动输出逐页叙事、演讲备注、屏幕文案和信息视觉诊断；仅安全补全结构元数据，不擅自改写事实。
 - **统一 Agent CLI**：Codex、WorkBuddy、Claude、Gemini、Cursor、自动化脚本与未来 MCP 统一调用 `scripts/slides.py`；JSON 返回结构和退出码稳定，不再解析终端文案。
-- **本地 MCP 工具服务器**：支持 MCP 的 AI 可直接发现并调用 6 个 `slides_*` 工具，同时读取协议、说明和布局资源；所有文件访问限制在启动时指定的工作目录内。
+- **本地 MCP 工具服务器**：支持 MCP 的 AI 可直接发现并调用 10 个 `slides_*` 工具，包括项目诊断、网络找图、媒体复核和单页文案修改；所有文件访问限制在启动时指定的工作目录内。
 - **安全 HTTP API**：网页、自动化平台和远程智能体可通过 Bearer Token 调用同一生产内核；默认仅监听本机，并提供 OpenAPI 3.1 描述。
-- **本地生产控制台**：无需编写命令即可选择大纲、验证、快速构建、运行完整流水线、查看错误与警告，并在同一页面预览成品。
+- **本地 Engine Cockpit**：无需编写 JSON 即可查看故事线、视觉覆盖率、真实图片来源和生产报告，并完成找图、媒体复核、构建与预览。
+
+## 安装为 AI 工具
+
+克隆仓库后运行一次：
+
+```bash
+python scripts/install_plugin.py --target codex
+```
+
+重启 AI 客户端后，直接说“使用 `$liquid-glass-slides` 生成一份演示文稿”。自定义 Skill 目录可使用 `--target custom --destination <目录>`。安装器只复制插件自身的受管文件，不修改 GitHub 仓库或用户项目。
 
 ## 快速开始
 
@@ -123,10 +133,10 @@ python scripts/mcp_server.py --workspace C:/path/to/presentation-project
 网页或自动化平台可启动本地 HTTP API：
 
 ```bash
-python scripts/api_server.py --workspace C:/path/to/presentation-project
+python scripts/api_server.py --workspace C:/path/to/presentation-project --open
 ```
 
-打开终端显示的 `http://127.0.0.1:8765` 即可进入生产控制台，把同一窗口里的 Bearer Token 粘贴一次完成连接。服务器仍可供其他网页或自动化平台调用；接口说明见 [`references/http-api.md`](references/http-api.md)，控制台说明见 [`references/production-console.md`](references/production-console.md)。
+`--open` 会打开 `http://127.0.0.1:8765` 并通过仅存在于 URL fragment 的临时令牌建立本机会话；令牌不会发送给网页服务器、写入项目或保存在浏览器存储。服务器仍可供其他本机自动化调用；接口说明见 [`references/http-api.md`](references/http-api.md)，控制台说明见 [`references/production-console.md`](references/production-console.md)。
 
 ## 目录结构
 
@@ -155,7 +165,8 @@ liquid-glass-slides/
 │   ├── slides.py            # 统一 Agent CLI 与稳定 JSON 调用协议
 │   ├── agent_service.py     # CLI / MCP / HTTP 共享服务边界
 │   ├── mcp_server.py        # 零依赖 MCP stdio 工具服务器
-│   ├── api_server.py        # 带认证和工作目录隔离的 HTTP API
+│   ├── api_server.py        # 带认证和工作目录隔离的 HTTP API / Cockpit 启动器
+│   ├── install_plugin.py    # 本地 AI Skill 安装器
 │   └── build.py             # 一键构建器（仅标准库）
 ├── console/                 # 零依赖本地生产控制台
 ├── references/              # 各模块参考文档
@@ -202,9 +213,9 @@ A model-agnostic presentation-generation **Skill** that turns articles, outlines
 - **Recoverable production pipeline** — one run emits storyboard, visual-plan, HTML, QA, and task-state artifacts; failures identify the exact stage so the same or another AI can resume after correction.
 - **Content Director** — produces per-slide narrative, notes, copy, and information-visual diagnoses while limiting automatic edits to safe structural metadata.
 - **Unified Agent CLI** — Codex, WorkBuddy, Claude, Gemini, Cursor, automation, and future MCP clients call one stable command with a machine-readable JSON envelope and explicit exit codes.
-- **Local MCP tool server** — MCP-capable agents discover six `slides_*` tools plus schemas and instructions as read-only resources, while all file access stays inside an explicit workspace boundary.
+- **Local MCP tool server** — MCP-capable agents discover ten `slides_*` tools, including project inspection, media review, and slide-copy editing, while all file access stays inside an explicit workspace boundary.
 - **Secure HTTP API** — web tools, automation platforms, and remote agents call the same production core through bearer authentication, loopback-only defaults, and an OpenAPI 3.1 description.
-- **Local production console** — select an outline, validate, build, run the recoverable pipeline, inspect errors and warnings, and preview the result without writing commands.
+- **Local Engine Cockpit** — inspect narrative direction, visual coverage, media provenance, and reports; review web images, build, and preview without editing JSON.
 
 ## Quick start
 
@@ -221,8 +232,8 @@ Standard-library only; no network needed (except AI imagery). Output is a single
 MCP-capable clients can launch `python scripts/mcp_server.py --workspace <project-directory>`.
 See [`references/mcp-server.md`](references/mcp-server.md) for configuration and security boundaries.
 
-Web and automation clients can launch `python scripts/api_server.py --workspace <project-directory>`.
-Open `http://127.0.0.1:8765`, then paste the generated bearer token once to use the production console. See [`references/http-api.md`](references/http-api.md) for endpoints and deployment safety, and [`references/production-console.md`](references/production-console.md) for the visual workflow.
+Web and automation clients can launch `python scripts/api_server.py --workspace <project-directory> --open`.
+The local Engine Cockpit opens and exchanges the ephemeral fragment token for an HttpOnly session. See [`references/http-api.md`](references/http-api.md) for endpoints and deployment safety, and [`references/production-console.md`](references/production-console.md) for the visual workflow.
 
 **Path A — hand-write:** start from `assets/template.html` or `templates/deck.html`, clone `<section class="slide">` blocks, fill real HTML. See `SKILL.md` for the full workflow.
 

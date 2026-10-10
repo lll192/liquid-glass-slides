@@ -9,6 +9,7 @@ import mimetypes
 import secrets
 import sys
 import uuid
+import webbrowser
 from http.cookies import CookieError, SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -21,7 +22,7 @@ except ImportError:  # pragma: no cover
     from scripts.agent_service import AgentService, ServiceError
 
 
-API_VERSION = "1.0"
+API_VERSION = "1.1"
 MAX_BODY_BYTES = 1024 * 1024
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,6 +42,12 @@ def openapi_document() -> dict[str, Any]:
         "/v1/workspace": {
             "get": {"summary": "List production inputs and outputs", "security": [{"bearerAuth": []}]}
         },
+        "/v1/project": {
+            "get": {"summary": "Inspect narrative, visual coverage, media, and reports", "security": [{"bearerAuth": []}]}
+        },
+        "/asset": {
+            "get": {"summary": "Preview a local project image", "security": [{"bearerAuth": []}]}
+        },
         "/v1/session": {
             "post": {
                 "summary": "Exchange bearer token for a local HttpOnly session cookie",
@@ -51,7 +58,7 @@ def openapi_document() -> dict[str, Any]:
             "get": {"summary": "Preview a generated HTML deck", "security": [{"bearerAuth": []}]}
         },
     }
-    for name in ("validate", "build", "source-images", "run", "status", "mark-exported"):
+    for name in ("validate", "build", "source-images", "review-media", "update-slide", "run", "status", "mark-exported"):
         paths[f"/v1/{name}"] = {
             "post": {
                 "summary": f"Run {name}",
@@ -205,6 +212,36 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                     "warnings": [],
                 })
                 return
+            if path == "/v1/project":
+                if not self._require_auth():
+                    return
+                query = parse_qs(parsed.query)
+                values = query.get("outline", [])
+                manifests = query.get("mediaManifest", [])
+                try:
+                    project = service.inspect_project(
+                        values[0] if values else "", manifests[0] if manifests else None
+                    )
+                    self._send(200, {
+                        "api_version": API_VERSION, "ok": True, "data": project,
+                        "errors": [], "warnings": [],
+                    })
+                except ServiceError as exc:
+                    self._send(400, _server_payload("project", "invalid project", [str(exc)]))
+                return
+            if path == "/asset":
+                if not self._require_auth():
+                    return
+                values = parse_qs(parsed.query).get("path", [])
+                try:
+                    asset = service.path(values[0] if values else "", "path")
+                    if asset.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"} or not asset.is_file():
+                        raise ServiceError("asset path must be an existing image file")
+                    content_type = mimetypes.guess_type(asset.name)[0] or "application/octet-stream"
+                    self._send_bytes(200, asset.read_bytes(), content_type)
+                except (OSError, ServiceError) as exc:
+                    self._send(400, _server_payload("asset", "invalid asset", [str(exc)]))
+                return
             if path == "/preview":
                 if not self._require_auth():
                     return
@@ -253,6 +290,8 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                 "/v1/validate": "validate",
                 "/v1/build": "build",
                 "/v1/source-images": "source-images",
+                "/v1/review-media": "review-media",
+                "/v1/update-slide": "update-slide",
                 "/v1/run": "run",
                 "/v1/status": "status",
                 "/v1/mark-exported": "mark-exported",
@@ -297,6 +336,10 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--token", help="Bearer token; generated when omitted")
     parser.add_argument(
+        "--open", action="store_true",
+        help="open the local cockpit and exchange the token from a URL fragment",
+    )
+    parser.add_argument(
         "--allow-remote", action="store_true",
         help="allow binding outside loopback; use only behind TLS and a trusted firewall",
     )
@@ -317,6 +360,8 @@ def main() -> int:
     print(f"Liquid Glass Slides API: http://{host}:{port}", file=sys.stderr)
     print(f"Bearer token: {token}", file=sys.stderr)
     print(f"Workspace: {args.workspace.resolve()}", file=sys.stderr)
+    if args.open:
+        webbrowser.open(f"http://{host}:{port}/#token={token}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

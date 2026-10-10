@@ -83,7 +83,7 @@ class McpServerTests(unittest.TestCase):
         self.assertEqual(result["resultType"], "complete")
         self.assertTrue(result["structuredContent"]["ok"])
         self.assertEqual(
-            result["_meta"]["io.modelcontextprotocol/serverInfo"]["version"], "1.2.0"
+            result["_meta"]["io.modelcontextprotocol/serverInfo"]["version"], "1.4.0"
         )
 
     def test_initialize_and_list_tools(self):
@@ -95,8 +95,9 @@ class McpServerTests(unittest.TestCase):
         names = [tool["name"] for tool in responses[1]["result"]["tools"]]
         self.assertEqual(
             names,
-            ["slides_doctor", "slides_validate", "slides_build", "slides_source_images", "slides_run",
-             "slides_status", "slides_mark_exported"],
+            ["slides_doctor", "slides_validate", "slides_build", "slides_inspect_project",
+             "slides_source_images", "slides_review_media", "slides_update_slide",
+             "slides_run", "slides_status", "slides_mark_exported"],
         )
 
     def test_resources_expose_schema_instructions_and_layouts(self):

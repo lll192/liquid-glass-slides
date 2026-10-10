@@ -9,7 +9,8 @@ authenticated JSON API. It uses only the Python standard library.
 python scripts/api_server.py \
   --workspace C:/path/to/presentation-project \
   --host 127.0.0.1 \
-  --port 8765
+  --port 8765 \
+  --open
 ```
 
 When `--token` is omitted, the server generates a strong bearer token and prints it to
@@ -31,9 +32,14 @@ python scripts/api_server.py --workspace C:/project --token local-development-to
 | `POST` | `/v1/session` | Bearer | Exchange a token for the console's HttpOnly local session |
 | `DELETE` | `/v1/session` | No | Clear the local console session |
 | `GET` | `/v1/workspace` | Bearer or session | List recognized outlines, briefs, manifests, states, and decks |
+| `GET` | `/v1/project?outline=...` | Bearer or session | Inspect narrative, visual coverage, media, and reports |
+| `GET` | `/asset?path=...` | Bearer or session | Preview a workspace image |
 | `GET` | `/preview?path=...` | Bearer or session | Preview an existing workspace HTML deck |
 | `POST` | `/v1/validate` | Bearer | Validate a brief, manifest, or outline |
 | `POST` | `/v1/build` | Bearer | Build a self-contained HTML deck |
+| `POST` | `/v1/source-images` | Bearer | Search and download reusable images for review |
+| `POST` | `/v1/review-media` | Bearer | Approve selected media candidates |
+| `POST` | `/v1/update-slide` | Bearer | Edit safe copy fields for one stable slide id |
 | `POST` | `/v1/run` | Bearer | Run the recoverable production pipeline |
 | `POST` | `/v1/status` | Bearer | Read pipeline state |
 | `POST` | `/v1/mark-exported` | Bearer | Record successful delivery |

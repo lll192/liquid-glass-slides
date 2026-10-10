@@ -12,6 +12,10 @@ response envelope, and production behavior.
 | `slides_doctor` | Check installation and discover capabilities |
 | `slides_validate` | Validate an outline, brief, or source manifest |
 | `slides_build` | Build one self-contained HTML deck |
+| `slides_inspect_project` | Read narrative, visual coverage, media, and reports |
+| `slides_source_images` | Search and download reusable real-world images |
+| `slides_review_media` | Approve reviewed candidates and reject unwanted assets |
+| `slides_update_slide` | Edit one slide's title, main point, transition, and speaker notes |
 | `slides_run` | Run the recoverable production pipeline |
 | `slides_status` | Read a pipeline state |
 | `slides_mark_exported` | Record successful delivery |
@@ -26,6 +30,7 @@ A newly connected agent can read the core contracts without knowing the reposito
 
 - `slides://schema/deck-v2` — machine-readable outline contract.
 - `slides://schema/agent-response-v1` — structured CLI/MCP result contract.
+- `slides://schema/media-plan-v1` — web-first image request contract.
 - `slides://instructions` — model-neutral production workflow.
 - `slides://layouts` — current semantic layout identifiers.
 
@@ -69,7 +74,7 @@ args = [
 ]
 ```
 
-Restart or reload the AI client after adding the server. The client should discover six
+Restart or reload the AI client after adding the server. The client should discover ten
 `slides_*` tools. Run `slides_doctor` first, then `slides_validate` before build or production.
 
 ## Protocol behavior

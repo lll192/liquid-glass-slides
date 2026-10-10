@@ -4,6 +4,7 @@ import sys
 import threading
 import unittest
 import urllib.error
+import urllib.parse
 import urllib.request
 from http.cookiejar import CookieJar
 from pathlib import Path
@@ -69,7 +70,7 @@ class ApiServerTests(unittest.TestCase):
     def test_console_is_public_and_session_cookie_unlocks_workspace(self):
         response = urllib.request.urlopen(self.base + "/", timeout=10)
         page = response.read().decode("utf-8")
-        self.assertIn("Production Console", page)
+        self.assertIn("Engine Cockpit", page)
         self.assertIn("/console/app.js", page)
 
         jar = CookieJar()
@@ -102,6 +103,53 @@ class ApiServerTests(unittest.TestCase):
         response = urllib.request.urlopen(request, timeout=10)
         self.assertEqual(response.status, 200)
         self.assertIn(b"<!doctype html>", response.read().lower())
+
+    def test_project_inspection_media_preview_and_review(self):
+        image_dir = self.workspace / "images"
+        image_dir.mkdir()
+        (image_dir / "candidate.jpg").write_bytes(b"candidate-image")
+        manifest = {
+            "schema_version": "1.0", "deck_id": "web-crawler-narrative",
+            "reviewed": False,
+            "assets": [{
+                "asset_id": "candidate-photo", "origin": "web", "role": "content",
+                "local_path": "images/candidate.jpg", "slide_ids": ["opening"],
+                "alt": "候选图片", "fit": "cover", "focal_point": "50% 50%",
+                "source_url": "https://example.com/source", "license_url": "https://example.com/license",
+                "license": "CC BY 4.0", "author": "Example",
+            }],
+        }
+        (self.workspace / "media-manifest.json").write_text(
+            json.dumps(manifest, ensure_ascii=False), encoding="utf-8"
+        )
+        status, inspected = self._request("/v1/project?outline=outline.json")
+        self.assertEqual(status, 200)
+        self.assertEqual(inspected["data"]["deck"]["deck_id"], "web-crawler-narrative")
+        self.assertEqual(inspected["data"]["metrics"]["web_assets"], 1)
+        asset_path = inspected["data"]["media"]["assets"][0]["asset_path"]
+        request = urllib.request.Request(
+            self.base + "/asset?path=" + urllib.parse.quote(asset_path),
+            headers={"Authorization": f"Bearer {TOKEN}"},
+        )
+        self.assertEqual(urllib.request.urlopen(request, timeout=10).read(), b"candidate-image")
+        status, reviewed = self._request(
+            "/v1/review-media", "POST",
+            {"manifest": "media-manifest.json", "selectedAssetIds": ["candidate-photo"]},
+        )
+        self.assertEqual(status, 200)
+        self.assertTrue(reviewed["data"]["reviewed"])
+        first_slide_id = json.loads(EXAMPLE.read_text(encoding="utf-8"))["slides"][0]["slide_id"]
+        status, updated = self._request(
+            "/v1/update-slide", "POST",
+            {
+                "outline": "outline.json", "slideId": first_slide_id,
+                "patch": {"main_point": "控制台已完成精确修改"},
+            },
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(updated["data"]["slide_id"], first_slide_id)
+        saved = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        self.assertEqual(saved["slides"][0]["main_point"], "控制台已完成精确修改")
 
     def test_preview_rejects_non_html_files(self):
         status, payload = self._request("/preview?path=outline.json")

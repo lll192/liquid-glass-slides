@@ -1,0 +1,7 @@
+interface:
+  display_name: "Liquid Glass Slides"
+  short_description: "AI策划、真实配图与质量检查的一体化演示生成引擎"
+  brand_color: "#0A84FF"
+  default_prompt: "Use $liquid-glass-slides to plan and produce a polished presentation, then open the local Engine Cockpit for review."
+policy:
+  allow_implicit_invocation: true
