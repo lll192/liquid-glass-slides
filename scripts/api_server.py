@@ -58,7 +58,7 @@ def openapi_document() -> dict[str, Any]:
             "get": {"summary": "Preview a generated HTML deck", "security": [{"bearerAuth": []}]}
         },
     }
-    for name in ("validate", "build", "source-images", "review-media", "update-slide", "run", "status", "mark-exported"):
+    for name in ("validate", "build", "source-images", "add-media", "review-media", "update-slide", "run", "status", "mark-exported"):
         paths[f"/v1/{name}"] = {
             "post": {
                 "summary": f"Run {name}",
@@ -290,6 +290,7 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                 "/v1/validate": "validate",
                 "/v1/build": "build",
                 "/v1/source-images": "source-images",
+                "/v1/add-media": "add-media",
                 "/v1/review-media": "review-media",
                 "/v1/update-slide": "update-slide",
                 "/v1/run": "run",

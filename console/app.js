@@ -13,6 +13,8 @@ const ui = {
   slideMetric: $('#metric-slides'), visualMetric: $('#metric-visual'), notesMetric: $('#metric-notes'), mediaMetric: $('#metric-media'),
   storyGrid: $('#story-grid'), visualGrid: $('#visual-grid'), visualSummary: $('#visual-summary'),
   assetGrid: $('#asset-grid'), mediaStatus: $('#media-review-status'), approveMedia: $('#approve-media'),
+  addMediaForm: $('#add-media-form'), addMediaQuery: $('#add-media-query'),
+  addMediaSlide: $('#add-media-slide'), addMediaRole: $('#add-media-role'),
 };
 
 let inventory = { files: [], decks: [] };
@@ -145,16 +147,28 @@ function renderStory() {
       ['title', '页面标题', slide.title],
       ['main_point', '核心结论', slide.main_point],
       ['transition', '转场提示', slide.transition],
-      ['speaker_notes', '演讲者笔记', slide.speaker_notes],
+      ['speaker_notes', '演讲者笔记', Array.isArray(slide.speaker_notes) ? slide.speaker_notes.join('\n') : slide.speaker_notes],
     ];
-    fields.forEach(([key, label, value]) => {
+    (slide.content_fields || []).forEach((field) => fields.splice(1, 0, [field.key, field.label, field.value, field]));
+    fields.forEach(([key, label, value, contentField]) => {
       const fieldLabel = document.createElement('label');
       fieldLabel.textContent = label;
-      const input = document.createElement('textarea');
+      const input = contentField?.type === 'html' ? document.createElement('div') : document.createElement('textarea');
       input.dataset.editField = key;
-      input.value = value || '';
-      input.rows = key === 'speaker_notes' ? 5 : 2;
+      if (contentField) input.dataset.contentType = contentField.type;
+      if (contentField?.columns) input.dataset.columns = JSON.stringify(contentField.columns);
+      if (contentField?.type === 'html') {
+        input.className = 'editable-rich-text';
+        input.contentEditable = 'true';
+        input.innerHTML = value || '';
+        input.setAttribute('role', 'textbox');
+        input.setAttribute('aria-multiline', 'true');
+      } else {
+        input.value = value || '';
+        input.rows = key === 'speaker_notes' ? 5 : (contentField?.type === 'list' ? 5 : 2);
+      }
       fieldLabel.append(input);
+      if (contentField?.hint) fieldLabel.append(text('small', 'content-field-note', contentField.hint));
       editor.append(fieldLabel);
     });
     const save = document.createElement('button');
@@ -170,15 +184,26 @@ function renderStory() {
 
 async function updateSlide(slideId, editor) {
   const patch = {};
-  editor.querySelectorAll('[data-edit-field]').forEach((input) => { patch[input.dataset.editField] = input.value.trim(); });
+  editor.querySelectorAll('[data-edit-field]').forEach((input) => {
+    const raw = input.dataset.contentType === 'html' ? input.innerHTML.trim() : input.value.trim();
+    if (input.dataset.contentType === 'list') {
+      const columns = JSON.parse(input.dataset.columns || '[]');
+      patch[input.dataset.editField] = raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
+        const parts = line.split(/[｜|]/).map((part) => part.trim());
+        return Object.fromEntries(columns.map((column, index) => [column, parts[index] || '']));
+      });
+    } else {
+      patch[input.dataset.editField] = raw;
+    }
+  });
   try {
-    setStatus('busy', '正在保存页面', '保存后可点击“快速构建”刷新成品。');
+    setStatus('busy', '正在保存页面', '正在把修改写回演示项目。');
     const payload = await api('/v1/update-slide', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ outline: ui.outline.value, slideId, patch }),
     });
     ui.raw.textContent = JSON.stringify(payload, null, 2);
-    setStatus('success', '页面已保存', '大纲已更新；点击“快速构建”生成新的演示成品。');
+    setStatus('success', '页面已保存', '点击“更新预览”即可查看修改后的页面。');
     await loadProject();
   } catch (error) {
     setStatus('error', '保存失败', error.message);
@@ -213,7 +238,7 @@ function renderAssets() {
   ui.mediaStatus.textContent = media.manifest
     ? `${media.assets.length} 个素材 · ${media.reviewed ? '已复核' : '等待复核'}`
     : '尚无媒体清单';
-  ui.approveMedia.disabled = !media.manifest || media.reviewed || !media.assets.length;
+  ui.approveMedia.disabled = !media.manifest || !media.assets.length;
   if (!media.assets.length) {
     ui.assetGrid.classList.add('empty-grid');
     ui.assetGrid.textContent = '尚未找到媒体。先运行“搜索真实图片”，或由 AI 添加原创视觉。';
@@ -232,14 +257,13 @@ function renderAssets() {
     const meta = document.createElement('div');
     const titleRow = document.createElement('div');
     titleRow.className = 'asset-title';
-    if (!media.reviewed) {
-      const choice = document.createElement('input');
-      choice.type = 'checkbox';
-      choice.checked = true;
-      choice.dataset.assetId = asset.asset_id;
-      choice.setAttribute('aria-label', `保留 ${asset.asset_id}`);
-      titleRow.append(choice);
-    }
+    const choice = document.createElement('input');
+    choice.type = 'checkbox';
+    choice.checked = true;
+    choice.dataset.assetId = asset.asset_id;
+    choice.setAttribute('aria-label', `保留 ${asset.asset_id}`);
+    choice.addEventListener('change', () => card.classList.toggle('excluded', !choice.checked));
+    titleRow.append(choice);
     titleRow.append(text('strong', '', asset.asset_id), text('span', `origin ${asset.origin}`, asset.origin));
     meta.append(titleRow, text('p', '', asset.alt));
     const credit = asset.origin === 'web' ? `${asset.author || '未知作者'} · ${asset.license || '许可待确认'}` : (asset.notes || '项目原创素材');
@@ -260,6 +284,13 @@ async function loadProject() {
   ui.visualMetric.textContent = `${project.metrics.visual_coverage}%`;
   ui.notesMetric.textContent = `${project.metrics.speaker_notes_coverage}%`;
   ui.mediaMetric.textContent = `${project.metrics.web_assets} / ${project.metrics.ai_assets}`;
+  ui.addMediaSlide.innerHTML = '<option value="">选择页面</option>';
+  project.slides.forEach((slide) => {
+    const option = document.createElement('option');
+    option.value = slide.slide_id;
+    option.textContent = `${String(slide.order).padStart(2, '0')} · ${slide.title}`;
+    ui.addMediaSlide.append(option);
+  });
   renderStory(); renderVisuals(); renderAssets();
   if (project.media.manifest && [...ui.media.options].some((option) => option.value === project.media.manifest)) {
     ui.media.value = project.media.manifest;
@@ -295,8 +326,8 @@ async function run(action) {
     const body = argumentsFor(action);
     running = true;
     $$('[data-action]').forEach((button) => button.disabled = true);
-    const labels = { validate: '正在验证', build: '正在构建', run: '正在完整生产', 'source-images': '正在搜索真实图片' };
-    setStatus('busy', labels[action], action === 'source-images' ? '正在并行检索并下载可复用图片。' : '生产内核正在处理，请保持页面打开。');
+    const labels = { validate: '正在检查', build: '正在更新预览', run: '正在生成成品', 'source-images': '正在寻找图片' };
+    setStatus('busy', labels[action], action === 'source-images' ? '正在寻找并下载可以复用的真实图片。' : '正在处理，请保持页面打开。');
     list(ui.errors, []); list(ui.warnings, []);
     const payload = await api(`/v1/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     ui.raw.textContent = JSON.stringify(payload, null, 2);
@@ -341,10 +372,45 @@ async function approveMedia() {
       body: JSON.stringify({ manifest: project.media.manifest, selectedAssetIds: selected }),
     });
     ui.raw.textContent = JSON.stringify(payload, null, 2);
-    setStatus('success', '媒体已确认', `已保留 ${payload.data.assets} 个素材，可进入完整生产。`);
+    setStatus('success', '图片选择已保存', `当前保留 ${payload.data.assets} 张图片。`);
     await loadWorkspace(false);
   } catch (error) {
     setStatus('error', '媒体确认失败', error.message);
+  }
+}
+
+async function addMedia(event) {
+  event.preventDefault();
+  if (!project?.media?.manifest) {
+    setStatus('error', '还没有图片清单', '请先点击左侧“寻找图片”，再继续添加。');
+    return;
+  }
+  if (!ui.addMediaSlide.value) {
+    setStatus('error', '请选择页面', '告诉系统这张图片将用于哪一页。');
+    return;
+  }
+  const submit = ui.addMediaForm.querySelector('button[type="submit"]');
+  try {
+    submit.disabled = true;
+    setStatus('busy', '正在添加图片', '正在根据关键词寻找一张可复用的真实图片。');
+    const payload = await api('/v1/add-media', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        manifest: project.media.manifest,
+        query: ui.addMediaQuery.value.trim(),
+        slideId: ui.addMediaSlide.value,
+        role: ui.addMediaRole.value,
+      }),
+    });
+    ui.raw.textContent = JSON.stringify(payload, null, 2);
+    ui.addMediaQuery.value = '';
+    setStatus('success', '图片已添加', `现在共有 ${payload.data.assets} 张候选图片，可以继续筛选。`);
+    await loadWorkspace(false);
+    switchView('assets');
+  } catch (error) {
+    setStatus('error', '添加失败', error.message);
+  } finally {
+    submit.disabled = false;
   }
 }
 
@@ -364,6 +430,7 @@ ui.media.addEventListener('change', () => loadProject().catch((error) => setStat
 $$('[data-action]').forEach((button) => button.addEventListener('click', () => run(button.dataset.action)));
 $$('[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
 ui.approveMedia.addEventListener('click', approveMedia);
+ui.addMediaForm.addEventListener('submit', addMedia);
 $('#refresh').addEventListener('click', () => loadWorkspace().catch(() => {}));
 $('#logout').addEventListener('click', async () => { await api('/v1/session', { method: 'DELETE' }).catch(() => {}); ui.gate.classList.remove('hidden'); });
 document.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') run('run'); });

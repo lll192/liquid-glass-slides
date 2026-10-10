@@ -16,34 +16,32 @@
     </header>
 
     <aside class="control-rail" aria-label="项目控制">
-      <div class="rail-index">01 / PROJECT</div>
+      <div class="rail-index">01 / START</div>
       <h1>从想法到<br><span>可演示成品</span></h1>
-      <p class="lede">同一套内核连接 AI 策划、真实图片、版式生成与质量检查。</p>
+      <p class="lede">选择项目，调整内容与图片，然后生成可以直接演示的成品。</p>
       <label for="outline">演示项目</label>
       <div class="select-wrap"><select id="outline"><option value="">等待连接…</option></select></div>
       <div class="project-identity"><strong id="project-name">尚未选择项目</strong><span id="project-meta">—</span></div>
-      <label for="output">输出文件</label>
-      <input id="output" type="text" value="dist/deck.html" spellcheck="false">
-      <details open>
-        <summary>生产选项</summary>
-        <label for="brief">设计简报</label><select id="brief"><option value="">不使用</option></select>
-        <label for="source">内容来源</label><select id="source"><option value="">不使用</option></select>
-        <label for="media">媒体清单</label><select id="media"><option value="">自动选择</option></select>
-        <label for="media-plan">网络图片计划</label><select id="media-plan"><option value="">未配置</option></select>
-        <label for="media-output">候选清单输出</label><input id="media-output" type="text" value="media-manifest-web.json" spellcheck="false">
-      </details>
-      <div class="actions">
-        <button class="secondary" data-action="validate" type="button"><span>01</span>验证结构</button>
-        <button class="secondary" data-action="source-images" type="button"><span>02</span>搜索真实图片</button>
-        <button class="primary" data-action="build" type="button"><span>03</span>快速构建</button>
-        <button class="primary ink" data-action="run" type="button"><span>04</span>完整生产</button>
+      <div class="engine-fields" hidden aria-hidden="true">
+        <input id="output" type="hidden" value="dist/deck.html">
+        <select id="brief"><option value="">不使用</option></select>
+        <select id="source"><option value="">不使用</option></select>
+        <select id="media"><option value="">自动选择</option></select>
+        <select id="media-plan"><option value="">未配置</option></select>
+        <input id="media-output" type="hidden" value="media-manifest-web.json">
       </div>
-      <p class="shortcut">Ctrl / ⌘ + Enter · 完整生产</p>
+      <div class="actions">
+        <button class="action-red" data-action="validate" type="button"><span>01</span>检查内容</button>
+        <button class="action-yellow" data-action="source-images" type="button"><span>02</span>寻找图片</button>
+        <button class="action-blue" data-action="build" type="button"><span>03</span>更新预览</button>
+        <button class="action-black" data-action="run" type="button"><span>04</span>生成成品</button>
+      </div>
+      <p class="shortcut">修改会先保存到项目；点击“更新预览”查看效果。</p>
     </aside>
 
     <main class="stage">
       <div class="stage-head">
-        <div><span class="rail-index">02 / ENGINE VIEW</span><h2 id="preview-title">等待项目</h2></div>
+        <div><span class="rail-index">02 / WORKSPACE</span><h2 id="preview-title">等待项目</h2></div>
         <div class="stage-actions"><button id="refresh" class="icon-button" type="button" aria-label="刷新项目">↻</button><a id="open-preview" class="text-button disabled" target="_blank" rel="noopener">演示 ↗</a></div>
       </div>
       <div class="metric-strip" aria-label="项目指标">
@@ -53,49 +51,47 @@
         <div><span>WEB / AI</span><strong id="metric-media">—</strong></div>
       </div>
       <nav class="view-tabs" aria-label="项目视图">
-        <button class="active" data-view="preview" type="button">成品预览</button>
-        <button data-view="story" type="button">故事线</button>
-        <button data-view="visual" type="button">视觉覆盖</button>
-        <button data-view="assets" type="button">媒体库</button>
+        <button class="active" data-view="preview" type="button">预览</button>
+        <button data-view="story" type="button">编辑内容</button>
+        <button data-view="visual" type="button">页面检查</button>
+        <button data-view="assets" type="button">选择图片</button>
       </nav>
       <section class="view-panel active" data-panel="preview">
         <div class="preview-frame" id="preview-frame">
           <iframe id="preview" title="演示文稿预览"></iframe>
-          <div class="empty-state" id="empty-state"><span class="cross" aria-hidden="true"></span><strong>选择一个项目</strong><p>这里显示最终成品；其他标签解释引擎如何组织叙事、视觉和媒体。</p></div>
+          <div class="empty-state" id="empty-state"><span class="cross" aria-hidden="true"></span><strong>选择一个项目</strong><p>这里会显示演示效果，你也可以在其他标签中修改文字与图片。</p></div>
         </div>
       </section>
       <section class="view-panel" data-panel="story">
-        <div class="panel-intro"><span>NARRATIVE DIRECTOR</span><p>每页承担一个清晰任务；核心结论和转场共同构成连续故事。</p></div>
+        <div class="panel-intro"><span>编辑内容</span><p>修改页面上真正显示的文字，也可以调整讲述重点与演讲者笔记。</p></div>
         <div id="story-grid" class="story-grid empty-grid">选择项目后显示故事线。</div>
       </section>
       <section class="view-panel" data-panel="visual">
-        <div class="panel-intro"><span>VISUAL COVERAGE PLANNER</span><p>检查视觉是否真的解释内容，而不只是填满空白。</p></div>
+        <div class="panel-intro"><span>页面检查</span><p>快速发现图片不足或主要依赖文字的页面，决定下一步先优化哪里。</p></div>
         <div id="visual-summary" class="coverage-summary"></div>
         <div id="visual-grid" class="visual-grid empty-grid">选择项目后显示视觉计划。</div>
       </section>
       <section class="view-panel" data-panel="assets">
-        <div class="panel-intro"><span>MEDIA LIBRARY</span><p>真实图片优先，保留作者与许可；AI 图片只补足无法检索的表达。</p></div>
-        <div class="asset-toolbar"><span id="media-review-status">尚无媒体清单</span><button id="approve-media" class="secondary compact" type="button" disabled>确认选中图片</button></div>
+        <div class="panel-intro"><span>选择图片</span><p>取消不合适的图片，或输入关键词继续寻找真实图片。</p></div>
+        <div class="asset-toolbar"><span id="media-review-status">尚无图片</span><button id="approve-media" class="secondary compact" type="button" disabled>保存图片选择</button></div>
+        <form id="add-media-form" class="add-media-form">
+          <label>搜索关键词<input id="add-media-query" type="text" placeholder="例如：北欧冬日街道" required></label>
+          <label>用于页面<select id="add-media-slide"><option value="">选择页面</option></select></label>
+          <label>图片用途<select id="add-media-role"><option value="content">内容图</option><option value="background">背景图</option><option value="decorative">装饰图</option></select></label>
+          <button class="secondary compact" type="submit">添加图片</button>
+        </form>
         <div id="asset-grid" class="asset-grid empty-grid">选择项目后显示媒体。</div>
       </section>
     </main>
 
     <aside class="inspector" aria-live="polite">
-      <div class="rail-index">03 / BUILD REPORT</div>
+      <div class="rail-index">03 / STATUS</div>
       <div class="status-line"><span id="status-dot" class="status-dot idle"></span><strong id="status-title">准备就绪</strong></div>
-      <p id="status-message">连接后，这里会显示生成阶段、错误、警告与机器返回。</p>
-      <dl class="metrics"><div><dt>大纲</dt><dd id="metric-outlines">—</dd></div><div><dt>成品</dt><dd id="metric-decks">—</dd></div><div><dt>耗时</dt><dd id="metric-time">—</dd></div></dl>
-      <section class="engine-stack">
-        <h3>生产内核</h3>
-        <div class="stack-step"><b>01</b><span>Brief Gate<small>目标与边界</small></span></div>
-        <div class="stack-step"><b>02</b><span>Narrative Director<small>故事与转场</small></span></div>
-        <div class="stack-step"><b>03</b><span>Visual Planner<small>图像与证据</small></span></div>
-        <div class="stack-step"><b>04</b><span>Layout Engine<small>排版与构图</small></span></div>
-        <div class="stack-step"><b>05</b><span>Quality Gate<small>溢出与交付</small></span></div>
-      </section>
-      <section class="report-section"><h3>错误</h3><ol id="errors"><li class="muted">暂无</li></ol></section>
-      <section class="report-section"><h3>警告与建议</h3><ol id="warnings"><li class="muted">暂无</li></ol></section>
-      <section class="report-section raw-section"><details><summary>查看机器返回</summary><pre id="raw">{}</pre></details></section>
+      <p id="status-message">这里会告诉你当前操作是否完成，以及下一步需要处理什么。</p>
+      <dl class="metrics"><div><dt>项目</dt><dd id="metric-outlines">—</dd></div><div><dt>成品</dt><dd id="metric-decks">—</dd></div><div><dt>本次耗时</dt><dd id="metric-time">—</dd></div></dl>
+      <section class="report-section"><h3>需要处理</h3><ol id="errors"><li class="muted">暂无</li></ol></section>
+      <section class="report-section"><h3>优化建议</h3><ol id="warnings"><li class="muted">暂无</li></ol></section>
+      <pre id="raw" hidden>{}</pre>
     </aside>
   </div>
 

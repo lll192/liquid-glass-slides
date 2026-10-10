@@ -6,13 +6,18 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import tempfile
+import uuid
 from pathlib import Path
 from typing import Any
 
 try:
     import slides
+    from source_web_images import source_images
 except ImportError:  # pragma: no cover
     from scripts import slides
+    from scripts.source_web_images import source_images
 
 
 class ServiceError(ValueError):
@@ -112,6 +117,38 @@ class AgentService:
     def _workspace_relative(self, path: Path) -> str:
         return path.resolve().relative_to(self.workspace).as_posix()
 
+    @staticmethod
+    def _content_fields(slide: dict[str, Any]) -> list[dict[str, Any]]:
+        """Describe visible slide copy without exposing the raw outline structure."""
+        labels = {
+            "eyebrow": "页眉小标题", "subtitle": "页面副标题", "caption": "补充说明",
+            "quote": "引用文字", "by": "引用署名", "center": "中心文字",
+            "left_title": "左侧标题", "right_title": "右侧标题",
+            "left": "左栏内容", "right": "右栏内容", "items": "页面内容",
+            "left_items": "左侧内容", "right_items": "右侧内容", "contacts": "结尾信息",
+        }
+        fields: list[dict[str, Any]] = []
+        for key, label in labels.items():
+            value = slide.get(key)
+            if isinstance(value, str):
+                fields.append({
+                    "key": key, "label": label,
+                    "type": "html" if re.search(r"<[^>]+>", value) else "text",
+                    "value": value,
+                })
+            elif isinstance(value, list) and value and all(isinstance(item, dict) for item in value):
+                preferred = ["year", "icon", "label", "head", "text", "desc"]
+                columns = [name for name in preferred if any(name in item for item in value)]
+                if not columns:
+                    continue
+                lines = ["｜".join(str(item.get(name, "")) for name in columns) for item in value]
+                fields.append({
+                    "key": key, "label": label, "type": "list", "columns": columns,
+                    "value": "\n".join(lines),
+                    "hint": "每行一项；同一行的不同部分用 ｜ 分隔。",
+                })
+        return fields
+
     def inspect_project(self, outline_value: Any, manifest_value: Any = None) -> dict[str, Any]:
         """Return a bounded, UI-ready view of one deck project."""
         outline_path = self.path(outline_value, "outline")
@@ -210,6 +247,7 @@ class AgentService:
                 "main_point": slide.get("main_point", ""),
                 "transition": slide.get("transition", ""),
                 "speaker_notes": slide.get("speaker_notes", ""),
+                "content_fields": self._content_fields(slide),
                 "visual_type": visual_type,
                 "visual_purpose": planned.get("purpose", ""),
                 "visual_source": planned.get("source", ""),
@@ -283,6 +321,57 @@ class AgentService:
                 reviewed=bool(arguments.get("reviewed", False)),
                 workers=int(arguments.get("workers", 4)),
             ))
+        if operation == "add-media":
+            manifest_path = self.path(arguments.get("manifest"), "manifest")
+            manifest = self._read_object(manifest_path, "manifest")
+            query = str(arguments.get("query", "")).strip()
+            role = str(arguments.get("role", "content")).strip()
+            slide_id = str(arguments.get("slideId", "")).strip()
+            if not query:
+                raise ServiceError("query must be a non-empty string")
+            if role not in {"content", "background", "decorative", "hero"}:
+                raise ServiceError("role must be content, background, decorative, or hero")
+            if not slide_id:
+                raise ServiceError("slideId must be a non-empty string")
+            slug = re.sub(r"[^a-z0-9]+", "-", query.lower()).strip("-")[:28] or "image"
+            asset_id = f"{slug}-{uuid.uuid4().hex[:7]}"
+            plan = {
+                "deck_id": manifest.get("deck_id"), "image_dir": "images/web",
+                "requests": [{
+                    "asset_id": asset_id, "query": query, "role": role,
+                    "slide_ids": [slide_id], "alt": query, "fit": "cover",
+                    "focal_point": "50% 50%",
+                }],
+            }
+            temp_plan: Path | None = None
+            temp_manifest: Path | None = None
+            try:
+                with tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", suffix=".json", prefix="media-plan-",
+                    dir=self.workspace, delete=False,
+                ) as handle:
+                    json.dump(plan, handle, ensure_ascii=False)
+                    temp_plan = Path(handle.name)
+                temp_manifest = self.workspace / f".media-extra-{uuid.uuid4().hex}.json"
+                added = source_images(temp_plan, self.workspace, temp_manifest, reviewed=False, workers=1)
+                current_assets = manifest.get("assets")
+                if not isinstance(current_assets, list):
+                    raise ServiceError("manifest assets must be an array")
+                current_assets.extend(added.get("assets", []))
+                manifest["reviewed"] = False
+                manifest_path.write_text(
+                    json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+                )
+            finally:
+                for temporary in (temp_plan, temp_manifest):
+                    if temporary:
+                        temporary.unlink(missing_ok=True)
+            return 0, {
+                "api_version": "1.0", "command": "add-media", "ok": True,
+                "message": "image added for review", "errors": [], "warnings": [],
+                "data": {"manifest": str(manifest_path), "asset_id": asset_id,
+                         "assets": len(manifest.get("assets", [])), "reviewed": False},
+            }
         if operation == "review-media":
             manifest_path = self.path(arguments.get("manifest"), "manifest")
             manifest = self._read_object(manifest_path, "manifest")
@@ -320,12 +409,26 @@ class AgentService:
                 raise ServiceError("slideId must be a non-empty string")
             if not isinstance(patch, dict) or not patch:
                 raise ServiceError("patch must be a non-empty object")
-            allowed = {"title", "main_point", "transition", "speaker_notes"}
+            string_fields = {
+                "title", "main_point", "transition", "speaker_notes", "eyebrow", "subtitle",
+                "caption", "quote", "by", "center", "left_title", "right_title", "left", "right",
+            }
+            list_fields = {"items", "left_items", "right_items", "contacts"}
+            allowed = string_fields | list_fields
             unknown = set(patch) - allowed
             if unknown:
                 raise ServiceError("unsupported slide fields: " + ", ".join(sorted(unknown)))
-            if not all(isinstance(value, str) for value in patch.values()):
-                raise ServiceError("editable slide fields must be strings")
+            if any(not isinstance(patch[key], str) for key in patch if key in string_fields):
+                raise ServiceError("editable text fields must be strings")
+            for key in set(patch) & list_fields:
+                value = patch[key]
+                if not isinstance(value, list) or not all(
+                    isinstance(item, dict) and all(
+                        isinstance(name, str) and isinstance(text, str)
+                        for name, text in item.items()
+                    ) for item in value
+                ):
+                    raise ServiceError(f"{key} must be a list of text objects")
             slide = next((item for item in outline.get("slides", []) if item.get("slide_id") == slide_id), None)
             if slide is None:
                 raise ServiceError(f"slideId was not found: {slide_id}")
