@@ -44,6 +44,7 @@ Load only the references needed for the current task:
 
 - `references/intake.md` — adaptive pre-generation form, gap diagnosis, and confirmation rules.
 - `references/design-brief.md` — the stable `brief.json` contract between intake and slide planning.
+- `references/production-profiles.md` — fast, balanced, and premium time/media budgets. Read when speed or visual richness matters.
 - `references/source-intake.md` — conditional upload, source receipt, and content-coverage workflow for full or partial copy.
 - `references/source-manifest.md` — the `source-manifest.json` provenance and handling contract.
 - `references/narrative-planning.md` — deck-type selection and story structures.
@@ -61,6 +62,7 @@ Load only the references needed for the current task:
 - `references/prompt-patterns.md` — ImageGen prompt templates for liquid-glass hero/cover/concept images.
 - `references/image-handling.md` — image intake & processing rules for BOTH AI-generated and user-provided images (transparency normalization, base64 embedding, sizing, placement patterns, optimization).
 - `references/ai-imagery.md` — **when/what/where to add AI images**: per-layout guidance, prompt shape, the transparent-background trap + flood-fill cutout, and save+embed flow. Read this whenever you decide to generate imagery.
+- `references/web-imagery.md` — **how to source reusable images from the web**: search, license checks, local saving, attribution, crop safety, and `media-manifest.json`. Read whenever web imagery is used.
 - `references/echarts-charts.md` — **when/what/where to add ECharts charts**: per-page decision rule (only where real quantitative data exists), chart-type selection, placement, and the auto-applied liquid-glass theme. Read this whenever a slide could benefit from a data visualization.
 - `references/three-3d.md` — **when/what/where to add Three.js scenes**: cover-only particles plus restrained `petals`, `waves`, and semantic `network`. `object` and `orbs` are retired and render nothing.
 - `references/ripple-textures.md` — **when/what/where to add ripple material**: water caustics, concentric rings, and cast-acrylic flow textures; quiet-zone composition, per-slide `surface` fields, static fallback, and dynamic shared-canvas behavior. Read this when water, propagation, resonance, flow, or transparent-material cues serve the topic.
@@ -127,6 +129,8 @@ progress bar, dots, page index, reduced-motion). Clone its
    - Pick layouts from content semantics, not from a fixed template order. Vary archetypes for rhythm.
    - Add a `visual_plan` to content slides. Use meaningful visuals for explanation or evidence; do not count ripple or Three.js atmosphere as information coverage.
    - Read `references/layout-intelligence.md`. Keep `variant:auto` unless semantics require a fixed reading order. Revise or split every slide reported as `overfull`.
+   - Read `references/production-profiles.md`. Default to `balanced`; use `fast` for rapid iteration and `premium` only when the user accepts a longer bespoke-art workflow.
+   - For concrete people, places, objects, artworks, or atmosphere, search for reusable web imagery before generating it. Read `references/web-imagery.md`, save selected assets locally, and validate `media-manifest.json`.
 
 6. **Apply visual DNA (style-lock)**
    - Read `references/visual-dna.md`, `references/composition-system.md`, and `assets/theme-tokens.json`.
@@ -148,7 +152,7 @@ progress bar, dots, page index, reduced-motion). Clone its
 
      **Path B — one-click build (reproducible / batch).** Compose a v2 `outline.json` and run the generator.
        a. Read `references/outline-schema.md` and `references/deck-schema-v2.json`. Every deck requires stable `schema_version`, `deck_id`, and per-page `slide_id` values: `{ "schema_version":"2.0", "deck_id":"my-talk", "title":"...", "lang":"zh-CN", "slides":[ { "slide_id":"opening-question", "layout":"cover", ...fields } ] }`. Never derive identity from the current page number. Validate with `python scripts/slides.py --json validate my-talk.json`; migrate older outlines with `python scripts/migrate_outline.py old.json --out new.json`.
-       b. **Add AI imagery**: `cover` and `section-divider` accept an optional `hero` field (image path or data URI) + `hero_alt`. Decide which slides need images per `references/ai-imagery.md`, generate + cut out the backgrounds, save the transparent files under `images/`, and put the **local path** (e.g. `"hero": "images/cover-hero.png"`) in the outline. `build.py` reads the file and **auto-inlines it as a base64 data URI**, so the output stays a single self-contained file while the image also lives on disk.
+       b. **Add sourced and AI imagery**: use web search first for concrete subjects and authentic atmosphere, following `references/web-imagery.md`; reserve ImageGen for bespoke cover language or concepts that cannot be sourced. Save every selected asset under `images/`, validate `media-manifest.json`, and use local paths in the outline. For cover images, `hero_fit` defaults to `contain`; use `cover` only when cropping is intentional, with `hero_position` protecting the focal subject. `build.py` auto-inlines local assets.
           > **Offline / sandbox note:** `build.py` inlines `echarts.min.js` and `three.min.js` from `assets/` — no network is required at build time. For images, prefer **local file paths** (relative to the outline) or `data:` URIs; avoid `http(s)://` URLs unless the build environment has network access.
        c. Run:
           ```bash
@@ -157,7 +161,7 @@ progress bar, dots, page index, reduced-motion). Clone its
           ```
           For production or cross-agent work, prefer the recoverable pipeline described in `references/production-pipeline.md`:
           ```bash
-          python scripts/slides.py --json run --outline my-talk.json --out dist/my-talk.html
+          python scripts/slides.py --json run --outline my-talk.json --media-manifest media-manifest.json --out dist/my-talk.html
           ```
           It materializes storyboard, visual-plan, QA-report, and pipeline-state JSON files beside the HTML. Continue from `needs_revision` by correcting the reported artifact and running the same command again.
           zero dependencies — only the Python standard library. Output is a single self-contained HTML file (engine CSS/JS inlined, same as Path A). Read `references/agent-cli.md` for the stable JSON contract and exit codes.

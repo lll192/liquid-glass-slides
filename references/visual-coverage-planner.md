@@ -8,7 +8,7 @@ explanatory diagrams, tables, images, and breathing room.
 
 | Content need | Preferred visual |
 |---|---|
-| Real-world situation, person, place, object | AI-generated or sourced image |
+| Real-world situation, person, place, object | sourced image first; AI-generated when bespoke art is needed |
 | Quantitative trend, comparison, distribution, proportion | ECharts chart |
 | Exact values the audience may need to read | `data-table` |
 | Ordered steps, pipeline, lifecycle | `process-flow` |
@@ -68,6 +68,8 @@ three to six nodes and name actual relationships in the spoken explanation.
 - Charts and tables need a visible caption/source or `visual_plan.source`.
 - The planner chooses the medium; the producing agent still generates an image with
   ImageGen, writes a valid ECharts option, or supplies structured layout data.
+- For sourced images, read `web-imagery.md`, save assets locally, and validate a
+  `media-manifest.json`. A search result URL by itself is not provenance.
 - Keep readable text in HTML. Do not ask image generation to render labels or paragraphs.
 - If no meaningful visual is justified, use a concise editorial text composition and the
   automatic ripple background instead of filler imagery.

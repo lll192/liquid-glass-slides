@@ -52,6 +52,9 @@
         "speaker_intent": {"type": "string"},
         "transition": {"type": "string"},
         "emotion": {"type": "string"},
+        "hero_mode": {"enum": ["auto", "float", "frame"]},
+        "hero_fit": {"enum": ["contain", "cover"]},
+        "hero_position": {"type": "string", "pattern": "^\\d{1,3}%\\s+\\d{1,3}%$"},
         "visual_plan": {"type": "object"}
       },
       "additionalProperties": true

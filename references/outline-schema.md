@@ -143,6 +143,9 @@ warning means the outline should be shortened or split before delivery.
 
 ### `cover`
 `eyebrow`, `title`, `subtitle`; optional `hero` (image src) + `hero_alt`.
+Optional crop controls: `hero_mode` (`auto`, `float`, `frame`), `hero_fit`
+(`contain`, `cover`), and `hero_position` (`50% 50%`). `contain` is the default.
+`auto` floats PNG/WebP assets whose headers declare alpha and frames other images.
 
 ### `toc`
 `eyebrow`, `title`; `items: [{ label, desc }]`. Renders as one indexed composition

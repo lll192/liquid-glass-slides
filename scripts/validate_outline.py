@@ -123,6 +123,19 @@ def validate_outline(outline: Any) -> list[str]:
         if visual_plan is not None and not isinstance(visual_plan, dict):
             errors.append(f"{prefix}.visual_plan must be an object when provided")
 
+        hero_mode = slide.get("hero_mode")
+        if hero_mode is not None and hero_mode not in {"auto", "float", "frame"}:
+            errors.append(f"{prefix}.hero_mode must be auto, float, or frame")
+        hero_fit = slide.get("hero_fit")
+        if hero_fit is not None and hero_fit not in {"contain", "cover"}:
+            errors.append(f"{prefix}.hero_fit must be contain or cover")
+        hero_position = slide.get("hero_position")
+        if hero_position is not None and (
+            not isinstance(hero_position, str)
+            or not re.fullmatch(r"\d{1,3}%\s+\d{1,3}%", hero_position.strip())
+        ):
+            errors.append(f"{prefix}.hero_position must look like 50% 50%")
+
     return errors
 
 

@@ -37,6 +37,18 @@ class OutlineProtocolTests(unittest.TestCase):
         }
         self.assertIn("slides[1].slide_id duplicates same-slide", validate_outline(outline))
 
+    def test_cover_crop_controls_are_validated(self):
+        outline = {
+            "schema_version": "2.0", "deck_id": "crop-demo", "title": "Demo", "lang": "en",
+            "slides": [{
+                "slide_id": "cover-page", "layout": "cover", "title": "Demo",
+                "hero_mode": "float", "hero_fit": "contain", "hero_position": "60% 40%",
+            }],
+        }
+        self.assertEqual(validate_outline(outline), [])
+        outline["slides"][0]["hero_fit"] = "stretch"
+        self.assertIn("slides[0].hero_fit must be contain or cover", validate_outline(outline))
+
     def test_migration_ids_survive_reordering(self):
         slides = [
             {"layout": "cover", "title": "稳定身份"},

@@ -11,12 +11,14 @@ happened so another agent or a later run can continue from the failure point.
 python scripts/pipeline.py run \
   --brief brief.json \
   --source-manifest source-manifest.json \
+  --media-manifest media-manifest.json \
   --outline outline.json \
   --out dist/talk.html
 ```
 
-`--brief` and `--source-manifest` are optional for an outline-only build. When supplied,
-they are validated before generation. Output paths default beside the HTML file:
+`--brief`, `--source-manifest`, and `--media-manifest` are optional for an outline-only
+build. When supplied, they are validated before generation. A media manifest must share
+the outline's `deck_id` and have `reviewed:true`. Output paths default beside the HTML file:
 
 - `talk.storyboard.json` — narrative snapshot keyed by stable `slide_id`.
 - `talk.visual-plan.json` — layout and visual-coverage snapshot.

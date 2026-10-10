@@ -38,11 +38,13 @@ Check the installation and discover capabilities:
 python scripts/slides.py --json doctor
 ```
 
-Validate any supported input. `auto` distinguishes outlines, briefs, and source manifests:
+Validate any supported input. `auto` distinguishes outlines, briefs, source manifests,
+and media manifests:
 
 ```bash
 python scripts/slides.py --json validate outline.json
 python scripts/slides.py --json validate brief.json --kind brief
+python scripts/slides.py --json validate media-manifest.json --kind media-manifest
 ```
 
 Validate and build a single self-contained deck:
@@ -54,7 +56,7 @@ python scripts/slides.py --json build --outline outline.json --out dist/deck.htm
 Run the recoverable production pipeline:
 
 ```bash
-python scripts/slides.py --json run --outline outline.json --out dist/deck.html
+python scripts/slides.py --json run --outline outline.json --media-manifest media-manifest.json --out dist/deck.html
 ```
 
 Read a job state without parsing human-readable output:

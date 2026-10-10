@@ -16,6 +16,7 @@ DIRECTIONS = {"auto", "minimal", "academic", "technology", "warm", "brand"}
 DENSITIES = {"airy", "balanced", "dense"}
 MOTIONS = {"none", "subtle", "expressive"}
 MEDIA_LEVELS = {"restrained", "balanced", "rich"}
+PRODUCTION_PROFILES = {"fast", "balanced", "premium"}
 
 
 def _nonempty_string(value: Any) -> bool:
@@ -84,6 +85,20 @@ def validate_brief(brief: Any) -> list[str]:
             errors.append('delivery.format must currently be "html"')
         if delivery.get("aspect_ratio") != "16:9":
             errors.append('delivery.aspect_ratio must currently be "16:9"')
+
+    production = brief.get("production")
+    if production is not None:
+        if not isinstance(production, dict):
+            errors.append("production must be an object when provided")
+        else:
+            if production.get("profile", "balanced") not in PRODUCTION_PROFILES:
+                errors.append("production.profile must be fast, balanced, or premium")
+            for field in ("ai_image_budget", "web_image_target"):
+                value = production.get(field)
+                if value is not None and (
+                    isinstance(value, bool) or not isinstance(value, int) or value < 0 or value > 12
+                ):
+                    errors.append(f"production.{field} must be an integer from 0 to 12")
 
     for field in ("assumptions", "open_questions"):
         if not _string_list(brief.get(field)):

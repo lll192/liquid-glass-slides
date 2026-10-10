@@ -15,12 +15,14 @@ try:
     from build import build
     from content_director import analyze_outline
     from validate_brief import validate_brief
+    from validate_media_manifest import validate_media_manifest
     from validate_outline import validate_outline
     from validate_source_manifest import validate_manifest
 except ImportError:  # pragma: no cover - module execution fallback
     from scripts.build import build
     from scripts.content_director import analyze_outline
     from scripts.validate_brief import validate_brief
+    from scripts.validate_media_manifest import validate_media_manifest
     from scripts.validate_outline import validate_outline
     from scripts.validate_source_manifest import validate_manifest
 
@@ -212,6 +214,7 @@ def _existing_revision(state_path: Path) -> int:
 def run_pipeline(args: argparse.Namespace) -> int:
     outline_path = args.outline.resolve()
     out_path = args.out.resolve()
+    media_manifest_arg = getattr(args, "media_manifest", None)
     stem = out_path.stem
     state_path = (args.state or out_path.with_name(stem + ".pipeline-state.json")).resolve()
     storyboard_path = (args.storyboard or out_path.with_name(stem + ".storyboard.json")).resolve()
@@ -225,6 +228,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
         input_paths.append(args.brief.resolve())
     if args.source_manifest:
         input_paths.append(args.source_manifest.resolve())
+    if media_manifest_arg:
+        input_paths.append(media_manifest_arg.resolve())
     if len(set(output_paths)) != len(output_paths):
         print("PIPELINE FAILED: all output artifact paths must be distinct", file=sys.stderr)
         return 2
@@ -240,6 +245,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
     artifacts = {
         "brief": _artifact_path(args.brief),
         "source_manifest": _artifact_path(args.source_manifest),
+        "media_manifest": _artifact_path(media_manifest_arg),
         "outline": _artifact_path(outline_path),
         "storyboard": _artifact_path(storyboard_path),
         "visual_plan": _artifact_path(visual_plan_path),
@@ -306,8 +312,18 @@ def run_pipeline(args: argparse.Namespace) -> int:
             "storyboard and director report materialized (%d/100)" % director_report["score"],
         )
         active_stage = "visual-planning"
+        if media_manifest_arg:
+            media_manifest = _read_json(media_manifest_arg.resolve(), "media manifest")
+            media_errors = validate_media_manifest(media_manifest)
+            if media_errors:
+                raise ValueError("invalid media manifest:\n- " + "\n- ".join(media_errors))
+            if media_manifest.get("deck_id") != outline.get("deck_id"):
+                raise ValueError("media manifest deck_id must match outline deck_id")
+            if media_manifest.get("reviewed") is not True:
+                raise ValueError("media manifest must be reviewed before production")
         _atomic_write_json(visual_plan_path, visual_plan_from_outline(outline, director_report))
-        _stage(state, "visual-planning", "complete", "visual plan snapshot materialized")
+        media_message = " with validated media manifest" if media_manifest_arg else ""
+        _stage(state, "visual-planning", "complete", "visual plan snapshot materialized" + media_message)
         _save_state(state_path, state, "generating")
 
         active_stage = "build"
@@ -407,6 +423,7 @@ def main() -> int:
     run.add_argument("--out", type=Path, required=True, help="output HTML")
     run.add_argument("--brief", type=Path, help="optional brief.json")
     run.add_argument("--source-manifest", type=Path, help="optional source-manifest.json")
+    run.add_argument("--media-manifest", type=Path, help="optional media-manifest.json")
     run.add_argument("--state", type=Path, help="pipeline state JSON path")
     run.add_argument("--storyboard", type=Path, help="storyboard snapshot JSON path")
     run.add_argument("--visual-plan", type=Path, help="visual plan snapshot JSON path")

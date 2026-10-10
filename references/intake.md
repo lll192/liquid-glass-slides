@@ -114,6 +114,7 @@ Use defaults only after inventorying the request:
 - media intensity: `balanced`;
 - palette: derive from topic, with accessible near-black body text;
 - output: self-contained 16:9 HTML deck.
+- production profile: `balanced`; use `fast` when the user prioritizes rapid iteration.
 
 Never invent facts, quotations, sources, or quantitative data to complete a
 brief. Put unresolved factual dependencies in `open_questions`.

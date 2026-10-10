@@ -336,12 +336,18 @@ p, li{ font-size:var(--body-size); color:var(--muted); line-height:1.55; margin:
   gap:clamp(1.6rem,4vw,4rem); align-items:center; text-align:left; }
 .cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.35em 0 0; }
 .cover-hero{ margin:0; max-width:min(48vw,620px); justify-self:end; }
-.cover-hero img{ width:100%; height:auto; max-height:min(58vh,520px); object-fit:cover; aspect-ratio:16/9; }
+.cover-hero img{ width:100%; height:auto; max-height:min(58vh,520px); object-fit:contain;
+  object-position:var(--hero-position,50% 50%); }
+.cover-hero.hero-fit-cover img{ height:min(58vh,520px); aspect-ratio:16/9; object-fit:cover; }
+.cover-hero.hero-fit-contain img{ width:auto; max-width:100%; object-fit:contain; aspect-ratio:auto; }
+.cover-hero.hero-mode-float{ padding:0; border:0; background:transparent; box-shadow:none; overflow:visible; }
+.cover-hero.hero-mode-float img{ border-radius:0; filter:drop-shadow(0 22px 44px rgba(30,60,100,.18)); }
 @media (max-width:800px){
   .cover-layout:has(.cover-hero){ grid-template-columns:1fr; gap:clamp(.9rem,2.5vh,1.4rem); text-align:center; }
   .cover-layout:has(.cover-hero) .cover-copy .lead{ margin:.35em auto 0; }
   .cover-hero{ grid-row:1; max-width:min(88vw,620px); justify-self:center; }
   .cover-hero img{ max-height:min(30vh,240px); }
+  .cover-hero.hero-fit-cover img{ height:min(30vh,240px); }
 }
 
 /* ============ ECharts 图表卡（液态玻璃风）============ */

@@ -52,13 +52,13 @@ TOOLS = [
     },
     {
         "name": "slides_validate",
-        "description": "Validate an outline, design brief, or source manifest before production.",
+        "description": "Validate an outline, design brief, source manifest, or media manifest before production.",
         "inputSchema": _schema(
             {
                 "path": {"type": "string", "description": "JSON path inside the MCP workspace."},
                 "kind": {
                     "type": "string",
-                    "enum": ["auto", "outline", "brief", "source-manifest"],
+                    "enum": ["auto", "outline", "brief", "source-manifest", "media-manifest"],
                     "default": "auto",
                 },
             },
@@ -85,6 +85,7 @@ TOOLS = [
                 "output": {"type": "string"},
                 "brief": {"type": "string"},
                 "sourceManifest": {"type": "string"},
+                "mediaManifest": {"type": "string"},
                 "state": {"type": "string"},
             },
             ["outline", "output"],

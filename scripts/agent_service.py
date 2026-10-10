@@ -95,8 +95,10 @@ class AgentService:
             return slides.command_doctor(argparse.Namespace(json=True))
         if operation == "validate":
             kind = arguments.get("kind", "auto")
-            if kind not in {"auto", "outline", "brief", "source-manifest"}:
-                raise ServiceError("kind must be auto, outline, brief, or source-manifest")
+            if kind not in {"auto", "outline", "brief", "source-manifest", "media-manifest"}:
+                raise ServiceError(
+                    "kind must be auto, outline, brief, source-manifest, or media-manifest"
+                )
             return slides.command_validate(argparse.Namespace(
                 json=True, input=self.path(arguments.get("path"), "path"), kind=kind,
             ))
@@ -117,6 +119,10 @@ class AgentService:
                 source_manifest=(
                     self.path(arguments["sourceManifest"], "sourceManifest")
                     if arguments.get("sourceManifest") else None
+                ),
+                media_manifest=(
+                    self.path(arguments["mediaManifest"], "mediaManifest")
+                    if arguments.get("mediaManifest") else None
                 ),
                 state=self.path(arguments["state"], "state") if arguments.get("state") else None,
                 assets=None,

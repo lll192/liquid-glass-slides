@@ -33,6 +33,11 @@ the renderer-specific structure in `outline.json`.
     "format": "html",
     "aspect_ratio": "16:9"
   },
+  "production": {
+    "profile": "balanced",
+    "ai_image_budget": 1,
+    "web_image_target": 3
+  },
   "assumptions": ["未提供完整文案，由 Agent 策划初稿并标记需核验的医学表述"],
   "open_questions": [],
   "confirmed": true
@@ -81,6 +86,15 @@ medium per slide based on content.
 The current package supports `html` and defaults to `16:9`. Keep these values
 explicit so future exporters can consume the same brief without redesigning the
 intake contract.
+
+### Production profile
+
+- `fast`: 0–1 AI images, 2–4 sourced images, report-first QA and minimal screenshots.
+- `balanced`: 1–2 AI images, 2–4 sourced images, selective visual inspection. Default.
+- `premium`: 2–4 AI images, richer sourcing, and broader visual inspection.
+
+The profile controls time and media spend, not factual or typography standards. Read
+`references/production-profiles.md` when speed or visual richness matters.
 
 ### Assumptions and open questions
 

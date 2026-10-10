@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / 'assets' / 'engine.css').read_text(encoding='utf-8')
 JS = (ROOT / 'assets' / 'engine.js').read_text(encoding='utf-8')
 BUILD = (ROOT / 'scripts' / 'build.py').read_text(encoding='utf-8')
+from scripts.build import image_has_alpha
 
 
 class VisualContractTests(unittest.TestCase):
@@ -68,6 +69,21 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('presenter-notes-editor', JS)
         self.assertIn("notesEditor.addEventListener('input', saveNote)", JS)
         self.assertIn('localStorage.setItem(key, value)', JS)
+
+    def test_cover_preserves_complete_artwork_by_default(self):
+        self.assertIn('.cover-hero.hero-fit-contain img', CSS)
+        self.assertIn('object-fit:contain', CSS)
+        self.assertIn('.cover-hero.hero-mode-float', CSS)
+        cover = (ROOT / 'templates' / 'single-page' / 'cover.html').read_text(encoding='utf-8')
+        self.assertIn('hero-mode-{{hero_mode}}', cover)
+        self.assertIn('hero-fit-{{hero_fit}}', cover)
+        self.assertIn('--hero-position:{{hero_position}}', cover)
+
+    def test_png_alpha_header_selects_floating_cover_mode(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            image = Path(temp_dir) / 'hero.png'
+            image.write_bytes(b'\x89PNG\r\n\x1a\n' + b'\0' * 17 + bytes([6]))
+            self.assertTrue(image_has_alpha('hero.png', temp_dir))
 
     def test_narrative_example_has_natural_length_speaker_notes(self):
         outline = json.loads((ROOT / 'examples' / 'narrative-visual-outline.json').read_text(encoding='utf-8'))

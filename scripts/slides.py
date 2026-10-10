@@ -20,12 +20,14 @@ try:
     from build import build
     from pipeline import PIPELINE_VERSION, _read_json, mark_exported, run_pipeline
     from validate_brief import validate_brief
+    from validate_media_manifest import validate_media_manifest
     from validate_outline import LAYOUTS, SCHEMA_VERSION, validate_outline
     from validate_source_manifest import validate_manifest
 except ImportError:  # pragma: no cover
     from scripts.build import build
     from scripts.pipeline import PIPELINE_VERSION, _read_json, mark_exported, run_pipeline
     from scripts.validate_brief import validate_brief
+    from scripts.validate_media_manifest import validate_media_manifest
     from scripts.validate_outline import LAYOUTS, SCHEMA_VERSION, validate_outline
     from scripts.validate_source_manifest import validate_manifest
 
@@ -87,6 +89,8 @@ def _detect_kind(value: Any) -> str:
         return "outline"
     if isinstance(value.get("sources"), list) and "processing" in value:
         return "source-manifest"
+    if isinstance(value.get("assets"), list) and "reviewed" in value:
+        return "media-manifest"
     if isinstance(value.get("content"), dict) and "audience" in value:
         return "brief"
     raise ValueError("cannot detect input kind; pass --kind explicitly")
@@ -114,7 +118,7 @@ def command_doctor(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
             "capabilities": [
                 "validate", "build", "production-run", "status", "mark-exported",
                 "narrative-director", "visual-coverage-planner", "mcp-stdio", "http-api",
-                "production-console",
+                "production-console", "web-image-sourcing", "media-manifest",
             ],
         },
         errors=[f"missing {name}" for name in missing]
@@ -127,6 +131,7 @@ VALIDATORS: dict[str, Callable[[Any], list[str]]] = {
     "outline": validate_outline,
     "brief": validate_brief,
     "source-manifest": validate_manifest,
+    "media-manifest": validate_media_manifest,
 }
 
 
@@ -191,6 +196,7 @@ def command_run(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
         out=args.out,
         brief=args.brief,
         source_manifest=args.source_manifest,
+        media_manifest=args.media_manifest,
         state=args.state,
         storyboard=None,
         visual_plan=None,
@@ -260,7 +266,7 @@ def parser() -> argparse.ArgumentParser:
     validate = commands.add_parser("validate", help="validate an outline, brief, or source manifest")
     validate.add_argument("input", type=Path)
     validate.add_argument(
-        "--kind", choices=("auto", "outline", "brief", "source-manifest"), default="auto"
+        "--kind", choices=("auto", "outline", "brief", "source-manifest", "media-manifest"), default="auto"
     )
     validate.set_defaults(handler=command_validate)
 
@@ -276,6 +282,7 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--out", type=Path, required=True)
     run.add_argument("--brief", type=Path)
     run.add_argument("--source-manifest", type=Path)
+    run.add_argument("--media-manifest", type=Path)
     run.add_argument("--state", type=Path)
     run.add_argument("--assets", type=Path)
     run.add_argument("--templates", type=Path)

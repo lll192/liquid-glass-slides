@@ -533,6 +533,19 @@ def image_profile(src, src_dir):
     return shape, status, width, height
 
 
+def image_has_alpha(src, src_dir):
+    """Return True when a supported image header declares an alpha channel."""
+    data, _status = _local_or_data_bytes(src, src_dir)
+    if not data:
+        return False
+    if data.startswith(b'\x89PNG\r\n\x1a\n') and len(data) >= 26:
+        return data[25] in (4, 6)
+    if (data.startswith(b'RIFF') and data[8:12] == b'WEBP'
+            and data[12:16] == b'VP8X' and len(data) >= 21):
+        return bool(data[20] & 0x10)
+    return False
+
+
 def chart_profile(chart):
     """Return (semantic chart family, data density) from a pure-JSON option."""
     if not isinstance(chart, dict):
@@ -1238,6 +1251,20 @@ def build(outline_path, out_path, assets_dir, templates_dir, return_report=False
             image_profile(image_src, src_dir) if visual_intelligence and image_src
             else ('none', 'none', None, None)
         )
+        if layout == 'cover' and image_src:
+            requested_mode = str(slide.get('hero_mode', 'auto')).strip().lower()
+            if requested_mode not in ('auto', 'float', 'frame'):
+                requested_mode = 'auto'
+            data['hero_mode'] = (
+                'float' if requested_mode == 'auto' and image_has_alpha(image_src, src_dir)
+                else ('frame' if requested_mode == 'auto' else requested_mode)
+            )
+            requested_fit = str(slide.get('hero_fit', 'contain')).strip().lower()
+            data['hero_fit'] = requested_fit if requested_fit in ('contain', 'cover') else 'contain'
+            position = str(slide.get('hero_position', '50% 50%')).strip()
+            data['hero_position'] = (
+                position if re.fullmatch(r'\d{1,3}%\s+\d{1,3}%', position) else '50% 50%'
+            )
         chart_family, chart_data_density = (
             chart_profile(slide.get('chart')) if visual_intelligence
             else ('none', 'normal')
