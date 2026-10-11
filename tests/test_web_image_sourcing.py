@@ -4,10 +4,32 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.source_web_images import source_images
+from scripts.source_web_images import _choose, source_images
 
 
 class WebImageSourcingTests(unittest.TestCase):
+    def test_choose_prefers_semantically_relevant_candidate(self):
+        face = {
+            "title": "Woman face close-up", "tags": [{"name": "portrait"}],
+            "url": "https://example.org/face.jpg", "license_url": "https://license",
+            "creator": "A", "width": 3000, "height": 3000,
+        }
+        coffee = {
+            "title": "Coffee cup on a wooden table",
+            "tags": [{"name": "coffee"}, {"name": "table"}],
+            "url": "https://example.org/coffee.jpg", "license_url": "https://license",
+            "creator": "B", "width": 1600, "height": 1000,
+        }
+        self.assertIs(_choose([face, coffee], "decorative", "coffee cup on table photograph"), coffee)
+
+    def test_choose_rejects_unrelated_candidates(self):
+        face = {
+            "title": "Woman face close-up", "tags": [{"name": "portrait"}],
+            "url": "https://example.org/face.jpg", "license_url": "https://license",
+            "creator": "A", "width": 3000, "height": 3000,
+        }
+        self.assertIsNone(_choose([face], "decorative", "coffee cup on table photograph"))
+
     def test_sourcing_materializes_unreviewed_manifest(self):
         selected = {
             "id": "abc",
@@ -23,6 +45,7 @@ class WebImageSourcingTests(unittest.TestCase):
             "height": 1000,
             "provider": "example",
             "source": "example",
+            "tags": [{"name": "reading"}, {"name": "group"}],
         }
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

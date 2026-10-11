@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 
 from scripts.api_server import create_server
+from scripts.agent_service import AgentService
 from scripts.source_web_images import SourceError
 
 
@@ -260,6 +261,12 @@ class ApiServerTests(unittest.TestCase):
         self.assertIn("elegant", captured["queries"][0])
         self.assertEqual(captured["queries"][1], "elderly man portrait")
         self.assertEqual(payload["data"]["search_query"], "elderly man portrait")
+
+    def test_non_person_image_search_does_not_force_portrait(self):
+        self.assertEqual(
+            AgentService._image_search_query("一杯摆在桌子上的咖啡"),
+            "coffee cup on table",
+        )
 
     def test_preview_rejects_non_html_files(self):
         status, payload = self._request("/preview?path=outline.json")

@@ -155,6 +155,11 @@ class AgentService:
         if not re.search(r"[\u3400-\u9fff]", query):
             return query
         replacements = [
+            ("一杯摆在桌子上的咖啡", "coffee cup on table"),
+            ("摆在桌子上的咖啡", "coffee cup on table"),
+            ("桌子上的咖啡", "coffee cup on table"),
+            ("一杯咖啡", "coffee cup"), ("咖啡杯", "coffee cup"),
+            ("咖啡", "coffee"), ("桌子", "table"), ("桌上", "on table"),
             ("白人老男人", "white elderly man"), ("老男人", "elderly man"),
             ("老年男人", "elderly man"), ("老年女人", "elderly woman"),
             ("白人", "white"), ("老人", "elderly person"), ("男人", "man"),
@@ -171,7 +176,10 @@ class AgentService:
             translated = translated.replace(chinese, f" {english} ")
         translated = re.sub(r"[\u3400-\u9fff]+", " ", translated)
         translated = re.sub(r"\s+", " ", translated).strip()
-        return f"{translated} portrait photograph" if translated else "editorial portrait photograph"
+        person_terms = {"person", "man", "woman", "elderly", "portrait"}
+        if person_terms & set(translated.lower().split()):
+            return f"{translated} portrait photograph"
+        return translated or "editorial photograph"
 
     @classmethod
     def _image_search_queries(cls, query: str) -> list[str]:
@@ -181,10 +189,13 @@ class AgentService:
             "white", "elegant", "realistic", "photograph", "photo", "editorial",
             "warm", "sad", "Nordic",
         }
+        is_portrait = "portrait" in tokens
         subject = [token for token in tokens if token not in modifiers and token != "portrait"]
         candidates = [exact]
         if subject:
-            candidates.extend([" ".join(subject + ["portrait"]), " ".join(subject)])
+            if is_portrait:
+                candidates.append(" ".join(subject + ["portrait"]))
+            candidates.append(" ".join(subject))
         return list(dict.fromkeys(candidate for candidate in candidates if candidate.strip()))
 
     def _apply_media_to_outline(

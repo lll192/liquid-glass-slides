@@ -19,6 +19,11 @@ ALLOWED_LICENSES = "pdm,cc0,by,by-sa"
 USER_AGENT = "liquid-glass-slides/2.7 (+https://github.com/lll192/liquid-glass-slides)"
 MAX_BYTES = 18 * 1024 * 1024
 
+SEARCH_STOP_WORDS = {
+    "a", "an", "and", "at", "by", "for", "from", "in", "of", "on", "the", "to",
+    "editorial", "image", "photo", "photograph", "real", "realistic", "still", "life",
+}
+
 
 class SourceError(RuntimeError):
     pass
@@ -30,7 +35,27 @@ def _get_json(url: str) -> dict[str, Any]:
         return json.loads(response.read().decode("utf-8"))
 
 
-def _choose(results: list[dict[str, Any]], role: str) -> dict[str, Any] | None:
+def _search_tokens(value: str) -> set[str]:
+    return {
+        token for token in re.findall(r"[a-z0-9]+", value.lower())
+        if len(token) > 1 and token not in SEARCH_STOP_WORDS
+    }
+
+
+def _item_tokens(item: dict[str, Any]) -> set[str]:
+    values = [str(item.get("title") or "")]
+    tags = item.get("tags")
+    if isinstance(tags, list):
+        for tag in tags:
+            if isinstance(tag, dict):
+                values.append(str(tag.get("name") or ""))
+            elif isinstance(tag, str):
+                values.append(tag)
+    return _search_tokens(" ".join(values))
+
+
+def _choose(results: list[dict[str, Any]], role: str, query: str) -> dict[str, Any] | None:
+    query_tokens = _search_tokens(query)
     candidates = []
     for item in results:
         url = item.get("url") or item.get("thumbnail")
@@ -50,8 +75,19 @@ def _choose(results: list[dict[str, Any]], role: str) -> dict[str, Any] | None:
         else:
             ratio_score = 2.0
         size_score = min(width * height, 16_000_000) / 16_000_000
-        candidates.append((ratio_score - size_score * .25, item))
-    return min(candidates, key=lambda pair: pair[0])[1] if candidates else None
+        title_tokens = _search_tokens(str(item.get("title") or ""))
+        item_tokens = _item_tokens(item)
+        overlap = query_tokens & item_tokens
+        # Search APIs sometimes rank visually popular but unrelated photos first.
+        # Refuse candidates whose title/tags do not mention any meaningful query term.
+        if query_tokens and not overlap:
+            continue
+        relevance = len(overlap) / max(len(query_tokens), 1)
+        title_overlap = len(query_tokens & title_tokens)
+        candidates.append((title_overlap, -relevance * 4 + ratio_score - size_score * .25, item))
+    if any(title_overlap for title_overlap, _score, _item in candidates):
+        candidates = [candidate for candidate in candidates if candidate[0] > 0]
+    return min(candidates, key=lambda candidate: (-candidate[0], candidate[1]))[2] if candidates else None
 
 
 def _download(urls: list[str], target_without_suffix: Path) -> Path:
@@ -93,12 +129,14 @@ def _source_one(request_item: dict[str, Any], project_dir: Path, image_dir: Path
     else:
         params = {
             "q": query,
+            # Anonymous Openverse access accepts at most 20 items per page;
+            # larger pages are rejected with 401 instead of a validation error.
             "page_size": 20,
             "license": ALLOWED_LICENSES,
             "mature": "false",
         }
         payload = _get_json(API_URL + "?" + urlencode(params))
-        selected = _choose(payload.get("results", []), role)
+        selected = _choose(payload.get("results", []), role, query)
     if not selected:
         raise SourceError(f"{asset_id}: no reusable image result found for {query!r}")
     target = _download(
