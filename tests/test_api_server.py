@@ -1,3 +1,4 @@
+import base64
 import json
 import subprocess
 import sys
@@ -278,6 +279,32 @@ class ApiServerTests(unittest.TestCase):
             AgentService._image_search_query("身穿比基尼的亚洲美女"),
             "wearing bikini Asian woman portrait photograph",
         )
+
+    def test_local_upload_supports_multiple_content_and_one_background(self):
+        manifest_path = self.workspace / "media-manifest.json"
+        manifest_path.write_text(json.dumps({
+            "schema_version": "1.0", "deck_id": "web-crawler-narrative",
+            "reviewed": True, "assets": [],
+        }), encoding="utf-8")
+        encoded = base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"0" * 32).decode("ascii")
+        ids = []
+        for name, role in (("one.png", "content"), ("two.png", "content"), ("bg.png", "background")):
+            status, payload = self._request("/v1/upload-media", "POST", {
+                "manifest": "media-manifest.json", "filename": name, "data": encoded,
+                "slideId": "crawler-loop", "role": role, "opacity": 0.42,
+            })
+            self.assertEqual(status, 200)
+            ids.append(payload["data"]["asset_id"])
+        status, payload = self._request("/v1/review-media", "POST", {
+            "manifest": "media-manifest.json", "outline": "outline.json",
+            "selectedAssetIds": ids,
+        })
+        self.assertEqual(status, 200)
+        outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        opening = next(slide for slide in outline["slides"] if slide["slide_id"] == "crawler-loop")
+        self.assertEqual(len(opening["support_images"]), 2)
+        self.assertEqual(opening["support_gallery_mode"], "right-grid")
+        self.assertEqual(opening["background_opacity"], 0.42)
 
     def test_preview_rejects_non_html_files(self):
         status, payload = self._request("/preview?path=outline.json")

@@ -91,6 +91,9 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('.slide-support-image', CSS)
         self.assertIn('.slide.has-support-image.support-right .slide-content', CSS)
         self.assertIn("universal_media_markup(slide)", BUILD)
+        self.assertIn('.slide-support-gallery.gallery-right-grid', CSS)
+        self.assertIn('.slide-support-gallery.gallery-bottom-strip', CSS)
+        self.assertIn('background_opacity', BUILD)
 
     def test_narrative_example_has_natural_length_speaker_notes(self):
         outline = json.loads((ROOT / 'examples' / 'narrative-visual-outline.json').read_text(encoding='utf-8'))

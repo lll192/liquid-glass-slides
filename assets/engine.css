@@ -97,11 +97,36 @@ body{ background:linear-gradient(160deg,#eef2f8,#f6f7fb); color:var(--ink);
 .slide-support-image.support-fit-contain img{ object-fit:contain; padding:1.2rem; box-sizing:border-box; }
 .slide.has-support-image.support-right .slide-content{ padding-right:max(39vw,520px); }
 .slide.has-support-image.support-left .slide-content{ padding-left:max(39vw,520px); }
+.slide-support-gallery{ position:absolute; z-index:2; display:grid; gap:clamp(8px,1vw,16px); pointer-events:none; }
+.slide-support-gallery .gallery-image{ margin:0; min-width:0; min-height:0; overflow:hidden;
+  border:1px solid rgba(255,255,255,.78); border-radius:clamp(12px,1.3vw,22px);
+  background:rgba(255,255,255,.34); box-shadow:0 14px 40px rgba(36,46,70,.14); }
+.slide-support-gallery img{ width:100%; height:100%; max-height:none; }
+.slide-support-gallery .fit-cover img{ object-fit:cover; }
+.slide-support-gallery .fit-contain img{ object-fit:contain; padding:.8rem; box-sizing:border-box; }
+.slide-support-gallery.gallery-right-grid{ top:8vh; right:4vw; bottom:8vh; width:min(35vw,540px);
+  grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); }
+.slide-support-gallery.gallery-right-grid.gallery-count-1{ grid-template-columns:1fr; }
+.slide.has-support-gallery.gallery-right-grid .slide-content{ padding-right:max(43vw,600px); }
+.slide-support-gallery.gallery-bottom-strip{ left:5vw; right:5vw; bottom:4vh; height:min(25vh,250px);
+  grid-template-columns:repeat(auto-fit,minmax(0,1fr)); grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); }
+.slide.has-support-gallery.gallery-bottom-strip .slide-content{ padding-bottom:min(31vh,310px); }
+.slide-decor-gallery{ position:absolute; z-index:1; inset:0; pointer-events:none; overflow:hidden; }
+.slide-decor-gallery .decor-item{ position:absolute; width:clamp(110px,15vw,240px); height:clamp(110px,20vh,220px);
+  margin:0; overflow:hidden; opacity:.34; border-radius:50%; box-shadow:0 12px 38px rgba(29,29,31,.10); }
+.slide-decor-gallery .decor-item:nth-child(1){ right:3vw; bottom:4vh; }
+.slide-decor-gallery .decor-item:nth-child(2){ right:19vw; top:5vh; transform:rotate(4deg); }
+.slide-decor-gallery .decor-item:nth-child(3){ left:3vw; bottom:5vh; transform:rotate(-5deg); }
+.slide-decor-gallery .decor-item:nth-child(4){ left:20vw; top:4vh; }
+.slide-decor-gallery .decor-item:nth-child(n+5){ display:none; }
+.slide-decor-gallery img{ width:100%; height:100%; max-height:none; object-fit:cover; filter:saturate(.72) contrast(.92); }
 @media(max-width:900px){
   .slide-web-decor{ width:18vw; height:18vw; opacity:.28; }
   .slide-support-image{ width:32vw; top:12vh; bottom:12vh; }
   .slide.has-support-image.support-right .slide-content{ padding-right:38vw; }
   .slide.has-support-image.support-left .slide-content{ padding-left:38vw; }
+  .slide-support-gallery.gallery-right-grid{ width:36vw; }
+  .slide.has-support-gallery.gallery-right-grid .slide-content{ padding-right:42vw; }
 }
 
 /* ============ RIPPLE MATERIAL（静态回退 + 动态场景的低成本底纹）============ */

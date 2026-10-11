@@ -78,6 +78,12 @@ def validate_media_manifest(manifest: Any) -> list[str]:
         position = asset.get("focal_point", "50% 50%")
         if not isinstance(position, str) or not re.fullmatch(r"\d{1,3}%\s+\d{1,3}%", position.strip()):
             errors.append(f"{prefix}.focal_point must look like 50% 50%")
+        opacity = asset.get("opacity")
+        if opacity is not None and (
+            not isinstance(opacity, (int, float)) or isinstance(opacity, bool)
+            or not 0.05 <= float(opacity) <= 1
+        ):
+            errors.append(f"{prefix}.opacity must be a number between 0.05 and 1")
         if asset.get("origin") == "web":
             for field in ("source_url", "license_url"):
                 if not _https(asset.get(field)):

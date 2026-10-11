@@ -54,7 +54,7 @@
         <button class="active" data-view="preview" type="button">预览</button>
         <button data-view="story" type="button">编辑内容</button>
         <button data-view="visual" type="button">页面检查</button>
-        <button data-view="assets" type="button">选择图片</button>
+        <button data-view="assets" type="button">管理图片</button>
       </nav>
       <section class="view-panel active" data-panel="preview">
         <div class="preview-frame" id="preview-frame">
@@ -72,13 +72,17 @@
         <div id="visual-grid" class="visual-grid empty-grid">选择项目后显示视觉计划。</div>
       </section>
       <section class="view-panel" data-panel="assets">
-        <div class="panel-intro"><span>选择图片</span><p>选择图片并指定页面；保存后会写入该页，更新预览或生成成品时自动生效。</p></div>
+        <div class="panel-intro"><span>管理图片</span><p>上传本地图片并指定页面与用途。内容图和装饰图可以多张组合；背景图每页仅保留一张。</p></div>
         <div class="asset-toolbar"><span id="media-review-status">尚无图片</span><button id="approve-media" class="secondary compact" type="button" disabled>保存并应用图片</button></div>
-        <form id="add-media-form" class="add-media-form">
-          <label>搜索关键词<input id="add-media-query" type="text" placeholder="例如：北欧冬日街道" required></label>
+        <form id="upload-media-form" class="upload-media-form">
           <label>用于页面<select id="add-media-slide"><option value="">选择页面</option></select></label>
           <label>图片用途<select id="add-media-role"><option value="content">内容图</option><option value="background">背景图</option><option value="decorative">装饰图</option></select></label>
-          <button class="secondary compact" type="submit">添加图片</button>
+          <label id="background-opacity-field" hidden>背景透明度 <output id="background-opacity-value">55%</output><input id="background-opacity" type="range" min="5" max="100" value="55"></label>
+          <label id="upload-dropzone" class="upload-dropzone" for="upload-media-files" tabindex="0">
+            <input id="upload-media-files" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+            <strong>拖拽图片到这里</strong><span>或点击选择本地图片 · 单张不超过 15 MB</span>
+          </label>
+          <button class="secondary compact" type="submit">上传所选图片</button>
         </form>
         <div id="asset-grid" class="asset-grid empty-grid">选择项目后显示媒体。</div>
       </section>

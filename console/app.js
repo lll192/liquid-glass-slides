@@ -13,8 +13,11 @@ const ui = {
   slideMetric: $('#metric-slides'), visualMetric: $('#metric-visual'), notesMetric: $('#metric-notes'), mediaMetric: $('#metric-media'),
   storyGrid: $('#story-grid'), visualGrid: $('#visual-grid'), visualSummary: $('#visual-summary'),
   assetGrid: $('#asset-grid'), mediaStatus: $('#media-review-status'), approveMedia: $('#approve-media'),
-  addMediaForm: $('#add-media-form'), addMediaQuery: $('#add-media-query'),
-  addMediaSlide: $('#add-media-slide'), addMediaRole: $('#add-media-role'),
+  uploadMediaForm: $('#upload-media-form'), uploadFiles: $('#upload-media-files'),
+  uploadDropzone: $('#upload-dropzone'), addMediaSlide: $('#add-media-slide'),
+  addMediaRole: $('#add-media-role'), backgroundOpacity: $('#background-opacity'),
+  backgroundOpacityField: $('#background-opacity-field'),
+  backgroundOpacityValue: $('#background-opacity-value'),
 };
 
 let inventory = { files: [], decks: [] };
@@ -254,9 +257,11 @@ function renderAssets() {
   ui.approveMedia.disabled = !media.manifest || !media.assets.length;
   if (!media.assets.length) {
     ui.assetGrid.classList.add('empty-grid');
-    ui.assetGrid.textContent = '尚未找到媒体。先运行“搜索真实图片”，或由 AI 添加原创视觉。';
+    ui.assetGrid.textContent = '尚未添加图片。可以把本地图片拖到上方上传区域。';
     return;
   }
+  const roleLabels = { background: '背景图', content: '内容图', decorative: '装饰图', hero: '主视觉', reference: '参考图' };
+  const slideLabels = new Map(project.slides.map((slide) => [slide.slide_id, `${String(slide.order).padStart(2, '0')} · ${slide.title}`]));
   media.assets.forEach((asset) => {
     const card = document.createElement('article');
     card.className = 'asset-card';
@@ -279,7 +284,36 @@ function renderAssets() {
     card.classList.toggle('excluded', !choice.checked);
     titleRow.append(choice);
     titleRow.append(text('strong', '', asset.asset_id), text('span', `origin ${asset.origin}`, asset.origin));
-    meta.append(titleRow, text('p', '', asset.alt));
+    const locations = (asset.slide_ids || []).map((id) => slideLabels.get(id) || id).join('、') || '未指定页面';
+    const info = document.createElement('dl');
+    info.className = 'asset-info';
+    info.append(
+      text('dt', '', '出现页面'), text('dd', '', locations),
+      text('dt', '', '图片类型'), text('dd', '', roleLabels[asset.role] || asset.role || '内容图'),
+      text('dt', '', '显示方式'), text('dd', '', asset.role === 'background' ? '全屏铺展' : '自动排版'),
+    );
+    meta.append(titleRow, info, text('p', '', asset.alt));
+    if (asset.role === 'background') {
+      const opacityRow = document.createElement('label');
+      opacityRow.className = 'asset-opacity';
+      const opacity = Math.round(Number(asset.opacity ?? .55) * 100);
+      const value = text('output', '', `${opacity}%`);
+      const slider = document.createElement('input');
+      slider.type = 'range'; slider.min = '5'; slider.max = '100'; slider.value = String(opacity);
+      slider.addEventListener('input', () => { value.textContent = `${slider.value}%`; });
+      slider.addEventListener('change', async () => {
+        try {
+          await api('/v1/update-media', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ manifest: project.media.manifest, assetId: asset.asset_id, opacity: Number(slider.value) / 100 }),
+          });
+          asset.opacity = Number(slider.value) / 100;
+          setStatus('success', '透明度已保存', '保存并应用图片后，背景会按新的透明度全屏铺展。');
+        } catch (error) { setStatus('error', '透明度保存失败', error.message); }
+      });
+      opacityRow.append(text('span', '', '背景透明度'), value, slider);
+      meta.append(opacityRow);
+    }
     const credit = asset.origin === 'web' ? `${asset.author || '未知作者'} · ${asset.license || '许可待确认'}` : (asset.notes || '项目原创素材');
     meta.append(text('small', '', credit));
     card.append(meta);
@@ -418,32 +452,56 @@ async function approveMedia() {
   }
 }
 
-async function addMedia(event) {
+function fileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error(`无法读取 ${file.name}`));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadMedia(event) {
   event.preventDefault();
   if (!project?.media?.manifest) {
-    setStatus('error', '还没有图片清单', '请先点击左侧“寻找图片”，再继续添加。');
+    setStatus('error', '还没有图片清单', '请先为当前项目建立媒体清单。');
     return;
   }
   if (!ui.addMediaSlide.value) {
     setStatus('error', '请选择页面', '告诉系统这张图片将用于哪一页。');
     return;
   }
-  const submit = ui.addMediaForm.querySelector('button[type="submit"]');
+  const files = [...ui.uploadFiles.files];
+  if (!files.length) {
+    setStatus('error', '请选择图片', '点击上传区域，或者把图片拖进来。');
+    return;
+  }
+  if (ui.addMediaRole.value === 'background' && files.length > 1) {
+    setStatus('error', '背景图只能上传一张', '内容图和装饰图可以一次上传多张。');
+    return;
+  }
+  const submit = ui.uploadMediaForm.querySelector('button[type="submit"]');
   try {
     submit.disabled = true;
-    setStatus('busy', '正在添加图片', '正在根据关键词寻找一张可复用的真实图片。');
-    const payload = await api('/v1/add-media', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        manifest: project.media.manifest,
-        query: ui.addMediaQuery.value.trim(),
-        slideId: ui.addMediaSlide.value,
-        role: ui.addMediaRole.value,
-      }),
-    });
+    setStatus('busy', '正在上传图片', `正在处理 ${files.length} 张本地图片。`);
+    let payload = null;
+    for (const file of files) {
+      if (file.size > 15 * 1024 * 1024) throw new Error(`${file.name} 超过 15 MB`);
+      payload = await api('/v1/upload-media', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          manifest: project.media.manifest, filename: file.name,
+          data: await fileAsDataUrl(file), slideId: ui.addMediaSlide.value,
+          role: ui.addMediaRole.value, opacity: Number(ui.backgroundOpacity.value) / 100,
+        }),
+      });
+    }
     ui.raw.textContent = JSON.stringify(payload, null, 2);
-    ui.addMediaQuery.value = '';
-    setStatus('success', '图片已添加', `现在共有 ${payload.data.assets} 张候选图片，可以继续筛选。`);
+    ui.uploadMediaForm.reset();
+    ui.backgroundOpacity.value = '55'; ui.backgroundOpacityValue.textContent = '55%';
+    ui.backgroundOpacityField.hidden = true; ui.uploadFiles.multiple = true;
+    ui.uploadDropzone.querySelector('strong').textContent = '拖拽图片到这里';
+    setStatus('success', '本地图片已添加', `已上传 ${files.length} 张；保存后将自动选择合适排版。`);
     await loadWorkspace(false);
     switchView('assets');
   } catch (error) {
@@ -469,7 +527,29 @@ ui.media.addEventListener('change', () => loadProject().catch((error) => setStat
 $$('[data-action]').forEach((button) => button.addEventListener('click', () => run(button.dataset.action)));
 $$('[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
 ui.approveMedia.addEventListener('click', approveMedia);
-ui.addMediaForm.addEventListener('submit', addMedia);
+ui.uploadMediaForm.addEventListener('submit', uploadMedia);
+ui.addMediaRole.addEventListener('change', () => {
+  const background = ui.addMediaRole.value === 'background';
+  ui.backgroundOpacityField.hidden = !background;
+  ui.uploadFiles.multiple = !background;
+});
+ui.backgroundOpacity.addEventListener('input', () => { ui.backgroundOpacityValue.textContent = `${ui.backgroundOpacity.value}%`; });
+['dragenter', 'dragover'].forEach((name) => ui.uploadDropzone.addEventListener(name, (event) => {
+  event.preventDefault(); ui.uploadDropzone.classList.add('dragging');
+}));
+['dragleave', 'drop'].forEach((name) => ui.uploadDropzone.addEventListener(name, (event) => {
+  event.preventDefault(); ui.uploadDropzone.classList.remove('dragging');
+}));
+ui.uploadDropzone.addEventListener('drop', (event) => {
+  const files = [...event.dataTransfer.files].filter((file) => file.type.startsWith('image/'));
+  if (ui.addMediaRole.value === 'background' && files.length > 1) files.splice(1);
+  const transfer = new DataTransfer(); files.forEach((file) => transfer.items.add(file));
+  ui.uploadFiles.files = transfer.files;
+  ui.uploadDropzone.querySelector('strong').textContent = files.length ? `已选择 ${files.length} 张图片` : '拖拽图片到这里';
+});
+ui.uploadFiles.addEventListener('change', () => {
+  ui.uploadDropzone.querySelector('strong').textContent = ui.uploadFiles.files.length ? `已选择 ${ui.uploadFiles.files.length} 张图片` : '拖拽图片到这里';
+});
 $('#refresh').addEventListener('click', () => loadWorkspace().catch(() => {}));
 $('#logout').addEventListener('click', async () => { await api('/v1/session', { method: 'DELETE' }).catch(() => {}); ui.gate.classList.remove('hidden'); });
 document.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') run('run'); });

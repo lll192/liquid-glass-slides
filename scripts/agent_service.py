@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
 import json
 import os
 import re
@@ -273,53 +275,94 @@ class AgentService:
                         }[field]
                         slide.pop(alt_field, None)
                         changed.add(str(slide_id))
+                for field in ("support_images", "decorative_images"):
+                    items = slide.get(field)
+                    if isinstance(items, list):
+                        retained = [
+                            item for item in items
+                            if not isinstance(item, dict) or item.get("src") != previous_path
+                        ]
+                        if len(retained) != len(items):
+                            if retained:
+                                slide[field] = retained
+                            else:
+                                slide.pop(field, None)
+                            changed.add(str(slide_id))
 
+        selected_by_slide: dict[str, list[dict[str, Any]]] = {}
         for asset in manifest.get("assets", []):
-            if not isinstance(asset, dict):
+            if not isinstance(asset, dict) or asset.get("selected", True) is False:
                 continue
-            if asset.get("selected", True) is False:
-                continue
-            image_path = outline_image_path(asset)
-            role = str(asset.get("role", "content"))
-            alt = str(asset.get("alt", ""))
             for slide_id in asset.get("slide_ids", []):
-                slide = slide_by_id.get(str(slide_id))
-                if not slide:
-                    continue
-                if asset.get("preserve_existing") and any(
-                    slide.get(existing_field) == image_path
-                    for existing_field in image_metadata
-                ):
-                    continue
-                if role in image_fields:
-                    field, alt_field = image_fields[role]
-                elif slide.get("layout") == "cover":
-                    field, alt_field = "hero", "hero_alt"
-                elif slide.get("layout") in {"image-frame", "object-float"}:
-                    field, alt_field = "image", "alt"
+                if str(slide_id) in slide_by_id:
+                    selected_by_slide.setdefault(str(slide_id), []).append(asset)
+
+        def media_item(asset: dict[str, Any]) -> dict[str, Any]:
+            fit = str(asset.get("fit", "cover"))
+            return {
+                "src": outline_image_path(asset),
+                "alt": str(asset.get("alt", "")),
+                "fit": fit if fit in {"contain", "cover"} else "cover",
+                "position": str(asset.get("focal_point", "50% 50%")),
+            }
+
+        for slide_id, selected_assets in selected_by_slide.items():
+            slide = slide_by_id[slide_id]
+            backgrounds = [asset for asset in selected_assets if asset.get("role") == "background"]
+            decorative = [asset for asset in selected_assets if asset.get("role") == "decorative"]
+            content = [asset for asset in selected_assets if asset.get("role") == "content"]
+            heroes = [asset for asset in selected_assets if asset.get("role") == "hero"]
+
+            if backgrounds:
+                asset = backgrounds[-1]
+                item = media_item(asset)
+                slide["background_image"] = item["src"]
+                slide["background_alt"] = item["alt"]
+                slide["background_position"] = item["position"]
+                try:
+                    slide["background_opacity"] = max(0.05, min(1.0, float(asset.get("opacity", 0.55))))
+                except (TypeError, ValueError):
+                    slide["background_opacity"] = 0.55
+
+            if decorative:
+                slide.pop("decorative_image", None)
+                slide.pop("decorative_alt", None)
+                slide["decorative_images"] = [media_item(asset) for asset in decorative]
+
+            if content:
+                for field in ("image", "alt", "support_image", "support_alt", "support_fit", "support_position"):
+                    slide.pop(field, None)
+                if len(content) == 1 and slide.get("layout") == "cover":
+                    item = media_item(content[0])
+                    slide.pop("support_images", None)
+                    slide.pop("support_gallery_mode", None)
+                    slide["hero"] = item["src"]
+                    slide["hero_alt"] = item["alt"]
+                    slide["hero_fit"] = item["fit"]
+                    slide["hero_position"] = item["position"]
+                    slide["hero_mode"] = "frame"
                 else:
-                    field, alt_field = "support_image", "support_alt"
-                # A reviewed asset has exactly one display mode on a slide. This
-                # removes stale slots left by older manifests, preventing the same
-                # photo from appearing as both a background and a side image.
-                for previous_field, metadata_fields in image_metadata.items():
-                    slide.pop(previous_field, None)
-                    for metadata_field in metadata_fields:
-                        slide.pop(metadata_field, None)
-                slide[field] = image_path
-                slide[alt_field] = alt
-                focal = str(asset.get("focal_point", "50% 50%"))
-                fit = str(asset.get("fit", "cover"))
-                if field == "background_image":
-                    slide["background_position"] = focal
-                elif field == "hero":
-                    slide["hero_mode"] = "frame" if asset.get("origin") == "web" else slide.get("hero_mode", "auto")
-                    slide["hero_fit"] = fit if fit in {"contain", "cover"} else "cover"
-                    slide["hero_position"] = focal
-                elif field == "support_image":
-                    slide["support_fit"] = fit if fit in {"contain", "cover"} else "cover"
-                    slide["support_position"] = focal
-                changed.add(str(slide_id))
+                    slide["support_images"] = [media_item(asset) for asset in content]
+                    visible_text = " ".join(
+                        value for key, value in slide.items()
+                        if isinstance(value, str) and key not in {
+                            "slide_id", "layout", "background_image", "hero", "image",
+                            "support_image", "decorative_image", "speaker_notes",
+                        }
+                    )
+                    slide["support_gallery_mode"] = (
+                        "bottom-strip" if len(visible_text) > 220 or len(content) >= 3 else "right-grid"
+                    )
+
+            if heroes:
+                asset = heroes[-1]
+                item = media_item(asset)
+                slide["hero"] = item["src"]
+                slide["hero_alt"] = item["alt"]
+                slide["hero_fit"] = item["fit"]
+                slide["hero_position"] = item["position"]
+                slide["hero_mode"] = "frame" if asset.get("origin") == "web" else slide.get("hero_mode", "auto")
+            changed.add(slide_id)
 
         errors = slides.validate_outline(outline)
         if errors:
@@ -344,6 +387,11 @@ class AgentService:
             str(asset.get("asset_id")) for asset in known_assets
             if isinstance(asset, dict) and asset.get("asset_id")
         }
+        known_assignments = {
+            (str(asset.get("role", "content")), str(slide_id))
+            for asset in known_assets if isinstance(asset, dict) and asset.get("selected", True)
+            for slide_id in asset.get("slide_ids", [])
+        }
         if manifest_path:
             for asset in known_assets:
                 local = asset.get("local_path") if isinstance(asset, dict) else None
@@ -362,6 +410,8 @@ class AgentService:
                 continue
             slide_id = str(slide.get("slide_id", "slide"))
             for field, (role, alt_field) in field_roles.items():
+                if (role, slide_id) in known_assignments:
+                    continue
                 value = slide.get(field)
                 if not isinstance(value, str) or not value.strip():
                     continue
@@ -463,6 +513,13 @@ class AgentService:
                 value = slide.get(field)
                 if isinstance(value, str) and value.strip():
                     active_paths.add((outline_path.parent / value).resolve())
+            for field in ("support_images", "decorative_images"):
+                items = slide.get(field)
+                if isinstance(items, list):
+                    for item in items:
+                        value = item.get("src") if isinstance(item, dict) else None
+                        if isinstance(value, str) and value.strip():
+                            active_paths.add((outline_path.parent / value).resolve())
 
         manifest_assets = [asset for asset in manifest.get("assets", []) if isinstance(asset, dict)]
         manifest_assets.extend(
@@ -685,6 +742,103 @@ class AgentService:
                 "data": {"manifest": str(manifest_path), "asset_id": asset_id,
                          "assets": len(manifest.get("assets", [])), "reviewed": False,
                          "search_query": used_query},
+            }
+        if operation == "upload-media":
+            manifest_path = self.path(arguments.get("manifest"), "manifest")
+            manifest = self._read_object(manifest_path, "manifest")
+            slide_id = str(arguments.get("slideId", "")).strip()
+            role = str(arguments.get("role", "content")).strip()
+            filename = str(arguments.get("filename", "image")).strip()
+            encoded = str(arguments.get("data", "")).strip()
+            if role not in {"content", "background", "decorative"}:
+                raise ServiceError("role must be content, background, or decorative")
+            if not slide_id:
+                raise ServiceError("slideId must be a non-empty string")
+            if not encoded:
+                raise ServiceError("data must contain a base64 encoded image")
+            if encoded.startswith("data:"):
+                encoded = encoded.partition(",")[2]
+            try:
+                image_bytes = base64.b64decode(encoded, validate=True)
+            except (ValueError, binascii.Error) as exc:
+                raise ServiceError("uploaded image is not valid base64") from exc
+            if not image_bytes or len(image_bytes) > 15 * 1024 * 1024:
+                raise ServiceError("uploaded image must be between 1 byte and 15 MB")
+            signatures = (
+                (b"\x89PNG\r\n\x1a\n", ".png"), (b"\xff\xd8\xff", ".jpg"),
+                (b"GIF87a", ".gif"), (b"GIF89a", ".gif"),
+            )
+            extension = next((suffix for signature, suffix in signatures if image_bytes.startswith(signature)), "")
+            if not extension and image_bytes.startswith(b"RIFF") and image_bytes[8:12] == b"WEBP":
+                extension = ".webp"
+            if not extension:
+                raise ServiceError("only PNG, JPEG, WebP, and GIF images are supported")
+            assets = manifest.get("assets")
+            if not isinstance(assets, list):
+                raise ServiceError("manifest assets must be an array")
+            stem = re.sub(r"[^a-z0-9]+", "-", Path(filename).stem.lower()).strip("-")[:28] or "upload"
+            asset_id = f"{stem}-{uuid.uuid4().hex[:7]}"
+            image_dir = manifest_path.parent / "images" / "uploads"
+            image_dir.mkdir(parents=True, exist_ok=True)
+            target = image_dir / f"{asset_id}{extension}"
+            target.write_bytes(image_bytes)
+            opacity_value = arguments.get("opacity", 0.55)
+            try:
+                opacity = max(0.05, min(1.0, float(opacity_value)))
+            except (TypeError, ValueError) as exc:
+                raise ServiceError("opacity must be a number between 0.05 and 1") from exc
+            if role == "background":
+                for asset in assets:
+                    if (isinstance(asset, dict) and asset.get("role") == "background"
+                            and slide_id in asset.get("slide_ids", [])):
+                        asset["selected"] = False
+            asset = {
+                "asset_id": asset_id, "origin": "user-provided", "role": role,
+                "local_path": target.relative_to(manifest_path.parent).as_posix(),
+                "slide_ids": [slide_id], "alt": Path(filename).stem or "用户上传图片",
+                "fit": "cover", "focal_point": "50% 50%", "selected": True,
+            }
+            if role == "background":
+                asset["opacity"] = opacity
+            assets.append(asset)
+            manifest["reviewed"] = False
+            manifest_path.write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+            return 0, {
+                "api_version": "1.0", "command": "upload-media", "ok": True,
+                "message": "local image uploaded", "errors": [], "warnings": [],
+                "data": {"manifest": str(manifest_path), "asset_id": asset_id,
+                         "assets": len(assets), "reviewed": False},
+            }
+        if operation == "update-media":
+            manifest_path = self.path(arguments.get("manifest"), "manifest")
+            manifest = self._read_object(manifest_path, "manifest")
+            asset_id = str(arguments.get("assetId", "")).strip()
+            assets = manifest.get("assets")
+            if not isinstance(assets, list):
+                raise ServiceError("manifest assets must be an array")
+            asset = next(
+                (item for item in assets if isinstance(item, dict) and item.get("asset_id") == asset_id),
+                None,
+            )
+            if asset is None:
+                raise ServiceError("assetId was not found")
+            if asset.get("role") != "background":
+                raise ServiceError("only background image opacity can be adjusted")
+            try:
+                asset["opacity"] = max(0.05, min(1.0, float(arguments.get("opacity"))))
+            except (TypeError, ValueError) as exc:
+                raise ServiceError("opacity must be a number between 0.05 and 1") from exc
+            manifest["reviewed"] = False
+            manifest_path.write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+            return 0, {
+                "api_version": "1.0", "command": "update-media", "ok": True,
+                "message": "background opacity updated", "errors": [], "warnings": [],
+                "data": {"manifest": str(manifest_path), "asset_id": asset_id,
+                         "opacity": asset["opacity"], "reviewed": False},
             }
         if operation == "review-media":
             manifest_path = self.path(arguments.get("manifest"), "manifest")

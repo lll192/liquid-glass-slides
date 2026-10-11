@@ -24,9 +24,9 @@ sys.path.insert(0, root_entry)
 from scripts.agent_service import AgentService, ServiceError
 
 
-API_VERSION = "1.2"
+API_VERSION = "1.3"
 SEARCH_ENGINE_VERSION = "semantic-search-v3"
-MAX_BODY_BYTES = 1024 * 1024
+MAX_BODY_BYTES = 22 * 1024 * 1024
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
 CONSOLE_DIR = ROOT / "console"
 
@@ -60,7 +60,7 @@ def openapi_document() -> dict[str, Any]:
             "get": {"summary": "Preview a generated HTML deck", "security": [{"bearerAuth": []}]}
         },
     }
-    for name in ("validate", "build", "source-images", "add-media", "review-media", "update-slide", "run", "status", "mark-exported"):
+    for name in ("validate", "build", "source-images", "add-media", "upload-media", "update-media", "review-media", "update-slide", "run", "status", "mark-exported"):
         paths[f"/v1/{name}"] = {
             "post": {
                 "summary": f"Run {name}",
@@ -294,6 +294,8 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                 "/v1/build": "build",
                 "/v1/source-images": "source-images",
                 "/v1/add-media": "add-media",
+                "/v1/upload-media": "upload-media",
+                "/v1/update-media": "update-media",
                 "/v1/review-media": "review-media",
                 "/v1/update-slide": "update-slide",
                 "/v1/run": "run",

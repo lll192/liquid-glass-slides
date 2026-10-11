@@ -440,6 +440,9 @@ def slide_has_image(slide):
         value = slide.get(key)
         if isinstance(value, str) and value.strip():
             return True
+    for key in ('support_images', 'decorative_images'):
+        if isinstance(slide.get(key), list) and slide.get(key):
+            return True
 
     def contains_img(value):
         if isinstance(value, str):
@@ -471,12 +474,27 @@ def universal_media_markup(slide):
         position = str(slide.get('background_position', '50% 50%')).strip()
         if not re.fullmatch(r'\d{1,3}%\s+\d{1,3}%', position):
             position = '50% 50%'
+        try:
+            opacity = max(.05, min(1.0, float(slide.get('background_opacity', .55))))
+        except (TypeError, ValueError):
+            opacity = .55
         parts.append(
-            '<div class="slide-web-background" aria-hidden="true">'
+            '<div class="slide-web-background" aria-hidden="true" style="opacity:%.2f">'
             '<img src="%s" alt="%s" style="object-position:%s"></div>'
             '<div class="slide-web-scrim" aria-hidden="true"></div>'
-            % (html.escape(background, quote=True), alt, position)
+            % (opacity, html.escape(background, quote=True), alt, position)
         )
+    decorative_items = slide.get('decorative_images')
+    if isinstance(decorative_items, list) and decorative_items:
+        figures = []
+        for index, item in enumerate(decorative_items[:6]):
+            if not isinstance(item, dict) or not str(item.get('src', '')).strip():
+                continue
+            src = html.escape(str(item['src']).strip(), quote=True)
+            alt = html.escape(str(item.get('alt', '')).strip(), quote=True)
+            figures.append('<figure class="decor-item decor-item-%d"><img src="%s" alt="%s"></figure>' % (index + 1, src, alt))
+        if figures:
+            parts.append('<div class="slide-decor-gallery" aria-label="Decorative images">%s</div>' % ''.join(figures))
     decorative = str(slide.get('decorative_image', '')).strip()
     if decorative:
         alt = html.escape(str(slide.get('decorative_alt', '')).strip(), quote=True)
@@ -505,6 +523,26 @@ def universal_media_markup(slide):
             '<img src="%s" alt="%s" style="object-position:%s"></figure>'
             % (side, fit, html.escape(support, quote=True), alt, position)
         )
+    support_items = slide.get('support_images')
+    if isinstance(support_items, list) and support_items:
+        mode = str(slide.get('support_gallery_mode', 'right-grid')).strip().lower()
+        if mode not in ('right-grid', 'bottom-strip'):
+            mode = 'right-grid'
+        figures = []
+        for item in support_items[:6]:
+            if not isinstance(item, dict) or not str(item.get('src', '')).strip():
+                continue
+            src = html.escape(str(item['src']).strip(), quote=True)
+            alt = html.escape(str(item.get('alt', '')).strip(), quote=True)
+            fit = str(item.get('fit', 'cover')).strip().lower()
+            if fit not in ('contain', 'cover'):
+                fit = 'cover'
+            position = str(item.get('position', '50% 50%')).strip()
+            if not re.fullmatch(r'\d{1,3}%\s+\d{1,3}%', position):
+                position = '50% 50%'
+            figures.append('<figure class="gallery-image fit-%s"><img src="%s" alt="%s" style="object-position:%s"></figure>' % (fit, src, alt, position))
+        if figures:
+            parts.append('<div class="slide-support-gallery gallery-%s gallery-count-%d">%s</div>' % (mode, len(figures), ''.join(figures)))
     return ''.join(parts)
 
 
@@ -1474,6 +1512,15 @@ def build(outline_path, out_path, assets_dir, templates_dir, return_report=False
             rendered = re.sub(
                 r'(<section\b[^>]*class=")([^"]*)(")',
                 lambda m: m.group(1) + m.group(2) + ' has-support-image support-' + support_side + m.group(3),
+                rendered, count=1)
+        support_images = slide.get('support_images')
+        if isinstance(support_images, list) and support_images:
+            gallery_mode = str(slide.get('support_gallery_mode', 'right-grid')).strip().lower()
+            if gallery_mode not in ('right-grid', 'bottom-strip'):
+                gallery_mode = 'right-grid'
+            rendered = re.sub(
+                r'(<section\b[^>]*class=")([^"]*)(")',
+                lambda m: m.group(1) + m.group(2) + ' has-support-gallery gallery-' + gallery_mode + m.group(3),
                 rendered, count=1)
         rendered = re.sub(
             r'(<section\b[^>]*>)',
