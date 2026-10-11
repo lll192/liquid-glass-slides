@@ -40,6 +40,25 @@ class WebImageSourcingTests(unittest.TestCase):
         }
         self.assertIsNone(_choose([face], "decorative", "coffee cup on table"))
 
+    def test_non_person_search_requires_multiple_matching_terms(self):
+        weak_match = {
+            "title": "Winter portrait", "tags": [{"name": "winter"}],
+            "url": "https://example.org/winter.jpg", "license_url": "https://license",
+            "creator": "A", "width": 1600, "height": 900,
+        }
+        self.assertIsNone(_choose([weak_match], "background", "Nordic winter street"))
+
+    def test_choose_excludes_existing_provider_result(self):
+        image = {
+            "id": "openverse-123", "title": "Potato chips in a bowl",
+            "tags": [{"name": "potato"}, {"name": "chips"}],
+            "url": "https://example.org/chips.jpg", "license_url": "https://license",
+            "creator": "A", "width": 1600, "height": 900,
+        }
+        self.assertIsNone(
+            _choose([image], "content", "potato chips", {"openverse-123"})
+        )
+
     def test_sourcing_materializes_unreviewed_manifest(self):
         selected = {
             "id": "abc",

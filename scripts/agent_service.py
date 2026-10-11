@@ -169,6 +169,9 @@ class AgentService:
             ("女人", "woman"), ("人物", "person"), ("优雅", "elegant"),
             ("肖像", "portrait"), ("真实", "realistic"), ("照片", "photograph"),
             ("北欧", "Nordic"), ("冬日", "winter"), ("街道", "street"),
+            ("薯片", "potato chips"), ("土豆片", "potato chips"),
+            ("身穿", "wearing"), ("穿着", "wearing"), ("比基尼", "bikini"),
+            ("亚洲", "Asian"), ("美女", "woman"),
             ("房屋", "house"), ("读书会", "book club"), ("阅读", "reading"),
             ("书籍", "books"), ("书", "book"), ("猫", "cat"),
             ("修理", "repair"), ("工具", "tools"), ("社区", "community"),
@@ -177,8 +180,14 @@ class AgentService:
         translated = query
         for chinese, english in replacements:
             translated = translated.replace(chinese, f" {english} ")
-        translated = re.sub(r"[\u3400-\u9fff]+", " ", translated)
+        # Remove grammar-only Chinese after translating visual concepts, but reject
+        # any remaining content word instead of silently broadening the search.
+        translated = re.sub(r"(?:一张|一幅|一个|一位|一些|这张|这个|图片|图像|的|在|里|中|上)", " ", translated)
+        if re.search(r"[\u3400-\u9fff]", translated):
+            return ""
         translated = re.sub(r"\s+", " ", translated).strip()
+        if not translated:
+            return ""
         person_terms = {"person", "man", "woman", "elderly", "portrait"}
         if person_terms & set(translated.lower().split()):
             return f"{translated} portrait photograph"
@@ -603,6 +612,19 @@ class AgentService:
                     "focal_point": "50% 50%",
                 }],
             }
+            current_assets = manifest.get("assets")
+            if not isinstance(current_assets, list):
+                raise ServiceError("manifest assets must be an array")
+            excluded_keys = sorted({
+                str(value).strip().lower().rstrip("/")
+                for asset in current_assets if isinstance(asset, dict)
+                for value in (
+                    asset.get("provider_asset_id"), asset.get("source_url"),
+                    asset.get("download_url"),
+                )
+                if value is not None and str(value).strip()
+            })
+            plan["requests"][0]["exclude_keys"] = excluded_keys
             temp_plan: Path | None = None
             temp_manifest: Path | None = None
             try:
@@ -632,10 +654,23 @@ class AgentService:
                     raise ServiceError(
                         "没有找到合适且许可清晰的图片，请换一个主体更明确的关键词"
                     ) from last_error
-                current_assets = manifest.get("assets")
-                if not isinstance(current_assets, list):
-                    raise ServiceError("manifest assets must be an array")
-                current_assets.extend(added.get("assets", []))
+                new_assets = added.get("assets", [])
+                if not isinstance(new_assets, list) or not new_assets:
+                    raise ServiceError("图片服务没有返回可用候选")
+                existing_keys = set(excluded_keys)
+                for asset in new_assets:
+                    candidate_keys = {
+                        str(value).strip().lower().rstrip("/")
+                        for value in (
+                            asset.get("provider_asset_id"), asset.get("source_url"),
+                            asset.get("download_url"),
+                        )
+                        if value is not None and str(value).strip()
+                    }
+                    if candidate_keys & existing_keys:
+                        raise ServiceError("搜索结果与图库中的图片重复，请换一个更具体的关键词")
+                    existing_keys.update(candidate_keys)
+                current_assets.extend(new_assets)
                 manifest["reviewed"] = False
                 manifest_path.write_text(
                     json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

@@ -272,6 +272,12 @@ class ApiServerTests(unittest.TestCase):
             "cup on table Starbucks coffee",
         )
         self.assertEqual(AgentService._image_search_queries("完全无法识别的词语"), [])
+        self.assertEqual(AgentService._image_search_query("北欧冬日街道"), "Nordic winter street")
+        self.assertEqual(AgentService._image_search_query("薯片"), "potato chips")
+        self.assertEqual(
+            AgentService._image_search_query("身穿比基尼的亚洲美女"),
+            "wearing bikini Asian woman portrait photograph",
+        )
 
     def test_preview_rejects_non_html_files(self):
         status, payload = self._request("/preview?path=outline.json")

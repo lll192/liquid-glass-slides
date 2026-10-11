@@ -20,6 +20,7 @@ const ui = {
 let inventory = { files: [], decks: [] };
 let project = null;
 let running = false;
+let engineChecked = false;
 
 function setStatus(kind, title, message) {
   ui.statusDot.className = `status-dot ${kind}`;
@@ -50,6 +51,16 @@ async function api(path, options = {}) {
   return payload;
 }
 
+async function requireCurrentEngine() {
+  if (engineChecked) return;
+  const health = await api('/health');
+  if (health.search_engine_version !== 'semantic-search-v3') {
+    setStatus('error', '服务版本过旧', '请关闭旧命令窗口并重新启动服务；旧版图片搜索已被停用。');
+    throw new Error('当前仍连接到旧版图片搜索服务，请重启本地服务后刷新页面');
+  }
+  engineChecked = true;
+}
+
 function fillSelect(select, values, emptyLabel) {
   const current = select.value;
   select.innerHTML = '';
@@ -75,6 +86,7 @@ function bestDeck() {
 
 async function loadWorkspace(showReady = true) {
   try {
+    await requireCurrentEngine();
     const payload = await api('/v1/workspace');
     inventory = payload.data;
     const outlines = inventory.files.filter((file) => file.kind === 'outline');

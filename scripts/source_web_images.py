@@ -22,10 +22,12 @@ MAX_BYTES = 18 * 1024 * 1024
 SEARCH_STOP_WORDS = {
     "a", "an", "and", "at", "by", "for", "from", "in", "of", "on", "the", "to",
     "editorial", "image", "photo", "photograph", "real", "realistic", "still", "life",
+    "wearing", "with",
 }
 PERSON_TOKENS = {
-    "boy", "face", "facial", "fashion", "girl", "headshot", "human", "man",
-    "makeup", "model", "people", "person", "portrait", "selfie", "woman",
+    "adult", "baby", "boy", "child", "crowd", "elderly", "face", "facial",
+    "fashion", "female", "girl", "headshot", "human", "lady", "male", "man",
+    "makeup", "model", "old", "people", "person", "portrait", "selfie", "woman",
 }
 
 
@@ -58,11 +60,27 @@ def _item_tokens(item: dict[str, Any]) -> set[str]:
     return _search_tokens(" ".join(values))
 
 
-def _choose(results: list[dict[str, Any]], role: str, query: str) -> dict[str, Any] | None:
+def _asset_keys(item: dict[str, Any]) -> set[str]:
+    """Return stable provider ids and URLs used to reject duplicate search results."""
+    keys: set[str] = set()
+    for field in ("id", "url", "thumbnail", "foreign_landing_url", "detail_url"):
+        value = item.get(field)
+        if value is not None and str(value).strip():
+            keys.add(str(value).strip().lower().rstrip("/"))
+    return keys
+
+
+def _choose(
+    results: list[dict[str, Any]], role: str, query: str,
+    excluded_keys: set[str] | None = None,
+) -> dict[str, Any] | None:
     query_tokens = _search_tokens(query)
     requests_people = bool(query_tokens & PERSON_TOKENS)
+    excluded = {str(value).strip().lower().rstrip("/") for value in (excluded_keys or set())}
     candidates = []
     for item in results:
+        if _asset_keys(item) & excluded:
+            continue
         url = item.get("url") or item.get("thumbnail")
         if not isinstance(url, str) or not url.startswith("https://"):
             continue
@@ -87,7 +105,8 @@ def _choose(results: list[dict[str, Any]], role: str, query: str) -> dict[str, A
             continue
         # Search APIs sometimes rank visually popular but unrelated photos first.
         # Refuse candidates whose title/tags do not mention any meaningful query term.
-        if query_tokens and not overlap:
+        minimum_overlap = 1 if len(query_tokens) <= 2 else 2
+        if query_tokens and len(overlap) < minimum_overlap:
             continue
         relevance = len(overlap) / max(len(query_tokens), 1)
         title_overlap = len(query_tokens & title_tokens)
@@ -143,7 +162,10 @@ def _source_one(request_item: dict[str, Any], project_dir: Path, image_dir: Path
             "mature": "false",
         }
         payload = _get_json(API_URL + "?" + urlencode(params))
-        selected = _choose(payload.get("results", []), role, query)
+        excluded = request_item.get("exclude_keys", [])
+        if not isinstance(excluded, list):
+            raise SourceError(f"{asset_id}: exclude_keys must be an array")
+        selected = _choose(payload.get("results", []), role, query, set(map(str, excluded)))
     if not selected:
         raise SourceError(f"{asset_id}: no reusable image result found for {query!r}")
     target = _download(
@@ -170,6 +192,7 @@ def _source_one(request_item: dict[str, Any], project_dir: Path, image_dir: Path
         "license_url": selected.get("license_url"),
         "provider": selected.get("provider"),
         "source": selected.get("source"),
+        "provider_asset_id": selected.get("id"),
         "title": selected.get("title"),
         "query": query,
     }

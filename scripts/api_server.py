@@ -24,7 +24,8 @@ sys.path.insert(0, root_entry)
 from scripts.agent_service import AgentService, ServiceError
 
 
-API_VERSION = "1.1"
+API_VERSION = "1.2"
+SEARCH_ENGINE_VERSION = "semantic-search-v3"
 MAX_BODY_BYTES = 1024 * 1024
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
 CONSOLE_DIR = ROOT / "console"
@@ -188,6 +189,7 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
             if path == "/health":
                 self._send(200, {
                     "api_version": API_VERSION,
+                    "search_engine_version": SEARCH_ENGINE_VERSION,
                     "ok": True,
                     "service": "liquid-glass-slides",
                     "status": "healthy",
@@ -364,7 +366,7 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
     host, port = server.server_address[:2]
-    print(f"Liquid Glass Slides API: http://{host}:{port}", file=sys.stderr)
+    print(f"Liquid Glass Slides API {API_VERSION} ({SEARCH_ENGINE_VERSION}): http://{host}:{port}", file=sys.stderr)
     print(f"Bearer token: {token}", file=sys.stderr)
     print(f"Workspace: {args.workspace.resolve()}", file=sys.stderr)
     if args.open:
