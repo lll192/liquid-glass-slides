@@ -158,6 +158,9 @@ class AgentService:
             ("一杯摆在桌子上的咖啡", "coffee cup on table"),
             ("摆在桌子上的咖啡", "coffee cup on table"),
             ("桌子上的咖啡", "coffee cup on table"),
+            ("摆在桌子上", "on table"), ("放在桌子上", "on table"),
+            ("桌子上", "on table"), ("桌面上", "on table"),
+            ("星巴克", "Starbucks"), ("一杯", "cup"),
             ("一杯咖啡", "coffee cup"), ("咖啡杯", "coffee cup"),
             ("咖啡", "coffee"), ("桌子", "table"), ("桌上", "on table"),
             ("白人老男人", "white elderly man"), ("老男人", "elderly man"),
@@ -179,7 +182,9 @@ class AgentService:
         person_terms = {"person", "man", "woman", "elderly", "portrait"}
         if person_terms & set(translated.lower().split()):
             return f"{translated} portrait photograph"
-        return translated or "editorial photograph"
+        # Never turn an unrecognised Chinese request into a generic portrait.
+        # A clear failure is safer than silently attaching an unrelated person.
+        return translated
 
     @classmethod
     def _image_search_queries(cls, query: str) -> list[str]:
@@ -577,11 +582,13 @@ class AgentService:
             manifest_path = self.path(arguments.get("manifest"), "manifest")
             manifest = self._read_object(manifest_path, "manifest")
             query = str(arguments.get("query", "")).strip()
-            search_queries = self._image_search_queries(query)
             role = str(arguments.get("role", "content")).strip()
             slide_id = str(arguments.get("slideId", "")).strip()
             if not query:
                 raise ServiceError("query must be a non-empty string")
+            search_queries = self._image_search_queries(query)
+            if not search_queries:
+                raise ServiceError("暂时无法理解这个图片关键词，请写清主体、场景和动作")
             if role not in {"content", "background", "decorative", "hero"}:
                 raise ServiceError("role must be content, background, decorative, or hero")
             if not slide_id:

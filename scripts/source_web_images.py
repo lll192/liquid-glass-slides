@@ -23,6 +23,10 @@ SEARCH_STOP_WORDS = {
     "a", "an", "and", "at", "by", "for", "from", "in", "of", "on", "the", "to",
     "editorial", "image", "photo", "photograph", "real", "realistic", "still", "life",
 }
+PERSON_TOKENS = {
+    "boy", "face", "facial", "fashion", "girl", "headshot", "human", "man",
+    "makeup", "model", "people", "person", "portrait", "selfie", "woman",
+}
 
 
 class SourceError(RuntimeError):
@@ -56,6 +60,7 @@ def _item_tokens(item: dict[str, Any]) -> set[str]:
 
 def _choose(results: list[dict[str, Any]], role: str, query: str) -> dict[str, Any] | None:
     query_tokens = _search_tokens(query)
+    requests_people = bool(query_tokens & PERSON_TOKENS)
     candidates = []
     for item in results:
         url = item.get("url") or item.get("thumbnail")
@@ -78,6 +83,8 @@ def _choose(results: list[dict[str, Any]], role: str, query: str) -> dict[str, A
         title_tokens = _search_tokens(str(item.get("title") or ""))
         item_tokens = _item_tokens(item)
         overlap = query_tokens & item_tokens
+        if not requests_people and item_tokens & PERSON_TOKENS:
+            continue
         # Search APIs sometimes rank visually popular but unrelated photos first.
         # Refuse candidates whose title/tags do not mention any meaningful query term.
         if query_tokens and not overlap:

@@ -30,6 +30,16 @@ class WebImageSourcingTests(unittest.TestCase):
         }
         self.assertIsNone(_choose([face], "decorative", "coffee cup on table photograph"))
 
+    def test_non_person_search_rejects_deceptive_portrait_metadata(self):
+        face = {
+            "title": "Coffee glow portrait", "tags": [
+                {"name": "coffee"}, {"name": "face"}, {"name": "woman"},
+            ],
+            "url": "https://example.org/face.jpg", "license_url": "https://license",
+            "creator": "A", "width": 3000, "height": 3000,
+        }
+        self.assertIsNone(_choose([face], "decorative", "coffee cup on table"))
+
     def test_sourcing_materializes_unreviewed_manifest(self):
         selected = {
             "id": "abc",
