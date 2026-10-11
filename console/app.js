@@ -235,8 +235,9 @@ function renderAssets() {
   ui.assetGrid.innerHTML = '';
   ui.assetGrid.classList.remove('empty-grid');
   const media = project.media;
+  const selectedCount = media.assets.filter((asset) => asset.selected !== false).length;
   ui.mediaStatus.textContent = media.manifest
-    ? `${media.assets.length} 个素材 · ${media.reviewed ? '已复核' : '等待复核'}`
+    ? `${selectedCount}/${media.assets.length} 已选 · ${media.reviewed ? '已复核' : '等待复核'}`
     : '尚无媒体清单';
   ui.approveMedia.disabled = !media.manifest || !media.assets.length;
   if (!media.assets.length) {
@@ -259,10 +260,11 @@ function renderAssets() {
     titleRow.className = 'asset-title';
     const choice = document.createElement('input');
     choice.type = 'checkbox';
-    choice.checked = true;
+    choice.checked = asset.selected !== false;
     choice.dataset.assetId = asset.asset_id;
     choice.setAttribute('aria-label', `保留 ${asset.asset_id}`);
     choice.addEventListener('change', () => card.classList.toggle('excluded', !choice.checked));
+    card.classList.toggle('excluded', !choice.checked);
     titleRow.append(choice);
     titleRow.append(text('strong', '', asset.asset_id), text('span', `origin ${asset.origin}`, asset.origin));
     meta.append(titleRow, text('p', '', asset.alt));

@@ -165,6 +165,65 @@ class ApiServerTests(unittest.TestCase):
         saved = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
         self.assertEqual(saved["slides"][0]["main_point"], "控制台已完成精确修改")
 
+    def test_project_recovers_used_image_and_keeps_unselected_library_assets(self):
+        image_dir = self.workspace / "images"
+        image_dir.mkdir()
+        (image_dir / "used.jpg").write_bytes(b"used-image")
+        (image_dir / "candidate.jpg").write_bytes(b"candidate-image")
+        outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        target = outline["slides"][0]
+        target["background_image"] = "images/used.jpg"
+        target["background_alt"] = "正在演示中使用的图片"
+        (self.workspace / "outline.json").write_text(
+            json.dumps(outline, ensure_ascii=False), encoding="utf-8"
+        )
+        manifest = {
+            "schema_version": "1.0", "deck_id": "web-crawler-narrative",
+            "reviewed": True,
+            "assets": [{
+                "asset_id": "candidate-photo", "origin": "project-asset", "role": "content",
+                "local_path": "images/candidate.jpg", "slide_ids": ["crawler-opening-question"],
+                "alt": "候选图片", "fit": "cover", "focal_point": "50% 50%",
+            }],
+        }
+        (self.workspace / "media-manifest.json").write_text(
+            json.dumps(manifest, ensure_ascii=False), encoding="utf-8"
+        )
+
+        status, inspected = self._request(
+            "/v1/project?outline=outline.json&mediaManifest=media-manifest.json"
+        )
+        self.assertEqual(status, 200)
+        recovered = next(
+            asset for asset in inspected["data"]["media"]["assets"]
+            if asset["local_path"] == "images/used.jpg"
+        )
+        self.assertEqual(recovered["origin"], "project-asset")
+
+        status, reviewed = self._request(
+            "/v1/review-media", "POST",
+            {"manifest": "media-manifest.json", "outline": "outline.json",
+             "selectedAssetIds": [recovered["asset_id"]]},
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(reviewed["data"]["assets"], 1)
+        self.assertEqual(reviewed["data"]["library_assets"], 2)
+        saved_manifest = json.loads(
+            (self.workspace / "media-manifest.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(saved_manifest["assets"]), 2)
+        candidate = next(
+            asset for asset in saved_manifest["assets"]
+            if asset["asset_id"] == "candidate-photo"
+        )
+        self.assertFalse(candidate["selected"])
+        saved_outline = json.loads(
+            (self.workspace / "outline.json").read_text(encoding="utf-8")
+        )
+        saved_target = saved_outline["slides"][0]
+        self.assertEqual(saved_target["background_image"], "images/used.jpg")
+        self.assertNotIn("hero", saved_target)
+
     def test_add_media_translates_chinese_search_and_keeps_connection(self):
         manifest = {
             "schema_version": "1.0", "deck_id": "web-crawler-narrative",

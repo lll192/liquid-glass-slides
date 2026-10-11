@@ -222,6 +222,13 @@ class AgentService:
             "background": ("background_image", "background_alt"),
             "decorative": ("decorative_image", "decorative_alt"),
         }
+        image_metadata = {
+            "hero": ("hero_alt", "hero_mode", "hero_fit", "hero_position"),
+            "image": ("alt",),
+            "support_image": ("support_alt", "support_fit", "support_position", "support_side"),
+            "background_image": ("background_alt", "background_position"),
+            "decorative_image": ("decorative_alt", "decorative_side"),
+        }
         changed: set[str] = set()
         for asset in removed_assets:
             try:
@@ -245,12 +252,19 @@ class AgentService:
         for asset in manifest.get("assets", []):
             if not isinstance(asset, dict):
                 continue
+            if asset.get("selected", True) is False:
+                continue
             image_path = outline_image_path(asset)
             role = str(asset.get("role", "content"))
             alt = str(asset.get("alt", ""))
             for slide_id in asset.get("slide_ids", []):
                 slide = slide_by_id.get(str(slide_id))
                 if not slide:
+                    continue
+                if asset.get("preserve_existing") and any(
+                    slide.get(existing_field) == image_path
+                    for existing_field in image_metadata
+                ):
                     continue
                 if role in image_fields:
                     field, alt_field = image_fields[role]
@@ -260,6 +274,13 @@ class AgentService:
                     field, alt_field = "image", "alt"
                 else:
                     field, alt_field = "support_image", "support_alt"
+                # A reviewed asset has exactly one display mode on a slide. This
+                # removes stale slots left by older manifests, preventing the same
+                # photo from appearing as both a background and a side image.
+                for previous_field, metadata_fields in image_metadata.items():
+                    slide.pop(previous_field, None)
+                    for metadata_field in metadata_fields:
+                        slide.pop(metadata_field, None)
                 slide[field] = image_path
                 slide[alt_field] = alt
                 focal = str(asset.get("focal_point", "50% 50%"))
@@ -284,6 +305,77 @@ class AgentService:
         )
         temporary.replace(outline_path)
         return sorted(changed)
+
+    def _outline_media_assets(
+        self,
+        outline: dict[str, Any],
+        outline_path: Path,
+        manifest_path: Path | None,
+        known_assets: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Recover images used by slides but missing from the selected media library."""
+        known_paths: set[Path] = set()
+        used_ids = {
+            str(asset.get("asset_id")) for asset in known_assets
+            if isinstance(asset, dict) and asset.get("asset_id")
+        }
+        if manifest_path:
+            for asset in known_assets:
+                local = asset.get("local_path") if isinstance(asset, dict) else None
+                if isinstance(local, str) and local:
+                    known_paths.add((manifest_path.parent / local).resolve())
+        field_roles = {
+            "hero": ("hero", "hero_alt"),
+            "image": ("content", "alt"),
+            "support_image": ("content", "support_alt"),
+            "background_image": ("background", "background_alt"),
+            "decorative_image": ("decorative", "decorative_alt"),
+        }
+        recovered: list[dict[str, Any]] = []
+        for slide in outline.get("slides", []):
+            if not isinstance(slide, dict):
+                continue
+            slide_id = str(slide.get("slide_id", "slide"))
+            for field, (role, alt_field) in field_roles.items():
+                value = slide.get(field)
+                if not isinstance(value, str) or not value.strip():
+                    continue
+                source = (outline_path.parent / value).resolve()
+                try:
+                    source.relative_to(self.workspace)
+                except ValueError:
+                    continue
+                if source in known_paths or not source.is_file():
+                    continue
+                stem = re.sub(r"[^a-z0-9]+", "-", source.stem.lower()).strip("-") or "image"
+                suffix = re.sub(r"[^a-z0-9]+", "-", field.lower()).strip("-")
+                asset_id = f"{stem}-{suffix}"[:64].rstrip("-")
+                counter = 2
+                base_id = asset_id
+                while asset_id in used_ids:
+                    asset_id = f"{base_id[:60]}-{counter}"
+                    counter += 1
+                used_ids.add(asset_id)
+                relative_base = manifest_path.parent if manifest_path else outline_path.parent
+                recovered.append({
+                    "asset_id": asset_id,
+                    "origin": "project-asset",
+                    "role": role,
+                    "local_path": Path(os.path.relpath(source, relative_base)).as_posix(),
+                    "slide_ids": [slide_id],
+                    "alt": str(slide.get(alt_field) or source.stem.replace("-", " ")),
+                    "fit": "cover",
+                    "focal_point": str(slide.get(
+                        "background_position" if field == "background_image" else
+                        "support_position" if field == "support_image" else "hero_position",
+                        "50% 50%",
+                    )),
+                    "selected": True,
+                    "preserve_existing": True,
+                    "notes": "已从当前演示页面恢复到图片库",
+                })
+                known_paths.add(source)
+        return recovered
 
     def inspect_project(self, outline_value: Any, manifest_value: Any = None) -> dict[str, Any]:
         """Return a bounded, UI-ready view of one deck project."""
@@ -338,10 +430,21 @@ class AgentService:
             manifest_path, manifest = requested_manifest, requested_value
         else:
             manifest_path, manifest = manifests[0] if manifests else (None, {"assets": [], "reviewed": False})
-        assets: list[dict[str, Any]] = []
-        for asset in manifest.get("assets", []):
-            if not isinstance(asset, dict):
+        active_paths: set[Path] = set()
+        for slide in outline.get("slides", []):
+            if not isinstance(slide, dict):
                 continue
+            for field in ("hero", "image", "support_image", "background_image", "decorative_image"):
+                value = slide.get(field)
+                if isinstance(value, str) and value.strip():
+                    active_paths.add((outline_path.parent / value).resolve())
+
+        manifest_assets = [asset for asset in manifest.get("assets", []) if isinstance(asset, dict)]
+        manifest_assets.extend(
+            self._outline_media_assets(outline, outline_path, manifest_path, manifest_assets)
+        )
+        assets: list[dict[str, Any]] = []
+        for asset in manifest_assets:
             item = dict(asset)
             local_path = item.get("local_path")
             if manifest_path and isinstance(local_path, str):
@@ -350,8 +453,10 @@ class AgentService:
                     resolved.relative_to(self.workspace)
                     if resolved.is_file():
                         item["asset_path"] = self._workspace_relative(resolved)
+                    item["in_use"] = resolved in active_paths
                 except ValueError:
                     pass
+            item["selected"] = item.get("selected", item.get("in_use", False))
             assets.append(item)
 
         image_fields = {"hero", "image", "background_image", "decorative_image", "support_image"}
@@ -534,16 +639,27 @@ class AgentService:
             assets = manifest.get("assets")
             if not isinstance(assets, list):
                 raise ServiceError("manifest assets must be an array")
+            outline_value = arguments.get("outline")
+            outline_path: Path | None = None
+            if outline_value:
+                outline_path = self.path(outline_value, "outline")
+                outline = self._read_object(outline_path, "outline")
+                assets.extend(
+                    self._outline_media_assets(outline, outline_path, manifest_path, assets)
+                )
             original_assets = list(assets)
             selected = arguments.get("selectedAssetIds")
             if selected is not None:
                 if not isinstance(selected, list) or not all(isinstance(item, str) for item in selected):
                     raise ServiceError("selectedAssetIds must be a string array")
                 selected_ids = set(selected)
-                assets = [asset for asset in assets if asset.get("asset_id") in selected_ids]
-                missing = selected_ids - {str(asset.get("asset_id")) for asset in assets}
+                known_ids = {str(asset.get("asset_id")) for asset in assets}
+                missing = selected_ids - known_ids
                 if missing:
                     raise ServiceError("unknown asset ids: " + ", ".join(sorted(missing)))
+                for asset in assets:
+                    if isinstance(asset, dict):
+                        asset["selected"] = str(asset.get("asset_id")) in selected_ids
                 manifest["assets"] = assets
             manifest["reviewed"] = True
             errors = slides.validate_media_manifest(manifest)
@@ -552,11 +668,12 @@ class AgentService:
             temporary = manifest_path.with_suffix(manifest_path.suffix + ".tmp")
             temporary.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             temporary.replace(manifest_path)
-            outline_value = arguments.get("outline")
             applied_slides: list[str] = []
-            if outline_value:
-                outline_path = self.path(outline_value, "outline")
-                kept_ids = {str(asset.get("asset_id")) for asset in assets}
+            kept_ids = {
+                str(asset.get("asset_id")) for asset in assets
+                if isinstance(asset, dict) and asset.get("selected", True)
+            }
+            if outline_path:
                 removed_assets = [
                     asset for asset in original_assets
                     if isinstance(asset, dict) and str(asset.get("asset_id")) not in kept_ids
@@ -567,7 +684,8 @@ class AgentService:
             return 0, {
                 "api_version": "1.0", "command": "review-media", "ok": True,
                 "message": "media selection approved", "errors": [], "warnings": [],
-                "data": {"manifest": str(manifest_path), "assets": len(assets), "reviewed": True,
+                "data": {"manifest": str(manifest_path), "assets": len(kept_ids),
+                         "library_assets": len(assets), "reviewed": True,
                          "applied_slides": applied_slides},
             }
         if operation == "update-slide":
