@@ -187,6 +187,104 @@ class AgentService:
             candidates.extend([" ".join(subject + ["portrait"]), " ".join(subject)])
         return list(dict.fromkeys(candidate for candidate in candidates if candidate.strip()))
 
+    def _apply_media_to_outline(
+        self,
+        manifest_path: Path,
+        manifest: dict[str, Any],
+        outline_path: Path,
+        removed_assets: list[dict[str, Any]],
+    ) -> list[str]:
+        """Materialize reviewed media choices into the fields consumed by the builder."""
+        outline = self._read_object(outline_path, "outline")
+        if outline.get("deck_id") != manifest.get("deck_id"):
+            raise ServiceError("manifest deck_id does not match outline deck_id")
+        slide_items = outline.get("slides")
+        if not isinstance(slide_items, list):
+            raise ServiceError("outline must contain a slides array")
+        slide_by_id = {
+            str(slide.get("slide_id")): slide for slide in slide_items
+            if isinstance(slide, dict) and slide.get("slide_id")
+        }
+
+        def outline_image_path(asset: dict[str, Any]) -> str:
+            local = asset.get("local_path")
+            if not isinstance(local, str) or not local:
+                raise ServiceError("media asset local_path must be a non-empty string")
+            source = (manifest_path.parent / local).resolve()
+            try:
+                source.relative_to(self.workspace)
+            except ValueError as exc:
+                raise ServiceError("media asset must stay inside workspace") from exc
+            return Path(os.path.relpath(source, outline_path.parent)).as_posix()
+
+        image_fields = {
+            "hero": ("hero", "hero_alt"),
+            "background": ("background_image", "background_alt"),
+            "decorative": ("decorative_image", "decorative_alt"),
+        }
+        changed: set[str] = set()
+        for asset in removed_assets:
+            try:
+                previous_path = outline_image_path(asset)
+            except ServiceError:
+                continue
+            for slide_id in asset.get("slide_ids", []):
+                slide = slide_by_id.get(str(slide_id))
+                if not slide:
+                    continue
+                for field in ("hero", "image", "support_image", "background_image", "decorative_image"):
+                    if slide.get(field) == previous_path:
+                        slide.pop(field, None)
+                        alt_field = {
+                            "hero": "hero_alt", "image": "alt", "support_image": "support_alt",
+                            "background_image": "background_alt", "decorative_image": "decorative_alt",
+                        }[field]
+                        slide.pop(alt_field, None)
+                        changed.add(str(slide_id))
+
+        for asset in manifest.get("assets", []):
+            if not isinstance(asset, dict):
+                continue
+            image_path = outline_image_path(asset)
+            role = str(asset.get("role", "content"))
+            alt = str(asset.get("alt", ""))
+            for slide_id in asset.get("slide_ids", []):
+                slide = slide_by_id.get(str(slide_id))
+                if not slide:
+                    continue
+                if role in image_fields:
+                    field, alt_field = image_fields[role]
+                elif slide.get("layout") == "cover":
+                    field, alt_field = "hero", "hero_alt"
+                elif slide.get("layout") in {"image-frame", "object-float"}:
+                    field, alt_field = "image", "alt"
+                else:
+                    field, alt_field = "support_image", "support_alt"
+                slide[field] = image_path
+                slide[alt_field] = alt
+                focal = str(asset.get("focal_point", "50% 50%"))
+                fit = str(asset.get("fit", "cover"))
+                if field == "background_image":
+                    slide["background_position"] = focal
+                elif field == "hero":
+                    slide["hero_mode"] = "frame" if asset.get("origin") == "web" else slide.get("hero_mode", "auto")
+                    slide["hero_fit"] = fit if fit in {"contain", "cover"} else "cover"
+                    slide["hero_position"] = focal
+                elif field == "support_image":
+                    slide["support_fit"] = fit if fit in {"contain", "cover"} else "cover"
+                    slide["support_position"] = focal
+                changed.add(str(slide_id))
+
+        errors = slides.validate_outline(outline)
+        if errors:
+            raise ServiceError("media application made outline invalid: " + "; ".join(errors))
+        temporary = outline_path.with_suffix(outline_path.suffix + ".tmp")
+        temporary.write_text(
+            json.dumps(outline, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        temporary.replace(outline_path)
+        return sorted(changed)
+
     def inspect_project(self, outline_value: Any, manifest_value: Any = None) -> dict[str, Any]:
         """Return a bounded, UI-ready view of one deck project."""
         outline_path = self.path(outline_value, "outline")
@@ -436,6 +534,7 @@ class AgentService:
             assets = manifest.get("assets")
             if not isinstance(assets, list):
                 raise ServiceError("manifest assets must be an array")
+            original_assets = list(assets)
             selected = arguments.get("selectedAssetIds")
             if selected is not None:
                 if not isinstance(selected, list) or not all(isinstance(item, str) for item in selected):
@@ -453,10 +552,23 @@ class AgentService:
             temporary = manifest_path.with_suffix(manifest_path.suffix + ".tmp")
             temporary.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             temporary.replace(manifest_path)
+            outline_value = arguments.get("outline")
+            applied_slides: list[str] = []
+            if outline_value:
+                outline_path = self.path(outline_value, "outline")
+                kept_ids = {str(asset.get("asset_id")) for asset in assets}
+                removed_assets = [
+                    asset for asset in original_assets
+                    if isinstance(asset, dict) and str(asset.get("asset_id")) not in kept_ids
+                ]
+                applied_slides = self._apply_media_to_outline(
+                    manifest_path, manifest, outline_path, removed_assets
+                )
             return 0, {
                 "api_version": "1.0", "command": "review-media", "ok": True,
                 "message": "media selection approved", "errors": [], "warnings": [],
-                "data": {"manifest": str(manifest_path), "assets": len(assets), "reviewed": True},
+                "data": {"manifest": str(manifest_path), "assets": len(assets), "reviewed": True,
+                         "applied_slides": applied_slides},
             }
         if operation == "update-slide":
             outline_path = self.path(arguments.get("outline"), "outline")

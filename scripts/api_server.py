@@ -16,16 +16,17 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-try:
-    from agent_service import AgentService, ServiceError
-except ImportError:  # pragma: no cover
-    from scripts.agent_service import AgentService, ServiceError
+ROOT = Path(__file__).resolve().parents[1]
+root_entry = str(ROOT)
+sys.path = [entry for entry in sys.path if entry != root_entry]
+sys.path.insert(0, root_entry)
+
+from scripts.agent_service import AgentService, ServiceError
 
 
 API_VERSION = "1.1"
 MAX_BODY_BYTES = 1024 * 1024
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
-ROOT = Path(__file__).resolve().parents[1]
 CONSOLE_DIR = ROOT / "console"
 
 

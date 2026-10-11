@@ -323,7 +323,7 @@ async function run(action) {
   if (running) return;
   const started = performance.now();
   try {
-    if (action === 'run') await ensureMediaReviewed();
+    if (action === 'run' || action === 'build') await applyMediaSelection();
     const body = argumentsFor(action);
     running = true;
     $$('[data-action]').forEach((button) => button.disabled = true);
@@ -355,8 +355,8 @@ async function run(action) {
   }
 }
 
-async function ensureMediaReviewed() {
-  if (!project?.media?.manifest || project.media.reviewed) return;
+async function applyMediaSelection() {
+  if (!project?.media?.manifest) return;
   const checkboxes = $$('[data-asset-id]');
   const selected = checkboxes.length
     ? checkboxes.filter((input) => input.checked).map((input) => input.dataset.assetId)
@@ -365,7 +365,11 @@ async function ensureMediaReviewed() {
   setStatus('busy', '正在保存图片选择', '生成前先确认当前保留的图片。');
   await api('/v1/review-media', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ manifest: project.media.manifest, selectedAssetIds: selected }),
+    body: JSON.stringify({
+      manifest: project.media.manifest,
+      outline: ui.outline.value,
+      selectedAssetIds: selected,
+    }),
   });
   project.media.reviewed = true;
 }
@@ -385,10 +389,15 @@ async function approveMedia() {
   try {
     const payload = await api('/v1/review-media', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ manifest: project.media.manifest, selectedAssetIds: selected }),
+      body: JSON.stringify({
+        manifest: project.media.manifest,
+        outline: ui.outline.value,
+        selectedAssetIds: selected,
+      }),
     });
     ui.raw.textContent = JSON.stringify(payload, null, 2);
-    setStatus('success', '图片选择已保存', `当前保留 ${payload.data.assets} 张图片。`);
+    const applied = payload.data.applied_slides?.length || 0;
+    setStatus('success', '图片选择已应用', `当前保留 ${payload.data.assets} 张图片，已更新 ${applied} 个页面。`);
     await loadWorkspace(false);
   } catch (error) {
     setStatus('error', '媒体确认失败', error.message);

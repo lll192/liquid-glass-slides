@@ -115,7 +115,7 @@ class ApiServerTests(unittest.TestCase):
             "reviewed": False,
             "assets": [{
                 "asset_id": "candidate-photo", "origin": "web", "role": "content",
-                "local_path": "images/candidate.jpg", "slide_ids": ["opening"],
+                "local_path": "images/candidate.jpg", "slide_ids": ["crawler-opening-question"],
                 "alt": "候选图片", "fit": "cover", "focal_point": "50% 50%",
                 "source_url": "https://example.com/source", "license_url": "https://example.com/license",
                 "license": "CC BY 4.0", "author": "Example",
@@ -137,10 +137,21 @@ class ApiServerTests(unittest.TestCase):
         self.assertEqual(urllib.request.urlopen(request, timeout=10).read(), b"candidate-image")
         status, reviewed = self._request(
             "/v1/review-media", "POST",
-            {"manifest": "media-manifest.json", "selectedAssetIds": ["candidate-photo"]},
+            {"manifest": "media-manifest.json", "outline": "outline.json",
+             "selectedAssetIds": ["candidate-photo"]},
         )
         self.assertEqual(status, 200)
         self.assertTrue(reviewed["data"]["reviewed"])
+        self.assertEqual(reviewed["data"]["applied_slides"], ["crawler-opening-question"])
+        applied_outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        self.assertEqual(applied_outline["slides"][0]["hero"], "images/candidate.jpg")
+        status, built = self._request(
+            "/v1/build", "POST",
+            {"outline": "outline.json", "output": "dist/media-applied.html"},
+        )
+        self.assertEqual(status, 200)
+        built_html = (self.workspace / "dist" / "media-applied.html").read_text(encoding="utf-8")
+        self.assertIn("data:image/jpeg;base64,Y2FuZGlkYXRlLWltYWdl", built_html)
         first_slide_id = json.loads(EXAMPLE.read_text(encoding="utf-8"))["slides"][0]["slide_id"]
         status, updated = self._request(
             "/v1/update-slide", "POST",
