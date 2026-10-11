@@ -305,6 +305,45 @@ class ApiServerTests(unittest.TestCase):
         self.assertEqual(len(opening["support_images"]), 2)
         self.assertEqual(opening["support_gallery_mode"], "right-grid")
         self.assertEqual(opening["background_opacity"], 0.42)
+        status, payload = self._request("/v1/update-media", "POST", {
+            "manifest": "media-manifest.json", "outline": "outline.json",
+            "assetId": ids[-1], "opacity": 0.27,
+        })
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["data"]["applied_slides"], ["crawler-loop"])
+        updated = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        opening = next(slide for slide in updated["slides"] if slide["slide_id"] == "crawler-loop")
+        self.assertEqual(opening["background_opacity"], 0.27)
+
+    def test_one_file_cannot_render_as_background_and_content_on_same_slide(self):
+        image_dir = self.workspace / "images"
+        image_dir.mkdir()
+        (image_dir / "same.jpg").write_bytes(b"same")
+        outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        target = outline["slides"][1]
+        target["image"] = "images/same.jpg"
+        target["background_image"] = "images/same.jpg"
+        target["background_opacity"] = 0.8
+        (self.workspace / "outline.json").write_text(json.dumps(outline), encoding="utf-8")
+        manifest = {
+            "schema_version": "1.0", "deck_id": "web-crawler-narrative", "reviewed": False,
+            "assets": [{
+                "asset_id": "same-photo", "origin": "user-provided", "role": "content",
+                "local_path": "images/same.jpg", "slide_ids": [target["slide_id"]],
+                "alt": "same photo", "selected": True,
+            }],
+        }
+        (self.workspace / "media-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        status, _payload = self._request("/v1/review-media", "POST", {
+            "manifest": "media-manifest.json", "outline": "outline.json",
+            "selectedAssetIds": ["same-photo"],
+        })
+        self.assertEqual(status, 200)
+        applied = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))["slides"][1]
+        self.assertNotIn("background_image", applied)
+        self.assertNotIn("background_opacity", applied)
+        self.assertNotIn("image", applied)
+        self.assertEqual(applied["support_images"][0]["src"], "images/same.jpg")
 
     def test_preview_rejects_non_html_files(self):
         status, payload = self._request("/preview?path=outline.json")

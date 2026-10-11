@@ -253,7 +253,7 @@ class AgentService:
             "hero": ("hero_alt", "hero_mode", "hero_fit", "hero_position"),
             "image": ("alt",),
             "support_image": ("support_alt", "support_fit", "support_position", "support_side"),
-            "background_image": ("background_alt", "background_position"),
+            "background_image": ("background_alt", "background_position", "background_opacity"),
             "decorative_image": ("decorative_alt", "decorative_side"),
         }
         changed: set[str] = set()
@@ -308,6 +308,39 @@ class AgentService:
 
         for slide_id, selected_assets in selected_by_slide.items():
             slide = slide_by_id[slide_id]
+            unique_by_path: dict[str, dict[str, Any]] = {}
+            for asset in selected_assets:
+                unique_by_path[outline_image_path(asset)] = asset
+            selected_assets = list(unique_by_path.values())
+            # One physical image may have exactly one presentation role per slide.
+            # Clear stale placements before assigning the role selected in the library.
+            selected_roles = {
+                outline_image_path(asset): str(asset.get("role", "content"))
+                for asset in selected_assets
+            }
+            field_roles = {
+                "hero": "hero", "image": "content", "support_image": "content",
+                "background_image": "background", "decorative_image": "decorative",
+            }
+            for field, field_role in field_roles.items():
+                current = slide.get(field)
+                desired_role = selected_roles.get(current) if isinstance(current, str) else None
+                if desired_role and desired_role != field_role:
+                    slide.pop(field, None)
+                    for metadata_field in image_metadata.get(field, ()):
+                        slide.pop(metadata_field, None)
+            for field, field_role in (("support_images", "content"), ("decorative_images", "decorative")):
+                items = slide.get(field)
+                if isinstance(items, list):
+                    retained = [
+                        item for item in items
+                        if not isinstance(item, dict)
+                        or selected_roles.get(str(item.get("src", "")), field_role) == field_role
+                    ]
+                    if retained:
+                        slide[field] = retained
+                    else:
+                        slide.pop(field, None)
             backgrounds = [asset for asset in selected_assets if asset.get("role") == "background"]
             decorative = [asset for asset in selected_assets if asset.get("role") == "decorative"]
             content = [asset for asset in selected_assets if asset.get("role") == "content"]
@@ -363,6 +396,14 @@ class AgentService:
                 slide["hero_position"] = item["position"]
                 slide["hero_mode"] = "frame" if asset.get("origin") == "web" else slide.get("hero_mode", "auto")
             changed.add(slide_id)
+
+        # Remove metadata that no longer has a corresponding visual slot. Older
+        # revisions could leave opacity or crop settings behind after role changes.
+        for slide in slide_by_id.values():
+            for field, metadata_fields in image_metadata.items():
+                if not slide.get(field):
+                    for metadata_field in metadata_fields:
+                        slide.pop(metadata_field, None)
 
         errors = slides.validate_outline(outline)
         if errors:
@@ -834,11 +875,19 @@ class AgentService:
             manifest_path.write_text(
                 json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
             )
+            applied_slides: list[str] = []
+            outline_value = arguments.get("outline")
+            if outline_value:
+                outline_path = self.path(outline_value, "outline")
+                applied_slides = self._apply_media_to_outline(
+                    manifest_path, manifest, outline_path, []
+                )
             return 0, {
                 "api_version": "1.0", "command": "update-media", "ok": True,
                 "message": "background opacity updated", "errors": [], "warnings": [],
                 "data": {"manifest": str(manifest_path), "asset_id": asset_id,
-                         "opacity": asset["opacity"], "reviewed": False},
+                         "opacity": asset["opacity"], "reviewed": False,
+                         "applied_slides": applied_slides},
             }
         if operation == "review-media":
             manifest_path = self.path(arguments.get("manifest"), "manifest")

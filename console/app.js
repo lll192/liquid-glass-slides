@@ -305,10 +305,20 @@ function renderAssets() {
         try {
           await api('/v1/update-media', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ manifest: project.media.manifest, assetId: asset.asset_id, opacity: Number(slider.value) / 100 }),
+            body: JSON.stringify({
+              manifest: project.media.manifest, outline: ui.outline.value,
+              assetId: asset.asset_id, opacity: Number(slider.value) / 100,
+            }),
           });
           asset.opacity = Number(slider.value) / 100;
-          setStatus('success', '透明度已保存', '保存并应用图片后，背景会按新的透明度全屏铺展。');
+          if (ui.output.value) {
+            await api('/v1/build', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ outline: ui.outline.value, output: ui.output.value }),
+            });
+            showPreview(ui.output.value);
+          }
+          setStatus('success', '透明度已生效', '背景透明度已经同步到当前页面和预览。');
         } catch (error) { setStatus('error', '透明度保存失败', error.message); }
       });
       opacityRow.append(text('span', '', '背景透明度'), value, slider);
