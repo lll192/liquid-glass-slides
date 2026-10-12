@@ -54,6 +54,15 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('width:14px; height:14px', console_css)
         self.assertIn('width:calc(100% + 14px)', console_css)
 
+    def test_console_preview_scales_a_fixed_16_9_canvas(self):
+        console_css = (ROOT / 'console' / 'app.css').read_text(encoding='utf-8')
+        self.assertIn('aspect-ratio: 16/9', console_css)
+        self.assertIn('width: 1920px; height: 1080px', console_css)
+        self.assertIn('transform: translate(-50%,-50%) scale(var(--preview-scale))', console_css)
+        self.assertIn('const PREVIEW_WIDTH = 1920', CONSOLE_APP)
+        self.assertIn('const PREVIEW_HEIGHT = 1080', CONSOLE_APP)
+        self.assertIn('new ResizeObserver(fitPreview).observe(ui.previewFrame)', CONSOLE_APP)
+
     def test_vs_tracks_the_actual_column_divider(self):
         self.assertIn('--compare-divider:58.333%', CSS)
         self.assertIn('--compare-divider:41.667%', CSS)

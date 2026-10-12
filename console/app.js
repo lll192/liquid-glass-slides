@@ -5,7 +5,7 @@ const ui = {
   gate: $('#auth-gate'), form: $('#auth-form'), token: $('#token'), authError: $('#auth-error'),
   outline: $('#outline'), output: $('#output'), brief: $('#brief'), source: $('#source'),
   media: $('#media'), mediaPlan: $('#media-plan'), mediaOutput: $('#media-output'),
-  preview: $('#preview'), empty: $('#empty-state'), open: $('#open-preview'), previewTitle: $('#preview-title'),
+  preview: $('#preview'), previewFrame: $('#preview-frame'), empty: $('#empty-state'), open: $('#open-preview'), previewTitle: $('#preview-title'),
   statusDot: $('#status-dot'), statusTitle: $('#status-title'), statusMessage: $('#status-message'),
   errors: $('#errors'), warnings: $('#warnings'), raw: $('#raw'),
   outlineCount: $('#metric-outlines'), deckCount: $('#metric-decks'), time: $('#metric-time'),
@@ -24,6 +24,24 @@ let inventory = { files: [], decks: [] };
 let project = null;
 let running = false;
 let engineChecked = false;
+const PREVIEW_WIDTH = 1920;
+const PREVIEW_HEIGHT = 1080;
+
+function fitPreview() {
+  if (!ui.previewFrame || !ui.preview) return;
+  const width = ui.previewFrame.clientWidth;
+  const height = ui.previewFrame.clientHeight;
+  if (!width || !height) return;
+  const scale = Math.min(width / PREVIEW_WIDTH, height / PREVIEW_HEIGHT);
+  ui.preview.style.setProperty('--preview-scale', String(scale));
+}
+
+if ('ResizeObserver' in window) {
+  new ResizeObserver(fitPreview).observe(ui.previewFrame);
+} else {
+  window.addEventListener('resize', fitPreview);
+}
+ui.preview.addEventListener('load', fitPreview);
 
 function setStatus(kind, title, message) {
   ui.statusDot.className = `status-dot ${kind}`;
@@ -132,6 +150,7 @@ function showPreview(path) {
   ui.open.href = `/preview?path=${encodeURIComponent(path)}`;
   ui.open.classList.remove('disabled');
   ui.previewTitle.textContent = path.split('/').pop();
+  requestAnimationFrame(fitPreview);
 }
 
 function text(tag, className, value) {
