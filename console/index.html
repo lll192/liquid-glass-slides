@@ -77,7 +77,7 @@
         <form id="upload-media-form" class="upload-media-form">
           <label>用于页面<select id="add-media-slide"><option value="">选择页面</option></select></label>
           <label>图片用途<select id="add-media-role"><option value="content">内容图</option><option value="background">背景图</option><option value="decorative">装饰图</option></select></label>
-          <label id="background-opacity-field" hidden>背景透明度 <output id="background-opacity-value">55%</output><input id="background-opacity" type="range" min="5" max="100" value="55"></label>
+          <label id="background-opacity-field" class="opacity-field" hidden>背景不透明度 <output id="background-opacity-value">55%</output><input id="background-opacity" type="range" min="0" max="100" value="55"></label>
           <label id="upload-dropzone" class="upload-dropzone" for="upload-media-files" tabindex="0">
             <input id="upload-media-files" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
             <strong>拖拽图片到这里</strong><span>或点击选择本地图片 · 单张不超过 15 MB</span>

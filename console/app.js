@@ -299,8 +299,12 @@ function renderAssets() {
       const opacity = Math.round(Number(asset.opacity ?? .55) * 100);
       const value = text('output', '', `${opacity}%`);
       const slider = document.createElement('input');
-      slider.type = 'range'; slider.min = '5'; slider.max = '100'; slider.value = String(opacity);
-      slider.addEventListener('input', () => { value.textContent = `${slider.value}%`; });
+      slider.type = 'range'; slider.min = '0'; slider.max = '100'; slider.value = String(opacity);
+      slider.style.setProperty('--range-fill', `${opacity}%`);
+      slider.addEventListener('input', () => {
+        value.textContent = `${slider.value}%`;
+        slider.style.setProperty('--range-fill', `${slider.value}%`);
+      });
       slider.addEventListener('change', async () => {
         try {
           await api('/v1/update-media', {
@@ -318,10 +322,10 @@ function renderAssets() {
             });
             showPreview(ui.output.value);
           }
-          setStatus('success', '透明度已生效', '背景透明度已经同步到当前页面和预览。');
-        } catch (error) { setStatus('error', '透明度保存失败', error.message); }
+          setStatus('success', '不透明度已生效', '背景不透明度已经同步到当前页面和预览。');
+        } catch (error) { setStatus('error', '不透明度保存失败', error.message); }
       });
-      opacityRow.append(text('span', '', '背景透明度'), value, slider);
+      opacityRow.append(text('span', '', '背景不透明度'), value, slider);
       meta.append(opacityRow);
     }
     const credit = asset.origin === 'web' ? `${asset.author || '未知作者'} · ${asset.license || '许可待确认'}` : (asset.notes || '项目原创素材');
@@ -419,7 +423,6 @@ async function applyMediaSelection() {
   const selected = checkboxes.length
     ? checkboxes.filter((input) => input.checked).map((input) => input.dataset.assetId)
     : project.media.assets.map((asset) => asset.asset_id);
-  if (!selected.length) throw new Error('请至少保留一张图片，再生成成品。');
   setStatus('busy', '正在保存图片选择', '生成前先确认当前保留的图片。');
   await api('/v1/review-media', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -440,11 +443,10 @@ function switchView(view) {
 async function approveMedia() {
   if (!project?.media?.manifest) return;
   const selected = $$('[data-asset-id]:checked').map((input) => input.dataset.assetId);
-  if (!selected.length) {
-    setStatus('error', '至少保留一张图片', '取消不合适的候选后，请至少保留一个素材。');
-    return;
-  }
+  const output = ui.output.value.trim();
   try {
+    ui.approveMedia.disabled = true;
+    setStatus('busy', '正在应用图片选择', '正在清理页面图片、重新生成并刷新预览。');
     const payload = await api('/v1/review-media', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -455,10 +457,19 @@ async function approveMedia() {
     });
     ui.raw.textContent = JSON.stringify(payload, null, 2);
     const applied = payload.data.applied_slides?.length || 0;
-    setStatus('success', '图片选择已应用', `当前保留 ${payload.data.assets} 张图片，已更新 ${applied} 个页面。`);
+    if (output) {
+      await api('/v1/build', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ outline: ui.outline.value, output }),
+      });
+    }
     await loadWorkspace(false);
+    if (output) showPreview(output);
+    setStatus('success', '图片选择已应用', `当前保留 ${payload.data.assets} 张图片，已更新 ${applied} 个页面，预览已经刷新。`);
   } catch (error) {
     setStatus('error', '媒体确认失败', error.message);
+  } finally {
+    ui.approveMedia.disabled = false;
   }
 }
 
@@ -543,7 +554,11 @@ ui.addMediaRole.addEventListener('change', () => {
   ui.backgroundOpacityField.hidden = !background;
   ui.uploadFiles.multiple = !background;
 });
-ui.backgroundOpacity.addEventListener('input', () => { ui.backgroundOpacityValue.textContent = `${ui.backgroundOpacity.value}%`; });
+ui.backgroundOpacity.style.setProperty('--range-fill', `${ui.backgroundOpacity.value}%`);
+ui.backgroundOpacity.addEventListener('input', () => {
+  ui.backgroundOpacityValue.textContent = `${ui.backgroundOpacity.value}%`;
+  ui.backgroundOpacity.style.setProperty('--range-fill', `${ui.backgroundOpacity.value}%`);
+});
 ['dragenter', 'dragover'].forEach((name) => ui.uploadDropzone.addEventListener(name, (event) => {
   event.preventDefault(); ui.uploadDropzone.classList.add('dragging');
 }));

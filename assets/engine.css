@@ -74,7 +74,7 @@ body{ background:linear-gradient(160deg,#eef2f8,#f6f7fb); color:var(--ink);
 /* Sourced web imagery. Backgrounds stay atmospheric; support images reserve a
    dedicated rail so they never sit on top of readable content. */
 .slide-web-background{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
-.slide-web-background img{ width:100%; height:100%; max-height:none; object-fit:cover; filter:saturate(.82) contrast(.92); }
+.slide-web-background img{ width:100%; height:100%; max-height:none; object-fit:cover; }
 .slide-web-scrim{ position:absolute; inset:0; z-index:1; pointer-events:none;
   background:linear-gradient(90deg,rgba(246,247,251,.96) 0 42%,rgba(246,247,251,.78) 64%,rgba(246,247,251,.5)); }
 .slide-web-decor{ position:absolute; z-index:1; bottom:3.5vh;
@@ -1011,9 +1011,9 @@ body{ --presenter-rail:min(430px,34vw); }
 .process-step{ position:relative; min-width:0; padding:clamp(1rem,2.2vw,1.7rem); border-right:1px solid var(--construct-rule); }
 .process-step:last-child{ border-right:0; }
 .process-step:not(:last-child)::after{
-  content:""; position:absolute; right:-.35rem; top:50%; z-index:2; width:.65rem; height:.65rem;
-  border-top:2px solid var(--accent); border-right:2px solid var(--accent); transform:translateY(-50%) rotate(45deg);
-  background:rgba(255,255,255,.72);
+  content:""; position:absolute; right:-.72rem; top:50%; z-index:2; width:1.45rem; height:.68rem;
+  background:var(--accent); transform:translateY(-50%);
+  clip-path:polygon(0 40%,58% 40%,58% 0,100% 50%,58% 100%,58% 60%,0 60%);
 }
 .process-index{ display:block; color:var(--accent); font-size:clamp(1.5rem,3.2vw,2.7rem); font-weight:750; letter-spacing:-.05em; }
 .process-step h3{ margin:.45rem 0 .25rem; }
@@ -1048,7 +1048,7 @@ body{ --presenter-rail:min(430px,34vw); }
   .process-flow,.variant-flow-compact .process-flow{ grid-auto-flow:row; grid-template-columns:1fr; }
   .process-step{ border-right:0; border-bottom:1px solid var(--construct-rule); }
   .process-step:last-child{ border-bottom:0; }
-  .process-step:not(:last-child)::after{ right:auto; left:1.15rem; top:auto; bottom:-.35rem; transform:rotate(135deg); }
+  .process-step:not(:last-child)::after{ right:auto; left:1.15rem; top:auto; bottom:-.34rem; transform:translateX(-50%) rotate(90deg); }
   .concept-map,.variant-map-bilateral .concept-map{ grid-template-columns:1fr; }
   .concept-core,.variant-map-bilateral .concept-core{ grid-column:1; grid-row:1; min-height:auto; }
   .concept-nodes,.variant-map-bilateral .concept-nodes{ grid-column:1; grid-row:2; grid-template-columns:1fr; }

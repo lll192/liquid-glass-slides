@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / 'assets' / 'engine.css').read_text(encoding='utf-8')
 JS = (ROOT / 'assets' / 'engine.js').read_text(encoding='utf-8')
 BUILD = (ROOT / 'scripts' / 'build.py').read_text(encoding='utf-8')
+CONSOLE_APP = (ROOT / 'console' / 'app.js').read_text(encoding='utf-8')
 from scripts.build import image_has_alpha
 
 
@@ -40,6 +41,18 @@ class VisualContractTests(unittest.TestCase):
     def test_data_table_has_alternating_rows(self):
         self.assertIn('.data-table tbody tr:nth-child(odd) > *', CSS)
         self.assertIn('.data-table tbody tr:nth-child(even) > *', CSS)
+
+    def test_process_flow_uses_clean_geometric_connectors(self):
+        connector = CSS[CSS.index('.process-step:not(:last-child)::after'):
+                        CSS.index('.process-index')]
+        self.assertIn('clip-path:polygon', connector)
+        self.assertIn('background:var(--accent)', connector)
+        self.assertNotIn('background:rgba(255,255,255', connector)
+
+    def test_opacity_slider_uses_compact_thumb(self):
+        console_css = (ROOT / 'console' / 'app.css').read_text(encoding='utf-8')
+        self.assertIn('width:14px; height:14px', console_css)
+        self.assertIn('width:calc(100% + 14px)', console_css)
 
     def test_vs_tracks_the_actual_column_divider(self):
         self.assertIn('--compare-divider:58.333%', CSS)
@@ -94,6 +107,18 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('.slide-support-gallery.gallery-right-grid', CSS)
         self.assertIn('.slide-support-gallery.gallery-bottom-strip', CSS)
         self.assertIn('background_opacity', BUILD)
+        self.assertIn('1.0 - opacity', BUILD)
+        self.assertNotIn('filter:saturate(.82) contrast(.92)', CSS)
+
+    def test_media_approval_rebuilds_and_refreshes_preview(self):
+        approval = CONSOLE_APP[
+            CONSOLE_APP.index('async function approveMedia()'):
+            CONSOLE_APP.index('function fileAsDataUrl')
+        ]
+        self.assertIn("await api('/v1/review-media'", approval)
+        self.assertIn("await api('/v1/build'", approval)
+        self.assertIn('showPreview(output)', approval)
+        self.assertNotIn('至少保留一张图片', approval)
 
     def test_narrative_example_has_natural_length_speaker_notes(self):
         outline = json.loads((ROOT / 'examples' / 'narrative-visual-outline.json').read_text(encoding='utf-8'))

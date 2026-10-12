@@ -58,7 +58,7 @@
         "background_image": {"type": "string"},
         "background_alt": {"type": "string"},
         "background_position": {"type": "string", "pattern": "^\\d{1,3}%\\s+\\d{1,3}%$"},
-        "background_opacity": {"type": "number", "minimum": 0.05, "maximum": 1},
+        "background_opacity": {"type": "number", "minimum": 0, "maximum": 1},
         "decorative_image": {"type": "string"},
         "decorative_alt": {"type": "string"},
         "decorative_side": {"enum": ["left", "right"]},

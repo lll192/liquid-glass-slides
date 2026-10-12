@@ -475,14 +475,14 @@ def universal_media_markup(slide):
         if not re.fullmatch(r'\d{1,3}%\s+\d{1,3}%', position):
             position = '50% 50%'
         try:
-            opacity = max(.05, min(1.0, float(slide.get('background_opacity', .55))))
+            opacity = max(0.0, min(1.0, float(slide.get('background_opacity', .55))))
         except (TypeError, ValueError):
             opacity = .55
         parts.append(
             '<div class="slide-web-background" aria-hidden="true" style="opacity:%.2f">'
-            '<img src="%s" alt="%s" style="object-position:%s"></div>'
-            '<div class="slide-web-scrim" aria-hidden="true"></div>'
-            % (opacity, html.escape(background, quote=True), alt, position)
+            '<img src="%s" alt="%s" style="object-position:%s">'
+            '<div class="slide-web-scrim" aria-hidden="true" style="opacity:%.2f"></div></div>'
+            % (opacity, html.escape(background, quote=True), alt, position, 1.0 - opacity)
         )
     decorative_items = slide.get('decorative_images')
     if isinstance(decorative_items, list) and decorative_items:

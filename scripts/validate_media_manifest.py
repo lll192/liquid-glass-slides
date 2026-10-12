@@ -81,9 +81,9 @@ def validate_media_manifest(manifest: Any) -> list[str]:
         opacity = asset.get("opacity")
         if opacity is not None and (
             not isinstance(opacity, (int, float)) or isinstance(opacity, bool)
-            or not 0.05 <= float(opacity) <= 1
+            or not 0 <= float(opacity) <= 1
         ):
-            errors.append(f"{prefix}.opacity must be a number between 0.05 and 1")
+            errors.append(f"{prefix}.opacity must be a number between 0 and 1")
         if asset.get("origin") == "web":
             for field in ("source_url", "license_url"):
                 if not _https(asset.get(field)):

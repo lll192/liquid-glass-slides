@@ -171,11 +171,17 @@ class ApiServerTests(unittest.TestCase):
         image_dir = self.workspace / "images"
         image_dir.mkdir()
         (image_dir / "used.jpg").write_bytes(b"used-image")
+        (image_dir / "used-gallery.jpg").write_bytes(b"used-gallery-image")
         (image_dir / "candidate.jpg").write_bytes(b"candidate-image")
         outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
         target = outline["slides"][0]
         target["background_image"] = "images/used.jpg"
         target["background_alt"] = "正在演示中使用的图片"
+        target["background_opacity"] = 1
+        target["support_images"] = [{
+            "src": "images/used-gallery.jpg", "alt": "正在页面中显示的内容图",
+            "fit": "cover", "position": "50% 50%",
+        }]
         (self.workspace / "outline.json").write_text(
             json.dumps(outline, ensure_ascii=False), encoding="utf-8"
         )
@@ -201,19 +207,26 @@ class ApiServerTests(unittest.TestCase):
             if asset["local_path"] == "images/used.jpg"
         )
         self.assertEqual(recovered["origin"], "project-asset")
+        recovered_gallery = next(
+            asset for asset in inspected["data"]["media"]["assets"]
+            if asset["local_path"] == "images/used-gallery.jpg"
+        )
+        self.assertEqual(recovered_gallery["role"], "content")
+        self.assertTrue(recovered_gallery["in_use"])
+        self.assertEqual(recovered["opacity"], 1)
 
         status, reviewed = self._request(
             "/v1/review-media", "POST",
             {"manifest": "media-manifest.json", "outline": "outline.json",
-             "selectedAssetIds": [recovered["asset_id"]]},
+             "selectedAssetIds": [recovered["asset_id"], recovered_gallery["asset_id"]]},
         )
         self.assertEqual(status, 200)
-        self.assertEqual(reviewed["data"]["assets"], 1)
-        self.assertEqual(reviewed["data"]["library_assets"], 2)
+        self.assertEqual(reviewed["data"]["assets"], 2)
+        self.assertEqual(reviewed["data"]["library_assets"], 3)
         saved_manifest = json.loads(
             (self.workspace / "media-manifest.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(len(saved_manifest["assets"]), 2)
+        self.assertEqual(len(saved_manifest["assets"]), 3)
         candidate = next(
             asset for asset in saved_manifest["assets"]
             if asset["asset_id"] == "candidate-photo"
@@ -224,7 +237,7 @@ class ApiServerTests(unittest.TestCase):
         )
         saved_target = saved_outline["slides"][0]
         self.assertEqual(saved_target["background_image"], "images/used.jpg")
-        self.assertNotIn("hero", saved_target)
+        self.assertEqual(saved_target["hero"], "images/used-gallery.jpg")
 
     def test_add_media_translates_chinese_search_and_keeps_connection(self):
         manifest = {
@@ -314,6 +327,16 @@ class ApiServerTests(unittest.TestCase):
         updated = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
         opening = next(slide for slide in updated["slides"] if slide["slide_id"] == "crawler-loop")
         self.assertEqual(opening["background_opacity"], 0.27)
+        for extreme in (0, 1):
+            status, payload = self._request("/v1/update-media", "POST", {
+                "manifest": "media-manifest.json", "outline": "outline.json",
+                "assetId": ids[-1], "opacity": extreme,
+            })
+            self.assertEqual(status, 200)
+            self.assertEqual(payload["data"]["opacity"], extreme)
+            updated = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+            opening = next(slide for slide in updated["slides"] if slide["slide_id"] == "crawler-loop")
+            self.assertEqual(opening["background_opacity"], extreme)
 
     def test_one_file_cannot_render_as_background_and_content_on_same_slide(self):
         image_dir = self.workspace / "images"
@@ -344,6 +367,55 @@ class ApiServerTests(unittest.TestCase):
         self.assertNotIn("background_opacity", applied)
         self.assertNotIn("image", applied)
         self.assertEqual(applied["support_images"][0]["src"], "images/same.jpg")
+
+    def test_removed_decorations_stay_removed_across_duplicate_manifests(self):
+        image_dir = self.workspace / "images"
+        image_dir.mkdir()
+        for name in ("decor-one.jpg", "decor-two.jpg"):
+            (image_dir / name).write_bytes(name.encode("ascii"))
+        outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        target = outline["slides"][1]
+        target["decorative_images"] = [
+            {"src": "images/decor-one.jpg", "alt": "装饰一", "fit": "cover", "position": "50% 50%"},
+            {"src": "images/decor-two.jpg", "alt": "装饰二", "fit": "cover", "position": "50% 50%"},
+        ]
+        (self.workspace / "outline.json").write_text(
+            json.dumps(outline, ensure_ascii=False), encoding="utf-8"
+        )
+        assets = [{
+            "asset_id": f"decor-{index}", "origin": "user-provided", "role": "decorative",
+            "local_path": f"images/decor-{name}.jpg", "slide_ids": [target["slide_id"]],
+            "alt": f"装饰{index}", "selected": True,
+        } for index, name in enumerate(("one", "two"), 1)]
+        for manifest_name in ("media-manifest.json", "media-manifest-web.json"):
+            (self.workspace / manifest_name).write_text(json.dumps({
+                "schema_version": "1.0", "deck_id": "web-crawler-narrative",
+                "reviewed": False, "assets": assets,
+            }, ensure_ascii=False), encoding="utf-8")
+
+        status, payload = self._request("/v1/review-media", "POST", {
+            "manifest": "media-manifest-web.json", "outline": "outline.json",
+            "selectedAssetIds": [],
+        })
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["data"]["assets"], 0)
+        self.assertEqual(payload["data"]["synchronized_manifests"], ["media-manifest.json"])
+        saved_outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
+        self.assertNotIn("decorative_images", saved_outline["slides"][1])
+        sibling = json.loads((self.workspace / "media-manifest.json").read_text(encoding="utf-8"))
+        self.assertTrue(all(asset["selected"] is False for asset in sibling["assets"]))
+
+        status, inspected = self._request(
+            "/v1/project?outline=outline.json&mediaManifest=media-manifest.json"
+        )
+        self.assertEqual(status, 200)
+        self.assertTrue(all(asset["selected"] is False for asset in inspected["data"]["media"]["assets"]))
+        status, built = self._request("/v1/build", "POST", {
+            "outline": "outline.json", "output": "dist/no-decor.html",
+        })
+        self.assertEqual(status, 200)
+        html = (self.workspace / "dist" / "no-decor.html").read_text(encoding="utf-8")
+        self.assertNotIn('<div class="slide-decor-gallery"', html)
 
     def test_preview_rejects_non_html_files(self):
         status, payload = self._request("/preview?path=outline.json")

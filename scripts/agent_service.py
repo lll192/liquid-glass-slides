@@ -353,7 +353,7 @@ class AgentService:
                 slide["background_alt"] = item["alt"]
                 slide["background_position"] = item["position"]
                 try:
-                    slide["background_opacity"] = max(0.05, min(1.0, float(asset.get("opacity", 0.55))))
+                    slide["background_opacity"] = max(0.0, min(1.0, float(asset.get("opacity", 0.55))))
                 except (TypeError, ValueError):
                     slide["background_opacity"] = 0.55
 
@@ -428,11 +428,6 @@ class AgentService:
             str(asset.get("asset_id")) for asset in known_assets
             if isinstance(asset, dict) and asset.get("asset_id")
         }
-        known_assignments = {
-            (str(asset.get("role", "content")), str(slide_id))
-            for asset in known_assets if isinstance(asset, dict) and asset.get("selected", True)
-            for slide_id in asset.get("slide_ids", [])
-        }
         if manifest_path:
             for asset in known_assets:
                 local = asset.get("local_path") if isinstance(asset, dict) else None
@@ -451,8 +446,6 @@ class AgentService:
                 continue
             slide_id = str(slide.get("slide_id", "slide"))
             for field, (role, alt_field) in field_roles.items():
-                if (role, slide_id) in known_assignments:
-                    continue
                 value = slide.get(field)
                 if not isinstance(value, str) or not value.strip():
                     continue
@@ -473,7 +466,7 @@ class AgentService:
                     counter += 1
                 used_ids.add(asset_id)
                 relative_base = manifest_path.parent if manifest_path else outline_path.parent
-                recovered.append({
+                recovered_asset = {
                     "asset_id": asset_id,
                     "origin": "project-asset",
                     "role": role,
@@ -489,9 +482,110 @@ class AgentService:
                     "selected": True,
                     "preserve_existing": True,
                     "notes": "已从当前演示页面恢复到图片库",
-                })
+                }
+                if role == "background":
+                    recovered_asset["opacity"] = max(
+                        0.0, min(1.0, float(slide.get("background_opacity", 0.55)))
+                    )
+                recovered.append(recovered_asset)
                 known_paths.add(source)
+            for field, role in (("support_images", "content"), ("decorative_images", "decorative")):
+                values = slide.get(field)
+                if not isinstance(values, list):
+                    continue
+                for index, item in enumerate(values):
+                    if not isinstance(item, dict):
+                        continue
+                    value = item.get("src")
+                    if not isinstance(value, str) or not value.strip():
+                        continue
+                    source = (outline_path.parent / value).resolve()
+                    try:
+                        source.relative_to(self.workspace)
+                    except ValueError:
+                        continue
+                    if source in known_paths or not source.is_file():
+                        continue
+                    stem = re.sub(r"[^a-z0-9]+", "-", source.stem.lower()).strip("-") or "image"
+                    asset_id = f"{stem}-{role}"[:64].rstrip("-")
+                    counter = 2
+                    base_id = asset_id
+                    while asset_id in used_ids:
+                        asset_id = f"{base_id[:60]}-{counter}"
+                        counter += 1
+                    used_ids.add(asset_id)
+                    relative_base = manifest_path.parent if manifest_path else outline_path.parent
+                    recovered.append({
+                        "asset_id": asset_id,
+                        "origin": "project-asset",
+                        "role": role,
+                        "local_path": Path(os.path.relpath(source, relative_base)).as_posix(),
+                        "slide_ids": [slide_id],
+                        "alt": str(item.get("alt") or source.stem.replace("-", " ")),
+                        "fit": str(item.get("fit") or "cover"),
+                        "focal_point": str(item.get("position") or "50% 50%"),
+                        "selected": True,
+                        "preserve_existing": True,
+                        "notes": f"已从当前演示页面的第 {index + 1} 张{('内容图' if role == 'content' else '装饰图')}恢复到图片库",
+                    })
+                    known_paths.add(source)
         return recovered
+
+    def _sync_media_selection(
+        self,
+        manifest_path: Path,
+        manifest: dict[str, Any],
+    ) -> list[str]:
+        """Keep duplicate project manifests from reviving assets a user removed."""
+        decisions: dict[Path, bool] = {}
+        for asset in manifest.get("assets", []):
+            if not isinstance(asset, dict):
+                continue
+            local = asset.get("local_path")
+            if isinstance(local, str) and local:
+                decisions[(manifest_path.parent / local).resolve()] = bool(
+                    asset.get("selected", True)
+                )
+        if not decisions:
+            return []
+        synchronized: list[str] = []
+        deck_id = manifest.get("deck_id")
+        for sibling_path in manifest_path.parent.glob("*media-manifest*.json"):
+            if sibling_path.resolve() == manifest_path.resolve():
+                continue
+            try:
+                sibling = json.loads(sibling_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(sibling, dict) or sibling.get("deck_id") != deck_id:
+                continue
+            sibling_assets = sibling.get("assets")
+            if not isinstance(sibling_assets, list):
+                continue
+            changed = False
+            for asset in sibling_assets:
+                if not isinstance(asset, dict):
+                    continue
+                local = asset.get("local_path")
+                if not isinstance(local, str) or not local:
+                    continue
+                source = (sibling_path.parent / local).resolve()
+                if source not in decisions:
+                    continue
+                selected = decisions[source]
+                if bool(asset.get("selected", True)) != selected:
+                    asset["selected"] = selected
+                    changed = True
+            if changed:
+                sibling["reviewed"] = True
+                temporary = sibling_path.with_suffix(sibling_path.suffix + ".tmp")
+                temporary.write_text(
+                    json.dumps(sibling, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                )
+                temporary.replace(sibling_path)
+                synchronized.append(self._workspace_relative(sibling_path))
+        return sorted(synchronized)
 
     def inspect_project(self, outline_value: Any, manifest_value: Any = None) -> dict[str, Any]:
         """Return a bounded, UI-ready view of one deck project."""
@@ -825,9 +919,9 @@ class AgentService:
             target.write_bytes(image_bytes)
             opacity_value = arguments.get("opacity", 0.55)
             try:
-                opacity = max(0.05, min(1.0, float(opacity_value)))
+                opacity = max(0.0, min(1.0, float(opacity_value)))
             except (TypeError, ValueError) as exc:
-                raise ServiceError("opacity must be a number between 0.05 and 1") from exc
+                raise ServiceError("opacity must be a number between 0 and 1") from exc
             if role == "background":
                 for asset in assets:
                     if (isinstance(asset, dict) and asset.get("role") == "background"
@@ -868,9 +962,9 @@ class AgentService:
             if asset.get("role") != "background":
                 raise ServiceError("only background image opacity can be adjusted")
             try:
-                asset["opacity"] = max(0.05, min(1.0, float(arguments.get("opacity"))))
+                asset["opacity"] = max(0.0, min(1.0, float(arguments.get("opacity"))))
             except (TypeError, ValueError) as exc:
-                raise ServiceError("opacity must be a number between 0.05 and 1") from exc
+                raise ServiceError("opacity must be a number between 0 and 1") from exc
             manifest["reviewed"] = False
             manifest_path.write_text(
                 json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -924,6 +1018,7 @@ class AgentService:
             temporary = manifest_path.with_suffix(manifest_path.suffix + ".tmp")
             temporary.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             temporary.replace(manifest_path)
+            synchronized_manifests = self._sync_media_selection(manifest_path, manifest)
             applied_slides: list[str] = []
             kept_ids = {
                 str(asset.get("asset_id")) for asset in assets
@@ -942,7 +1037,8 @@ class AgentService:
                 "message": "media selection approved", "errors": [], "warnings": [],
                 "data": {"manifest": str(manifest_path), "assets": len(kept_ids),
                          "library_assets": len(assets), "reviewed": True,
-                         "applied_slides": applied_slides},
+                         "applied_slides": applied_slides,
+                         "synchronized_manifests": synchronized_manifests},
             }
         if operation == "update-slide":
             outline_path = self.path(arguments.get("outline"), "outline")
