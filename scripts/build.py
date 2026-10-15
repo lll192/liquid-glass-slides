@@ -529,7 +529,7 @@ def universal_media_markup(slide):
         if mode not in ('right-grid', 'bottom-strip'):
             mode = 'right-grid'
         figures = []
-        for item in support_items[:6]:
+        for item in support_items[:3]:
             if not isinstance(item, dict) or not str(item.get('src', '')).strip():
                 continue
             src = html.escape(str(item['src']).strip(), quote=True)

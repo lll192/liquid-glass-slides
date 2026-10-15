@@ -55,6 +55,7 @@
         <button data-view="story" type="button">编辑内容</button>
         <button data-view="visual" type="button">页面检查</button>
         <button data-view="assets" type="button">管理图片</button>
+        <button data-view="connect" type="button">连接 AI</button>
       </nav>
       <section class="view-panel active" data-panel="preview">
         <div class="preview-frame" id="preview-frame">
@@ -72,11 +73,11 @@
         <div id="visual-grid" class="visual-grid empty-grid">选择项目后显示视觉计划。</div>
       </section>
       <section class="view-panel" data-panel="assets">
-        <div class="panel-intro"><span>管理图片</span><p>上传本地图片并指定页面与用途。内容图和装饰图可以多张组合；背景图每页仅保留一张。</p></div>
+        <div class="panel-intro"><span>管理图片</span><p>上传本地图片并指定页面与用途。内容图每页最多三张；背景图每页仅保留一张。</p></div>
         <div class="asset-toolbar"><span id="media-review-status">尚无图片</span><button id="approve-media" class="secondary compact" type="button" disabled>保存并应用图片</button></div>
         <form id="upload-media-form" class="upload-media-form">
           <label>用于页面<select id="add-media-slide"><option value="">选择页面</option></select></label>
-          <label>图片用途<select id="add-media-role"><option value="content">内容图</option><option value="background">背景图</option><option value="decorative">装饰图</option></select></label>
+          <label>图片用途<select id="add-media-role"><option value="content">内容图</option><option value="background">背景图</option></select></label>
           <label id="background-opacity-field" class="opacity-field" hidden>背景不透明度 <output id="background-opacity-value">55%</output><input id="background-opacity" type="range" min="0" max="100" value="55"></label>
           <label id="upload-dropzone" class="upload-dropzone" for="upload-media-files" tabindex="0">
             <input id="upload-media-files" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
@@ -85,6 +86,34 @@
           <button class="secondary compact" type="submit">上传所选图片</button>
         </form>
         <div id="asset-grid" class="asset-grid empty-grid">选择项目后显示媒体。</div>
+      </section>
+      <section class="view-panel" data-panel="connect">
+        <div class="panel-intro"><span>连接 AI</span><p>普通用户可以直接复制任务给 AI；支持 MCP 的客户端可以复制配置。Codex 支持一键安装本地 Skill。</p></div>
+        <div class="connect-layout">
+          <div class="platform-list" role="tablist" aria-label="选择 AI 平台">
+            <button class="platform-card active" data-platform="codex" type="button"><b>Codex</b><span>一键安装 Skill</span></button>
+            <button class="platform-card" data-platform="claude" type="button"><b>Claude</b><span>仓库指令 / MCP</span></button>
+            <button class="platform-card" data-platform="cursor" type="button"><b>Cursor</b><span>项目规则 / MCP</span></button>
+            <button class="platform-card" data-platform="gemini" type="button"><b>Gemini</b><span>仓库指令 / MCP</span></button>
+            <button class="platform-card" data-platform="generic" type="button"><b>其他 AI</b><span>通用 MCP 配置</span></button>
+          </div>
+          <div class="connection-card">
+            <div class="connection-head"><div><span class="rail-index">AI CONNECTION</span><h3 id="connection-title">连接 Codex</h3></div><span id="connection-state" class="connection-state">等待检测</span></div>
+            <p id="connection-description">安装本地 Skill 后，重启 Codex，即可直接说“使用 liquid-glass-slides 生成演示”。</p>
+            <div class="connection-actions">
+              <button id="install-codex" class="primary" type="button">一键安装 Codex Skill</button>
+              <button id="test-engine" class="secondary" type="button">测试生成引擎</button>
+            </div>
+            <label for="ai-task">交给 AI 的任务</label>
+            <textarea id="ai-task" class="copy-field" rows="6" readonly>先创建或选择一个演示项目，这里会生成可以直接交给 AI 的任务。</textarea>
+            <button id="copy-ai-task" class="secondary compact copy-button" type="button">复制 AI 任务</button>
+            <details class="advanced-connection"><summary>高级：MCP 配置</summary>
+              <p>仅支持 MCP 的客户端需要这段配置；普通用户无需处理。</p>
+              <textarea id="mcp-config" class="copy-field code-field" rows="10" readonly></textarea>
+              <button id="copy-mcp-config" class="secondary compact copy-button" type="button">复制 MCP 配置</button>
+            </details>
+          </div>
+        </div>
       </section>
     </main>
 

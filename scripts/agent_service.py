@@ -9,6 +9,8 @@ import binascii
 import json
 import os
 import re
+import subprocess
+import sys
 import tempfile
 import uuid
 from pathlib import Path
@@ -118,6 +120,43 @@ class AgentService:
 
     def _workspace_relative(self, path: Path) -> str:
         return path.resolve().relative_to(self.workspace).as_posix()
+
+    def integration_info(self) -> dict[str, Any]:
+        engine_root = Path(__file__).resolve().parents[1]
+        mcp_script = engine_root / "scripts" / "mcp_server.py"
+        command = str(Path(sys.executable).resolve())
+        args = [str(mcp_script.resolve()), "--workspace", str(self.workspace)]
+        return {
+            "engine_root": str(engine_root),
+            "workspace": str(self.workspace),
+            "python": command,
+            "mcp": {"command": command, "args": args},
+            "codex_skill_destination": str(Path.home() / ".codex" / "skills" / "liquid-glass-slides"),
+            "adapters": {
+                "codex": "AGENTS.md / SKILL.md",
+                "claude": "CLAUDE.md",
+                "gemini": "GEMINI.md",
+                "cursor": ".cursor/rules/liquid-glass-slides.mdc",
+                "generic": "references/INSTRUCTIONS.md",
+            },
+        }
+
+    def install_skill(self, target: str) -> dict[str, Any]:
+        if target != "codex":
+            raise ServiceError("only the Codex skill supports one-click installation")
+        engine_root = Path(__file__).resolve().parents[1]
+        result = subprocess.run(
+            [sys.executable, str(engine_root / "scripts" / "install_plugin.py"),
+             "--target", "codex", "--update"],
+            cwd=engine_root, capture_output=True, text=True, timeout=120,
+        )
+        if result.returncode != 0:
+            raise ServiceError((result.stdout or result.stderr or "skill installation failed").strip())
+        return {
+            "target": target,
+            "destination": str(Path.home() / ".codex" / "skills" / "liquid-glass-slides"),
+            "message": "Codex Skill 已安装；重启 Codex 后即可使用。",
+        }
 
     @staticmethod
     def _content_fields(slide: dict[str, Any]) -> list[dict[str, Any]]:
@@ -232,6 +271,9 @@ class AgentService:
             str(slide.get("slide_id")): slide for slide in slide_items
             if isinstance(slide, dict) and slide.get("slide_id")
         }
+        for slide in slide_by_id.values():
+            for field in ("decorative_image", "decorative_alt", "decorative_side", "decorative_images"):
+                slide.pop(field, None)
 
         def outline_image_path(asset: dict[str, Any]) -> str:
             local = asset.get("local_path")
@@ -308,6 +350,8 @@ class AgentService:
 
         for slide_id, selected_assets in selected_by_slide.items():
             slide = slide_by_id[slide_id]
+            for field in ("decorative_image", "decorative_alt", "decorative_side", "decorative_images"):
+                slide.pop(field, None)
             unique_by_path: dict[str, dict[str, Any]] = {}
             for asset in selected_assets:
                 unique_by_path[outline_image_path(asset)] = asset
@@ -342,8 +386,7 @@ class AgentService:
                     else:
                         slide.pop(field, None)
             backgrounds = [asset for asset in selected_assets if asset.get("role") == "background"]
-            decorative = [asset for asset in selected_assets if asset.get("role") == "decorative"]
-            content = [asset for asset in selected_assets if asset.get("role") == "content"]
+            content = [asset for asset in selected_assets if asset.get("role") == "content"][:3]
             heroes = [asset for asset in selected_assets if asset.get("role") == "hero"]
 
             if backgrounds:
@@ -356,11 +399,6 @@ class AgentService:
                     slide["background_opacity"] = max(0.0, min(1.0, float(asset.get("opacity", 0.55))))
                 except (TypeError, ValueError):
                     slide["background_opacity"] = 0.55
-
-            if decorative:
-                slide.pop("decorative_image", None)
-                slide.pop("decorative_alt", None)
-                slide["decorative_images"] = [media_item(asset) for asset in decorative]
 
             if content:
                 for field in ("image", "alt", "support_image", "support_alt", "support_fit", "support_position"):
@@ -375,7 +413,7 @@ class AgentService:
                     slide["hero_position"] = item["position"]
                     slide["hero_mode"] = "frame"
                 else:
-                    slide["support_images"] = [media_item(asset) for asset in content]
+                    slide["support_images"] = [media_item(asset) for asset in content[:3]]
                     visible_text = " ".join(
                         value for key, value in slide.items()
                         if isinstance(value, str) and key not in {
@@ -790,8 +828,8 @@ class AgentService:
             search_queries = self._image_search_queries(query)
             if not search_queries:
                 raise ServiceError("暂时无法理解这个图片关键词，请写清主体、场景和动作")
-            if role not in {"content", "background", "decorative", "hero"}:
-                raise ServiceError("role must be content, background, decorative, or hero")
+            if role not in {"content", "background", "hero"}:
+                raise ServiceError("role must be content, background, or hero")
             if not slide_id:
                 raise ServiceError("slideId must be a non-empty string")
             slug = re.sub(r"[^a-z0-9]+", "-", query.lower()).strip("-")[:28] or "image"
@@ -885,8 +923,8 @@ class AgentService:
             role = str(arguments.get("role", "content")).strip()
             filename = str(arguments.get("filename", "image")).strip()
             encoded = str(arguments.get("data", "")).strip()
-            if role not in {"content", "background", "decorative"}:
-                raise ServiceError("role must be content, background, or decorative")
+            if role not in {"content", "background"}:
+                raise ServiceError("role must be content or background")
             if not slide_id:
                 raise ServiceError("slideId must be a non-empty string")
             if not encoded:
@@ -1011,6 +1049,20 @@ class AgentService:
                     if isinstance(asset, dict):
                         asset["selected"] = str(asset.get("asset_id")) in selected_ids
                 manifest["assets"] = assets
+            selected_content: dict[str, int] = {}
+            for asset in assets:
+                if not isinstance(asset, dict):
+                    continue
+                if asset.get("role") == "decorative":
+                    asset["selected"] = False
+                    continue
+                if asset.get("selected", True) is False or asset.get("role") != "content":
+                    continue
+                for slide_id in asset.get("slide_ids", []):
+                    selected_content[slide_id] = selected_content.get(slide_id, 0) + 1
+                    if selected_content[slide_id] > 3:
+                        asset["selected"] = False
+                        break
             manifest["reviewed"] = True
             errors = slides.validate_media_manifest(manifest)
             if errors:

@@ -150,8 +150,8 @@ Optional crop controls: `hero_mode` (`auto`, `float`, `frame`), `hero_fit`
 Every layout can also receive sourced photography without rewriting its template:
 
 - `background_image`, `background_alt`, `background_position` — full-slide atmosphere with a reading-safe scrim.
-- `decorative_image`, `decorative_alt`, `decorative_side` — nonessential edge decoration.
-- `support_image`, `support_alt`, `support_side`, `support_fit`, `support_position` — a dedicated side image rail that reserves space instead of covering text.
+- `support_image`, `support_alt`, `support_side`, `support_fit`, `support_position` — one dedicated content image rail that reserves space instead of covering text.
+- `support_images` — one to three content-image objects (`src`, `alt`, `fit`, `position`) with automatic gallery layout. New projects do not use decorative-image fields.
 
 ### `toc`
 `eyebrow`, `title`; `items: [{ label, desc }]`. Renders as one indexed composition

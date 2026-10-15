@@ -65,6 +65,19 @@ class ApiServerTests(unittest.TestCase):
         status, spec = self._request("/openapi.json", token=None)
         self.assertEqual(status, 200)
         self.assertEqual(spec["openapi"], "3.1.0")
+        self.assertNotIn("/v1/create-project", spec["paths"])
+        self.assertIn("/v1/integration", spec["paths"])
+        status, removed = self._request("/v1/create-project", "POST", {})
+        self.assertEqual(status, 404)
+        self.assertFalse(removed["ok"])
+
+    def test_integration_route_returns_ready_to_copy_mcp_settings(self):
+        status, payload = self._request("/v1/integration")
+        self.assertEqual(status, 200)
+        self.assertTrue(payload["ok"])
+        self.assertTrue(payload["data"]["mcp"]["command"])
+        self.assertIn("mcp_server.py", payload["data"]["mcp"]["args"][0])
+        self.assertEqual(payload["data"]["mcp"]["args"][-1], str(self.workspace))
 
     def test_private_routes_require_bearer_token(self):
         status, payload = self._request("/v1/capabilities", token=None)
@@ -301,7 +314,9 @@ class ApiServerTests(unittest.TestCase):
         }), encoding="utf-8")
         encoded = base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"0" * 32).decode("ascii")
         ids = []
-        for name, role in (("one.png", "content"), ("two.png", "content"), ("bg.png", "background")):
+        for name, role in (("one.png", "content"), ("two.png", "content"),
+                           ("three.png", "content"), ("four.png", "content"),
+                           ("bg.png", "background")):
             status, payload = self._request("/v1/upload-media", "POST", {
                 "manifest": "media-manifest.json", "filename": name, "data": encoded,
                 "slideId": "crawler-loop", "role": role, "opacity": 0.42,
@@ -315,8 +330,8 @@ class ApiServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         outline = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
         opening = next(slide for slide in outline["slides"] if slide["slide_id"] == "crawler-loop")
-        self.assertEqual(len(opening["support_images"]), 2)
-        self.assertEqual(opening["support_gallery_mode"], "right-grid")
+        self.assertEqual(len(opening["support_images"]), 3)
+        self.assertEqual(opening["support_gallery_mode"], "bottom-strip")
         self.assertEqual(opening["background_opacity"], 0.42)
         status, payload = self._request("/v1/update-media", "POST", {
             "manifest": "media-manifest.json", "outline": "outline.json",
@@ -337,6 +352,19 @@ class ApiServerTests(unittest.TestCase):
             updated = json.loads((self.workspace / "outline.json").read_text(encoding="utf-8"))
             opening = next(slide for slide in updated["slides"] if slide["slide_id"] == "crawler-loop")
             self.assertEqual(opening["background_opacity"], extreme)
+
+    def test_decorative_upload_role_is_retired(self):
+        (self.workspace / "media-manifest.json").write_text(json.dumps({
+            "schema_version": "1.0", "deck_id": "web-crawler-narrative",
+            "reviewed": True, "assets": [],
+        }), encoding="utf-8")
+        encoded = base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"0" * 32).decode("ascii")
+        status, payload = self._request("/v1/upload-media", "POST", {
+            "manifest": "media-manifest.json", "filename": "decor.png", "data": encoded,
+            "slideId": "crawler-loop", "role": "decorative",
+        })
+        self.assertEqual(status, 400)
+        self.assertIn("content or background", payload["errors"][0])
 
     def test_one_file_cannot_render_as_background_and_content_on_same_slide(self):
         image_dir = self.workspace / "images"

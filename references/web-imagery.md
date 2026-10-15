@@ -17,6 +17,10 @@ book cover, or a recognizable film poster.
 
 ## Source order
 
+Google Images and Pinterest may be used to discover visual directions and candidate
+pages, but never as the downloadable source or license record. Follow every candidate
+to its original publisher, photographer, archive, or stock page before reuse.
+
 1. Official institution, museum, library, government, or project media with an explicit
    reuse statement.
 2. Wikimedia Commons file pages. Check the license on the individual file page and keep
@@ -69,9 +73,22 @@ judgment. Refine a weak query or pin a reviewed result with `openverse_id`.
 6. Pass `--media-manifest media-manifest.json` to the production pipeline so provenance
    is checked with the other inputs.
 
-Use `background_image` for atmosphere, `support_image` for a meaningful side photograph,
-and `decorative_image` only when it can disappear without changing the argument. All
-three work on any layout and are embedded into the self-contained HTML.
+Use `background_image` for one full-slide atmosphere image and `support_images` for one
+to three meaningful content photographs. Decorative-image roles are retired: if an image
+does not support the argument or atmosphere, omit it. Both supported roles work on any
+layout and are embedded into the self-contained HTML.
+
+## Orientation-to-role rule
+
+- A landscape asset is eligible for `background_image` when its aspect ratio is roughly
+  1.50–2.20 and its usable size is at least 1600×900. Use one background per slide.
+- Portrait assets (ratio ≤ 0.82) and square/near-square assets (ratio 0.82–1.25) become
+  content images. A smaller landscape image may also remain a content image.
+- A content page may use one, two, or three content images. Choose the gallery layout
+  from text density and image orientation; never force a fourth image onto the slide.
+- The same physical asset may appear in only one role on the same slide.
+- Except for opening and closing, every slide should contain a reviewed image. When the
+  page has real quantitative evidence, an ECharts visualization may replace that image.
 
 ## Media manifest example
 

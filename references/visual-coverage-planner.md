@@ -1,8 +1,9 @@
 # Visual Coverage Planner
 
-Visual Coverage Planner gives each content slide a deliberate visual job. Its goal is
-not to decorate every page. It balances human-readable text with evidence views,
-explanatory diagrams, tables, images, and breathing room.
+Visual Coverage Planner gives each content slide a deliberate visual job. Opening and
+closing pages may remain typographic; every interior page must have at least one reviewed
+image, or a factual chart that replaces the image. It balances human-readable text with
+evidence views, images, and breathing room without decorative-only assets.
 
 ## Decision matrix
 
@@ -15,7 +16,7 @@ explanatory diagrams, tables, images, and breathing room.
 | Relationships, system parts, taxonomy | `concept-map` |
 | Two positions, choices, before/after | `comparison` |
 | One decisive number | `stat-highlight` or `kpi-grid` |
-| No trustworthy evidence or useful visual structure | concise text + ripple |
+| No trustworthy evidence or useful visual structure | reviewed atmospheric photo + concise text |
 
 Ripple and Three.js can create atmosphere, but they do not count as meaningful
 information visuals. A meaningful visual must explain, compare, locate, quantify, or
@@ -40,10 +41,9 @@ make a concrete subject visible.
 - `source`: compact provenance for factual graphics.
 
 The builder reports the planned and rendered visual type, required-visual mismatches,
-missing chart/table provenance, long text-only runs, and deck-level meaningful visual
-coverage. For decks with at least six content slides, roughly 40–65% meaningful visual
-coverage is a useful default range—not a quota. Dense technical reports may need more;
-reflective or keynote-style decks may need less.
+missing chart/table provenance, text-only interior pages, and deck-level meaningful
+visual coverage. Interior visual coverage should reach 100% when photography and factual
+charts are counted together.
 
 ## Structured layouts
 
@@ -71,8 +71,9 @@ three to six nodes and name actual relationships in the spoken explanation.
 - For sourced images, read `web-imagery.md`, save assets locally, and validate a
   `media-manifest.json`. A search result URL by itself is not provenance.
 - Keep readable text in HTML. Do not ask image generation to render labels or paragraphs.
-- If no meaningful visual is justified, use a concise editorial text composition and the
-  automatic ripple background instead of filler imagery.
+- Use one background image or one to three content images. Do not add a decorative role.
+- If no evidence image is justified, use a reviewed atmospheric image that matches the
+  slide's place, object, or emotional context. Do not fabricate relevance.
 
 Top-level `"visual_coverage_planner": false` disables this audit for exact legacy
 reproduction. It is enabled by default.

@@ -15,6 +15,11 @@ GIF, extended WebP, and dimensioned SVG without external libraries. It classifie
 - `media-unknown` — remote, missing, unsupported, or dimensionless asset; retain the
   safe default layout.
 
+Role selection follows dimensions before layout: high-resolution 1.50–2.20 landscape
+images are background candidates; portrait and square images are content images. A slide
+has at most one background and three content images. Content galleries choose a right
+grid or bottom strip from text density and image count. Decorative images are not used.
+
 Every image slide exposes `data-media`. Missing local assets and missing `alt` /
 `hero_alt` text produce build warnings.
 

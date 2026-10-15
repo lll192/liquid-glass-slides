@@ -12,12 +12,13 @@ python scripts/api_server.py --workspace C:/path/to/presentation-project --open
 
 `--open` launches the default browser with the bearer token in the URL fragment. Fragments are not sent in HTTP requests; the page exchanges it for an HttpOnly same-site session and removes it from the address bar. Without `--open`, paste the terminal token into the connection screen.
 
-## Four project views
+## Five project views
 
 1. **成品预览** — inspect the newest generated deck and open it for rehearsal.
 2. **故事线** — read every slide's story role, claim, and transition from Narrative Director; directly edit the title, main point, transition, and speaker notes.
 3. **视觉覆盖** — see meaningful-visual coverage and each slide's actual visual type from Visual Coverage Planner.
 4. **媒体库** — preview local images, distinguish web and AI origins, read attribution, reject candidates, and approve the final selection.
+5. **连接 AI** — copy a ready-to-use AI task or MCP configuration, test the local engine, and install the Codex Skill with one click.
 
 ## Production workflow
 

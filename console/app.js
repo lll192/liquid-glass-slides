@@ -18,12 +18,17 @@ const ui = {
   addMediaRole: $('#add-media-role'), backgroundOpacity: $('#background-opacity'),
   backgroundOpacityField: $('#background-opacity-field'),
   backgroundOpacityValue: $('#background-opacity-value'),
+  aiTask: $('#ai-task'), mcpConfig: $('#mcp-config'), connectionTitle: $('#connection-title'),
+  connectionDescription: $('#connection-description'), connectionState: $('#connection-state'),
+  installCodex: $('#install-codex'),
 };
 
 let inventory = { files: [], decks: [] };
 let project = null;
 let running = false;
 let engineChecked = false;
+let integration = null;
+let selectedPlatform = 'codex';
 const PREVIEW_WIDTH = 1920;
 const PREVIEW_HEIGHT = 1080;
 
@@ -129,6 +134,9 @@ async function loadWorkspace(showReady = true) {
     }
     if (showReady) setStatus('success', '已连接', `工作目录已载入，共发现 ${outlines.length} 个演示项目。`);
     ui.gate.classList.add('hidden');
+    if (!integration) loadIntegration().catch(() => {
+      ui.connectionState.textContent = '等待连接';
+    });
   } catch (error) {
     if (error.status === 401) ui.gate.classList.remove('hidden');
     throw error;
@@ -137,8 +145,12 @@ async function loadWorkspace(showReady = true) {
 
 function suggestOutput() {
   if (!ui.outline.value) return;
-  const stem = ui.outline.value.split('/').pop().replace(/\.json$/i, '').replace(/-outline$/i, '');
-  ui.output.value = `dist/${stem || 'deck'}.html`;
+  const parts = ui.outline.value.split('/');
+  const filename = parts.pop() || 'outline.json';
+  const parent = parts.at(-1) || '';
+  const stem = filename.replace(/\.json$/i, '').replace(/-outline$/i, '');
+  const deckName = stem === 'outline' && parent ? parent : (stem || 'deck');
+  ui.output.value = `${parts.length ? `${parts.join('/')}/` : ''}dist/${deckName}.html`;
 }
 
 function showPreview(path) {
@@ -158,6 +170,78 @@ function text(tag, className, value) {
   if (className) node.className = className;
   node.textContent = value || '';
   return node;
+}
+
+function updateAiTask() {
+  if (ui.outline.value) {
+    ui.aiTask.value = `请使用 liquid-glass-slides 读取 ${ui.outline.value}，检查并完善逐页内容、视觉方案和演讲者提示，校验通过后生成自包含 HTML 演示。`;
+    return;
+  }
+  ui.aiTask.value = '请先把由 AI 生成的演示项目放入工作目录，然后在左侧选择项目。';
+}
+
+function renderConnection() {
+  if (!integration) return;
+  const labels = {
+    codex: ['连接 Codex', '点击下面的按钮安装本地 Skill；重启 Codex 后即可在对话框中直接调用。'],
+    claude: ['连接 Claude', '使用 Claude Code 打开当前仓库即可读取 CLAUDE.md；也可以把下方配置加入 MCP 设置。'],
+    cursor: ['连接 Cursor', '直接打开仓库即可加载项目规则；需要跨项目调用时可使用下方 MCP 配置。'],
+    gemini: ['连接 Gemini', '使用 Gemini CLI 打开仓库即可读取 GEMINI.md；也可以配置本地 MCP。'],
+    generic: ['连接其他 AI', '支持 MCP 的客户端复制下方配置；能操作本地文件的 AI 直接打开 GitHub 仓库即可。'],
+  };
+  [ui.connectionTitle.textContent, ui.connectionDescription.textContent] = labels[selectedPlatform];
+  ui.installCodex.hidden = selectedPlatform !== 'codex';
+  const config = { mcpServers: { 'liquid-glass-slides': integration.mcp } };
+  ui.mcpConfig.value = JSON.stringify(config, null, 2);
+  ui.connectionState.textContent = '本地引擎可用';
+  updateAiTask();
+}
+
+async function loadIntegration() {
+  const payload = await api('/v1/integration');
+  integration = payload.data;
+  renderConnection();
+}
+
+async function copyValue(target, button) {
+  const value = target.value;
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch (_error) {
+    target.focus(); target.select(); document.execCommand('copy');
+  }
+  const original = button.textContent;
+  button.textContent = '已复制';
+  setTimeout(() => { button.textContent = original; }, 1400);
+}
+
+async function installCodexSkill() {
+  try {
+    ui.installCodex.disabled = true;
+    setStatus('busy', '正在安装 Codex Skill', '正在复制受管文件到本机 Codex Skill 目录。');
+    const payload = await api('/v1/install-skill', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: 'codex' }),
+    });
+    ui.connectionState.textContent = 'Skill 已安装';
+    setStatus('success', '安装完成', payload.data.message);
+  } catch (error) {
+    setStatus('error', '安装失败', error.message);
+  } finally {
+    ui.installCodex.disabled = false;
+  }
+}
+
+async function testEngine() {
+  try {
+    const payload = await api('/v1/capabilities');
+    const count = payload.data?.capabilities?.length || 0;
+    ui.connectionState.textContent = '连接正常';
+    setStatus('success', '生成引擎正常', count ? `已发现 ${count} 项引擎能力。` : '本地生成内核可以正常调用。');
+  } catch (error) {
+    ui.connectionState.textContent = '连接失败';
+    setStatus('error', '引擎测试失败', error.message);
+  }
 }
 
 function renderStory() {
@@ -279,7 +363,7 @@ function renderAssets() {
     ui.assetGrid.textContent = '尚未添加图片。可以把本地图片拖到上方上传区域。';
     return;
   }
-  const roleLabels = { background: '背景图', content: '内容图', decorative: '装饰图', hero: '主视觉', reference: '参考图' };
+  const roleLabels = { background: '背景图', content: '内容图', decorative: '已停用', hero: '主视觉', reference: '参考图' };
   const slideLabels = new Map(project.slides.map((slide) => [slide.slide_id, `${String(slide.order).padStart(2, '0')} · ${slide.title}`]));
   media.assets.forEach((asset) => {
     const card = document.createElement('article');
@@ -373,6 +457,7 @@ async function loadProject() {
     ui.addMediaSlide.append(option);
   });
   renderStory(); renderVisuals(); renderAssets();
+  updateAiTask();
   if (project.media.manifest && [...ui.media.options].some((option) => option.value === project.media.manifest)) {
     ui.media.value = project.media.manifest;
   }
@@ -517,7 +602,11 @@ async function uploadMedia(event) {
     return;
   }
   if (ui.addMediaRole.value === 'background' && files.length > 1) {
-    setStatus('error', '背景图只能上传一张', '内容图和装饰图可以一次上传多张。');
+    setStatus('error', '背景图只能上传一张', '内容图可以一次上传多张。');
+    return;
+  }
+  if (ui.addMediaRole.value === 'content' && files.length > 3) {
+    setStatus('error', '内容图最多三张', '请一次选择不超过三张内容图。');
     return;
   }
   const submit = ui.uploadMediaForm.querySelector('button[type="submit"]');
@@ -566,6 +655,15 @@ ui.outline.addEventListener('change', async () => { suggestOutput(); await loadP
 ui.media.addEventListener('change', () => loadProject().catch((error) => setStatus('error', '读取媒体失败', error.message)));
 $$('[data-action]').forEach((button) => button.addEventListener('click', () => run(button.dataset.action)));
 $$('[data-view]').forEach((button) => button.addEventListener('click', () => switchView(button.dataset.view)));
+$$('[data-platform]').forEach((button) => button.addEventListener('click', () => {
+  selectedPlatform = button.dataset.platform;
+  $$('[data-platform]').forEach((item) => item.classList.toggle('active', item === button));
+  renderConnection();
+}));
+ui.installCodex.addEventListener('click', installCodexSkill);
+$('#test-engine').addEventListener('click', testEngine);
+$('#copy-ai-task').addEventListener('click', (event) => copyValue(ui.aiTask, event.currentTarget));
+$('#copy-mcp-config').addEventListener('click', (event) => copyValue(ui.mcpConfig, event.currentTarget));
 ui.approveMedia.addEventListener('click', approveMedia);
 ui.uploadMediaForm.addEventListener('submit', uploadMedia);
 ui.addMediaRole.addEventListener('change', () => {
@@ -596,7 +694,9 @@ ui.uploadFiles.addEventListener('change', () => {
 });
 $('#refresh').addEventListener('click', () => loadWorkspace().catch(() => {}));
 $('#logout').addEventListener('click', async () => { await api('/v1/session', { method: 'DELETE' }).catch(() => {}); ui.gate.classList.remove('hidden'); });
-document.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') run('run'); });
+document.addEventListener('keydown', (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') run('run');
+});
 
 const fragment = new URLSearchParams(location.hash.slice(1));
 const fragmentToken = fragment.get('token');

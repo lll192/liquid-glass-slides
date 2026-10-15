@@ -24,7 +24,7 @@ sys.path.insert(0, root_entry)
 from scripts.agent_service import AgentService, ServiceError
 
 
-API_VERSION = "1.3"
+API_VERSION = "1.4"
 SEARCH_ENGINE_VERSION = "semantic-search-v3"
 MAX_BODY_BYTES = 22 * 1024 * 1024
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
@@ -47,6 +47,9 @@ def openapi_document() -> dict[str, Any]:
         "/v1/project": {
             "get": {"summary": "Inspect narrative, visual coverage, media, and reports", "security": [{"bearerAuth": []}]}
         },
+        "/v1/integration": {
+            "get": {"summary": "Read local AI integration settings", "security": [{"bearerAuth": []}]}
+        },
         "/asset": {
             "get": {"summary": "Preview a local project image", "security": [{"bearerAuth": []}]}
         },
@@ -60,7 +63,7 @@ def openapi_document() -> dict[str, Any]:
             "get": {"summary": "Preview a generated HTML deck", "security": [{"bearerAuth": []}]}
         },
     }
-    for name in ("validate", "build", "source-images", "add-media", "upload-media", "update-media", "review-media", "update-slide", "run", "status", "mark-exported"):
+    for name in ("install-skill", "validate", "build", "source-images", "add-media", "upload-media", "update-media", "review-media", "update-slide", "run", "status", "mark-exported"):
         paths[f"/v1/{name}"] = {
             "post": {
                 "summary": f"Run {name}",
@@ -215,6 +218,14 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                     "warnings": [],
                 })
                 return
+            if path == "/v1/integration":
+                if not self._require_auth():
+                    return
+                self._send(200, {
+                    "api_version": API_VERSION, "ok": True,
+                    "data": service.integration_info(), "errors": [], "warnings": [],
+                })
+                return
             if path == "/v1/project":
                 if not self._require_auth():
                     return
@@ -288,6 +299,17 @@ def handler_class(service: AgentService, token: str) -> type[BaseHTTPRequestHand
                     "application/json; charset=utf-8",
                     {"Set-Cookie": _session_cookie(token)},
                 )
+                return
+            if path == "/v1/install-skill":
+                try:
+                    body = self._body()
+                    data = service.install_skill(str(body.get("target") or ""))
+                    self._send(200, {
+                        "api_version": API_VERSION, "command": "install-skill", "ok": True,
+                        "message": data["message"], "data": data, "errors": [], "warnings": [],
+                    })
+                except ServiceError as exc:
+                    self._send(400, _server_payload("install-skill", "installation failed", [str(exc)]))
                 return
             operation = {
                 "/v1/validate": "validate",

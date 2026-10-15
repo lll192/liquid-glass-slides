@@ -119,6 +119,12 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('1.0 - opacity', BUILD)
         self.assertNotIn('filter:saturate(.82) contrast(.92)', CSS)
 
+    def test_console_only_offers_background_and_content_image_roles(self):
+        console = (ROOT / 'console' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('<option value="content">内容图</option>', console)
+        self.assertIn('<option value="background">背景图</option>', console)
+        self.assertNotIn('<option value="decorative">', console)
+
     def test_media_approval_rebuilds_and_refreshes_preview(self):
         approval = CONSOLE_APP[
             CONSOLE_APP.index('async function approveMedia()'):

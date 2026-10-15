@@ -1,252 +1,194 @@
-# Liquid Glass Slides · 液态玻璃幻灯片
+# Liquid Glass Slides
 
-> 一个面向多种 AI 编程与智能体环境的演示文稿生成 Skill：把文章、大纲、笔记、Markdown 或零散想法，一键生成 **Apple iOS 26 液态玻璃（Liquid Glass）风格** 的动画 HTML 幻灯片。
+<div align="center">
 
-[English version below ↓](#english)
+**把一个主题，变成可讲、可改、可追踪来源的动画演示。**
 
-## 这是什么
+面向 Codex、WorkBuddy、Claude、Gemini、Cursor 与其他 AI Agent 的演示文稿生成引擎。
 
-`liquid-glass-slides` 是一个模型无关、可移植的演示文稿生成技能。它既可安装到 WorkBuddy 或支持 `SKILL.md` 的智能体环境，也可通过仓库内置适配文件在 OpenAI Codex、Claude Code、Gemini CLI 与 Cursor 中直接使用。任何能够读取 Markdown 并运行 Python 的 AI Agent，也可以遵循 `references/INSTRUCTIONS.md` 完成同样的构建流程。
+真实图片优先，数据图表按需，最终输出一个可离线播放的自包含 HTML。
 
-- **液态玻璃质感**：半透明磨砂面板、背景虚化与折射、边缘高光、层次景深，忠实还原 Apple 的 Liquid Glass 设计语言（纯 CSS 实现，无原生 Apple API）。
-- **构成主义简约版式**：默认采用非对称网格、严格边缘对齐、尺度对比与大留白；用一个共享玻璃平面组织内容，避免“每句话一张卡片”的仪表盘感。
-- **智能构图与密度检测**：根据项目数量、左右文字量和页面类型自动选择 7:5 / 5:7、主次网格、马赛克网格及图文方向；内容过载时明确警告，不再无止境缩小字号。
-- **中文与中英混排优化**：按视觉长度自动区分短、中、长标题，启用中文严格换行、标题平衡换行、脚本感知字距和表格数字，并提示需要改写的超长标题。
-- **图片与图表智能编排**：识别横图、竖图、方图及趋势、比较、占比、雷达、分布图，自动调整图文比例和图表高度，并检查替代文本与数据结论。
-- **整套节奏与自动质检**：构建时发现连续重复版式、页面重量失衡和缺失的呼吸页；浏览器端无需截图即可检测溢出、越界、标题过度换行和过小字号。
-- **文案与演讲备注分层**：识别空泛标题和过长屏幕文案，用 `main_point` 固定每页核心结论，用 `speaker_notes` 保存约 100 字的自然讲稿；播放时按 `N` 可直接编辑并自动保存到本机浏览器。
-- **Narrative Director**：为每页规划故事角色、观众问题、讲述意图、情绪节拍和自然转场；演讲者视图只保留核心结论与转场提示，并检测连续平铺、缺少证据或反差的故事弧。
-- **Visual Coverage Planner**：区分“解释信息的视觉”与纯装饰，规划图片、图表、数据表、流程图和概念图；检测视觉缺失、连续纯文字页与图表/表格来源缺失。
-- **真实中文文字**：所有可读文字都是真正的 HTML 文本，绝不乱码、可直接编辑。
-- **零依赖单文件输出**：内联 CSS/JS，浏览器直接全屏播放，支持键盘 / 滚轮 / 触摸翻页与入场动画。
-- **ECharts 数据图表**：仅在页面确有真实可比数据时自动加入（趋势、对比、占比、雷达），并自动套用液态玻璃主题。
-- **Three.js 动态背景**：封面可使用粒子或星云；非封面仅在内容语义需要时使用关系网、花瓣或波形（单共享画布，按可见页切换）。
-- **自动涟漪兜底**：页面没有 Three.js、ECharts 或图片时，构建器自动加入克制的涟漪材质；信息密集页使用静态低对比纹理，稀疏页面可使用轻微动态。
-- **主题色自动系统**：根据主题自动派生 3 个背景晕染色 + 粒子色 + 1 个强调色，正文保持近黑以保证可读性。
-- **可选 AI 配图**：封面 / 章节分隔可自动生成透明背景的装饰插画（仅用于装饰，文字绝不进图）。
-- **生成前 Brief Gate**：先盘点用户已经提供的信息；信息不足时一次性显示 6 项简洁表单，信息充分时直接生成结构化简报，避免重复追问。
-- **可复用设计简报**：把主题、目标、受众、内容归属、视觉偏好和约束固化为可校验的 `brief.json`，再进入故事板与渲染。
-- **条件式 Source Gate**：选择完整文案或部分素材时，支持附件、本地路径、粘贴文本及图文混合上传，自动确认主文案、辅助材料、图片用途、改写幅度和缺失内容。
-- **来源与补写可追踪**：通过 `source-manifest.json` 和 `content-map.md` 区分用户原文、辅助参考与 AI 补充，避免素材混用或静默改写。
-- **稳定 Deck Protocol v2**：用永久 `deck_id` 与唯一 `slide_id` 绑定页面、笔记和后续修改；提供标准库校验器、机器可读 JSON Schema 与旧版确定性迁移工具。
-- **可恢复生产流水线**：一次运行生成故事板、视觉规划、HTML、QA 报告与任务状态；失败会记录精确阶段和错误，修正后可由同一或另一个 AI 继续执行。
-- **Content Director 内容导演**：自动输出逐页叙事、演讲备注、屏幕文案和信息视觉诊断；仅安全补全结构元数据，不擅自改写事实。
-- **统一 Agent CLI**：Codex、WorkBuddy、Claude、Gemini、Cursor、自动化脚本与未来 MCP 统一调用 `scripts/slides.py`；JSON 返回结构和退出码稳定，不再解析终端文案。
-- **本地 MCP 工具服务器**：支持 MCP 的 AI 可直接发现并调用 10 个 `slides_*` 工具，包括项目诊断、网络找图、媒体复核和单页文案修改；所有文件访问限制在启动时指定的工作目录内。
-- **安全 HTTP API**：网页、自动化平台和远程智能体可通过 Bearer Token 调用同一生产内核；默认仅监听本机，并提供 OpenAPI 3.1 描述。
-- **本地 Engine Cockpit**：无需编写 JSON 即可查看故事线、视觉覆盖率、真实图片来源和生产报告，并完成找图、媒体复核、构建与预览。
+[![MIT License](https://img.shields.io/badge/license-MIT-111111.svg)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.10%2B-1677ff.svg)
+![Output](https://img.shields.io/badge/output-self--contained_HTML-d24b32.svg)
+![Dependencies](https://img.shields.io/badge/core-zero_dependencies-f3c623.svg)
 
-## 安装为 AI 工具
+</div>
 
-克隆仓库后运行一次：
+![Engine Cockpit：真实项目控制台](assets/readme/engine-cockpit.png)
 
-```bash
+## 这不是一套固定模板
+
+`liquid-glass-slides` 是一条完整的演示生产流水线：AI 负责策划、写作与视觉决策；确定性的构建器负责排版、交互、校验和输出；用户通过 Engine Cockpit 修改内容、管理图片、检查问题并重新生成。
+
+```mermaid
+flowchart LR
+    A[主题 / 文章 / 本地资料] --> B[AI Skill<br/>策划与写作]
+    B --> C[Brief + Outline<br/>稳定页面 ID]
+    C --> D[真实图片优先<br/>必要时 AI 图表 / 生图]
+    D --> E[HTML 构建器<br/>排版与交互]
+    E --> F[Engine Cockpit<br/>修改、复核、预览]
+    F --> G[QA 检查]
+    G --> H[单文件动画演示]
+    F -->|继续修改| E
+```
+
+### 核心能力
+
+- **模型无关**：一套 `SKILL.md` 与 CLI，可被不同 AI 平台调用。
+- **真实图片优先**：先通过 Google、Pinterest 等发现候选，再回到图片原始来源核验版权与下载；无法满足表达时才使用 AI 生图。
+- **视觉角色明确**：每页最多 1 张全屏背景图、3 张内容图；不再提供“装饰图”选项。
+- **自动选择版式**：根据文字量、图片数量与横竖比例选择分栏、画廊或全幅背景，避免重复叠图。
+- **数据可视化**：出现明确统计、趋势或比较数据时，可用 ECharts 图表取代普通配图。
+- **可编辑演讲者笔记**：播放时按 `N` 打开演讲者面板，编辑后保存在本机浏览器；观众端不会看到。
+- **稳定项目协议**：`deck_id`、`slide_id`、媒体清单和流水线状态让另一个 AI 可以接手同一项目。
+- **浏览器级 QA**：检测文字溢出、边界越界、字号过小、视觉缺失与来源缺失。
+
+## 真实生成效果
+
+下面两张图来自同一个《一个叫欧维的男人决定去死》读书会项目，不是设计稿或界面模型。
+
+| 封面：克制的玻璃层次与瑞典叙事气质 | 内容页：真实摄影、强层级与清晰比较 |
+|---|---|
+| <img src="assets/readme/ove-cover.png" alt="欧维读书会演示封面" width="100%"> | <img src="assets/readme/ove-character.png" alt="欧维人物解读页面" width="100%"> |
+
+默认视觉方向不是“满屏玻璃卡片”，而是：**瑞士网格 + 构成主义的不对称关系 + 大尺度中文标题 + 单一强调色 + 克制的 Liquid Glass 信息层**。玻璃用于组织信息，不作为无意义装饰。
+
+## 图片策略
+
+生成器按“真实世界素材优先”的顺序工作：
+
+1. 使用 Google、Pinterest 或开放图库发现合适的真实摄影候选。
+2. 回到原始网页确认来源、作者和许可，不把搜索结果缩略图直接写进成品。
+3. 横向、接近 16:9 且尺寸足够的图片优先作为背景图；背景图每页最多 1 张，可调不透明度并全屏铺展。
+4. 竖向或方形图片作为内容图；每页最多 3 张，由引擎结合文字密度自动排版。
+5. 除首尾页外，每页至少有一张有效图片，或在确有数据时使用图表替代。
+6. 同一张图片在同一页只能承担一种角色。没有必要时不生图，也不添加纯装饰图片。
+
+> Google 与 Pinterest 用于发现线索，不等于图片已经获得复用授权。公开发布前仍需核验原始来源和许可。
+
+## Windows：最快开始
+
+从 GitHub 下载并解压后，在 Windows 文件资源管理器中双击：
+
+```text
+打开控制台.cmd
+```
+
+首次运行会检查 Python、安装本地 Skill 并打开 Engine Cockpit。关闭同时出现的命令窗口即可停止本地服务。若双击后只看到代码，请确认是在**文件资源管理器**中运行，而不是在编辑器或聊天附件预览里打开。
+
+### 打开已有演示
+
+控制台读取的是“演示项目文件夹”，不是单独的 HTML。项目文件夹中通常包含：
+
+```text
+my-project/
+├── brief.json
+├── outline.json
+├── media-manifest.json
+└── dist/
+    └── my-project.html      # 最终展示文件
+```
+
+将控制台的工作目录指向包含 `outline.json` 的项目目录，即可继续编辑；最终 HTML 位于该项目的 `dist/` 文件夹。
+
+## 让 AI 使用这个工具
+
+### Codex
+
+```powershell
+git clone https://github.com/lll192/liquid-glass-slides.git
+cd liquid-glass-slides
 python scripts/install_plugin.py --target codex
 ```
 
-重启 AI 客户端后，直接说“使用 `$liquid-glass-slides` 生成一份演示文稿”。自定义 Skill 目录可使用 `--target custom --destination <目录>`。安装器只复制插件自身的受管文件，不修改 GitHub 仓库或用户项目。
+重启 Codex 后直接说：
 
-## 快速开始
-
-### 路径 B：一键生成（推荐，可复现）
-
-1. 根据 `references/intake.md` 完成生成前 Brief Gate，生成 `brief.json`（示例见 `examples/sample-brief.json`）。
-2. 校验简报：
-   ```bash
-   python scripts/slides.py --json validate brief.json
-   ```
-3. 如果使用完整文案或部分素材，根据 `references/source-intake.md` 生成并校验来源清单：
-   ```bash
-   python scripts/slides.py --json validate source-manifest.json
-   ```
-   纯 AI 策划且没有附件时跳过此步。
-4. 根据简报和内容覆盖表编写 v2 `outline.json`，为整套演示设置稳定的 `deck_id`，并为每页设置唯一 `slide_id`（字段规范见 `references/outline-schema.md`、`references/deck-schema-v2.json` 与 `examples/sample-outline.json`）。
-5. 校验并构建：
-   ```bash
-   python scripts/slides.py --json validate my-talk.json
-   python scripts/slides.py --json build --outline my-talk.json --out my-talk.html
-   ```
-   仅依赖 Python 标准库，无需联网（AI 配图除外）。输出一个自包含 HTML 文件。
-
-旧版 outline 可以先迁移：
-
-```bash
-python scripts/migrate_outline.py old-outline.json --out outline-v2.json
+```text
+使用 liquid-glass-slides，根据这份资料生成 12 页演示；真实图片优先，完成后运行检查。
 ```
 
-### 生产流水线（推荐给多 AI 与持续迭代项目）
+### WorkBuddy 或支持 Skill 的 AI
 
-```bash
-python scripts/slides.py --json run \
-  --brief brief.json \
-  --source-manifest source-manifest.json \
-  --outline my-talk.json \
-  --out dist/my-talk.html
+让 AI 克隆或打开本仓库，并明确要求它完整读取根目录的 `SKILL.md`，然后在你的演示项目目录中工作。若平台支持自定义 Skill 目录，可运行：
+
+```powershell
+python scripts/install_plugin.py --target custom --destination "C:\你的AI工具\skills"
 ```
 
-如果没有外部文案，可省略 `--brief` 和 `--source-manifest`。流水线会在 HTML 旁生成：
+### MCP 客户端
 
-- `my-talk.storyboard.json`
-- `my-talk.visual-plan.json`
-- `my-talk.director-report.json`
-- `my-talk.qa-report.json`
-- `my-talk.pipeline-state.json`
+MCP 适合希望让 AI 在对话中直接调用“检查项目、构建、管理媒体、修改页面”等工具的用户：
 
-查看状态：
-
-```bash
-python scripts/slides.py --json status dist/my-talk.pipeline-state.json
+```powershell
+python scripts/mcp_server.py --workspace "C:\你的演示项目目录"
 ```
 
-### 路径 A：手写（创意 / 探索）
+客户端配置与安全边界见 [`references/mcp-server.md`](references/mcp-server.md)。不支持 MCP 也没关系：AI 仍可直接运行统一 CLI。
 
-从 `assets/template.html` 或 `templates/deck.html` 起步，克隆 `<section class="slide">` 块，填充真实 HTML 文本。完整工作流见 `SKILL.md`。
+## CLI 工作流
 
-## 多 AI / 跨平台使用
-
-本仓库的模型无关工作流统一放在 [`references/INSTRUCTIONS.md`](references/INSTRUCTIONS.md)。`SKILL.md` 提供可安装的 Skill 入口，其余平台通过各自的仓库级适配文件加载相同规则：
-
-| 平台 | 加载文件 | 说明 |
-|---|---|---|
-| **WorkBuddy / Skill-compatible agents** | `SKILL.md` | 可安装 Skill 入口（含 frontmatter） |
-| **OpenAI Codex** | `AGENTS.md` | 仓库级指令；安装为个人 Skill 时同样可使用 `SKILL.md` |
-| **Claude Code** | `CLAUDE.md` | 打开仓库时加载；也可复制为 Claude Skill |
-| **Gemini CLI** | `GEMINI.md` | 同上 |
-| **Cursor** | `.cursor/rules/liquid-glass-slides.mdc` | 命中 `.json` 时触发 |
-| **其他 AI Agent** | `references/INSTRUCTIONS.md` | 读取模型无关说明，并调用同一个 Python 构建器 |
-
-所有平台统一的入口命令（零依赖、无需联网）：
-
-```bash
+```powershell
+# 检查运行环境
 python scripts/slides.py --json doctor
-python scripts/slides.py --json build --outline my-talk.json --out my-talk.html
+
+# 校验演示结构
+python scripts/slides.py --json validate outline.json
+
+# 运行完整生产流水线
+python scripts/slides.py --json run --outline outline.json --out dist/deck.html
+
+# 查看任务状态
+python scripts/slides.py --json status dist/deck.pipeline-state.json
 ```
 
-支持 MCP 的客户端可直接启动本地工具服务器：
+流水线会生成故事板、视觉规划、内容导演报告、QA 报告、任务状态和最终 HTML。失败时会记录精确阶段，修正后可以继续，而不必从头生成。
 
-```bash
-python scripts/mcp_server.py --workspace C:/path/to/presentation-project
-```
+## 项目结构
 
-配置示例和安全边界见 [`references/mcp-server.md`](references/mcp-server.md)。
-
-网页或自动化平台可启动本地 HTTP API：
-
-```bash
-python scripts/api_server.py --workspace C:/path/to/presentation-project --open
-```
-
-`--open` 会打开 `http://127.0.0.1:8765` 并通过仅存在于 URL fragment 的临时令牌建立本机会话；令牌不会发送给网页服务器、写入项目或保存在浏览器存储。服务器仍可供其他本机自动化调用；接口说明见 [`references/http-api.md`](references/http-api.md)，控制台说明见 [`references/production-console.md`](references/production-console.md)。
-
-## 目录结构
-
-```
+```text
 liquid-glass-slides/
-├── SKILL.md                 # 技能说明与工作流
-├── LICENSE                  # MIT
-├── README.md                # 本文件
-├── assets/
-│   ├── engine.css           # 玻璃系统 / 动画 / 基础样式
-│   ├── engine.js            # 翻页控制器（键盘/滚轮/触摸）
-│   ├── template.html        # 手写起步脚手架
-│   ├── theme-tokens.json    # 设计令牌
-│   ├── echarts.min.js       # 图表库（按需自动内联）
-│   └── three.min.js         # 3D 库（按需自动内联）
-├── templates/
-│   ├── deck.html            # 构建骨架
-│   └── single-page/         # 18 个布局片段（含 chart/data-table/process-flow/concept-map）
+├── SKILL.md                  # AI 必须遵循的完整生产工作流
+├── AGENTS.md / CLAUDE.md     # 不同 Agent 的仓库入口
+├── assets/                   # 播放引擎、主题令牌与内置库
+├── console/                  # Engine Cockpit 前端
+├── templates/                # 页面骨架与布局组件
+├── references/               # 图片、构图、MCP、API 等规范
 ├── scripts/
-│   ├── validate_brief.py    # 设计简报校验器（仅标准库）
-│   ├── validate_source_manifest.py # 素材来源校验器（仅标准库）
-│   ├── validate_outline.py  # v2 Deck Schema 与稳定 ID 校验器
-│   ├── migrate_outline.py   # 旧版 outline → v2 确定性迁移
-│   ├── pipeline.py          # 可恢复的多阶段生产流水线与任务状态
-│   ├── content_director.py  # 逐页内容诊断与安全元数据补全
-│   ├── slides.py            # 统一 Agent CLI 与稳定 JSON 调用协议
-│   ├── agent_service.py     # CLI / MCP / HTTP 共享服务边界
-│   ├── mcp_server.py        # 零依赖 MCP stdio 工具服务器
-│   ├── api_server.py        # 带认证和工作目录隔离的 HTTP API / Cockpit 启动器
-│   ├── install_plugin.py    # 本地 AI Skill 安装器
-│   └── build.py             # 一键构建器（仅标准库）
-├── console/                 # 零依赖本地生产控制台
-├── references/              # 各模块参考文档
-└── examples/                # 示例 outline 与成品
+│   ├── slides.py             # 统一 CLI
+│   ├── build.py              # HTML 构建器
+│   ├── agent_service.py      # CLI / MCP / HTTP 共用服务
+│   ├── mcp_server.py         # MCP stdio 服务
+│   └── api_server.py         # 本地 API 与控制台服务
+└── tests/                    # 协议、构建、视觉规则与 API 测试
 ```
 
-## 许可证
+## 面向其他平台的入口
 
-[MIT](LICENSE) © 2026 lll192
-
----
-
-<a id="english"></a>
-# Liquid Glass Slides (English)
-
-A model-agnostic presentation-generation **Skill** that turns articles, outlines, notes, Markdown, or rough ideas into **Apple iOS 26 Liquid Glass style** animated HTML slide decks. It works as an installable skill in compatible agent environments and includes repository adapters for OpenAI Codex, Claude Code, Gemini CLI, and Cursor.
-
-## Highlights
-
-- **Liquid Glass aesthetic** — translucent frosted panels, backdrop blur/refraction, specular edge highlights, layered depth (pure CSS, no native Apple APIs).
-- **Constructivist-minimal composition** — asymmetric grids, strict edge alignment, scale contrast, quiet space, and shared glass planes instead of dashboard-like card repetition.
-- **Layout intelligence and density checks** — automatically selects split direction, feature-first or mosaic grids, media side, and bounded compact spacing; overfull slides are reported for revision instead of silently shrinking text.
-- **Editorial CJK and mixed-script typography** — visual-length title profiles, strict Chinese line breaking, balanced headings, script-aware tracking, tabular figures, and warnings for titles that should be rewritten.
-- **Visual intelligence** — profiles landscape/portrait/square imagery and trend/comparison/proportion/radar/distribution charts, then adjusts visual ratios and bounded chart height while checking alt text and takeaways.
-- **Deck rhythm and automatic QA** — reports repetitive layout/weight sequences at build time, then measures overflow, boundaries, title wrapping, and minimum readable type in the real browser viewport without routine screenshot loops.
-- **Content and presenter-note intelligence** — flags generic titles and oversized display blocks, preserves one `main_point` per page, and keeps natural, page-specific `speaker_notes` in an editable, locally auto-saved `N`-toggle presenter panel.
-- **Narrative Director** — plans story roles, audience questions, speaker intent, emotional beats, and transitions; the live panel keeps only the main point and transition while flat story arcs are reported.
-- **Visual Coverage Planner** — distinguishes explanatory visuals from decoration, plans images/charts/tables/flows/maps, and reports missing required visuals, provenance, or long text-only runs.
-- **Real, editable text** — all readable text is genuine HTML; Chinese never garbles.
-- **Zero-dependency single file** — inlined CSS/JS, fullscreen playback, keyboard/wheel/touch navigation with reveal animations.
-- **ECharts charts** — auto-added only where real quantitative data exists, themed to match the deck.
-- **Three.js motion backgrounds** — particles or nebula on covers, with network, petals, or waves reserved for semantically relevant non-cover pages (one shared canvas, swapped by visible slide).
-- **Automatic ripple fallback** — slides without Three.js, ECharts, or imagery receive a restrained ripple material automatically; dense layouts use a quiet static treatment.
-- **Auto color theme** — 3 background blobs + particle colors + 1 accent derived from the topic; body text stays near-black.
-- **Optional AI imagery** — transparent decorative hero/motif illustrations (text never baked into images).
-- **Executable web-first image sourcing** — `source-images` searches Openverse in parallel, downloads reusable real-world photography, records author/license provenance, and requires visual review before the files are inserted as backgrounds, side images, or decoration. ImageGen fills only the remaining gaps.
-- **Production profiles** — `fast`, `balanced`, and `premium` budgets control AI-image count, sourced-image targets, and visual QA depth without weakening content checks.
-- **Crop-safe cover media** — transparent heroes float automatically; `contain` preserves complete artwork by default, while explicit `cover` plus a focal point enables intentional photographic crops.
-- **Adaptive Brief Gate** — inventories what the user already supplied, asks one compact six-field form only when needed, and avoids redundant questions.
-- **Reusable design brief** — captures intent, audience, content ownership, visual preferences, and constraints in a validated `brief.json` before storyboarding.
-- **Conditional Source Gate** — when full or partial copy is supplied, accepts attachments, local paths, pasted text, and mixed text/image input while recording source priority, image use, editing level, protected wording, and content gaps.
-- **Traceable AI additions** — `source-manifest.json` and `content-map.md` distinguish user copy, references, and AI-authored additions.
-- **Stable Deck Protocol v2** — permanent `deck_id` and unique `slide_id` values anchor pages, notes, and revisions, with a stdlib validator, machine-readable JSON Schema, and deterministic legacy migration.
-- **Recoverable production pipeline** — one run emits storyboard, visual-plan, HTML, QA, and task-state artifacts; failures identify the exact stage so the same or another AI can resume after correction.
-- **Content Director** — produces per-slide narrative, notes, copy, and information-visual diagnoses while limiting automatic edits to safe structural metadata.
-- **Unified Agent CLI** — Codex, WorkBuddy, Claude, Gemini, Cursor, automation, and future MCP clients call one stable command with a machine-readable JSON envelope and explicit exit codes.
-- **Local MCP tool server** — MCP-capable agents discover ten `slides_*` tools, including project inspection, media review, and slide-copy editing, while all file access stays inside an explicit workspace boundary.
-- **Secure HTTP API** — web tools, automation platforms, and remote agents call the same production core through bearer authentication, loopback-only defaults, and an OpenAPI 3.1 description.
-- **Local Engine Cockpit** — inspect narrative direction, visual coverage, media provenance, and reports; review web images, build, and preview without editing JSON.
-
-## Quick start
-
-**Path B — one-click build (reproducible):**
-```bash
-python scripts/slides.py --json validate brief.json
-# When user material is supplied:
-python scripts/slides.py --json validate source-manifest.json
-python scripts/slides.py --json validate my-talk.json
-python scripts/slides.py --json run --outline my-talk.json --out dist/my-talk.html
-```
-Standard-library only; no network needed (except AI imagery). Output is a single self-contained HTML file.
-
-MCP-capable clients can launch `python scripts/mcp_server.py --workspace <project-directory>`.
-See [`references/mcp-server.md`](references/mcp-server.md) for configuration and security boundaries.
-
-Web and automation clients can launch `python scripts/api_server.py --workspace <project-directory> --open`.
-The local Engine Cockpit opens and exchanges the ephemeral fragment token for an HttpOnly session. See [`references/http-api.md`](references/http-api.md) for endpoints and deployment safety, and [`references/production-console.md`](references/production-console.md) for the visual workflow.
-
-**Path A — hand-write:** start from `assets/template.html` or `templates/deck.html`, clone `<section class="slide">` blocks, fill real HTML. See `SKILL.md` for the full workflow.
-
-## AI platform adapters
-
-| Environment | Entry file |
+| 平台 | 入口 |
 |---|---|
-| WorkBuddy / skill-compatible agents | `SKILL.md` |
-| OpenAI Codex | `AGENTS.md` |
+| WorkBuddy / Skill-compatible agents | `SKILL.md` |
+| OpenAI Codex | `AGENTS.md` 或安装后的 `SKILL.md` |
 | Claude Code | `CLAUDE.md` |
 | Gemini CLI | `GEMINI.md` |
 | Cursor | `.cursor/rules/liquid-glass-slides.mdc` |
-| Other agents | `references/INSTRUCTIONS.md` |
+| 其他 AI Agent | `references/INSTRUCTIONS.md` + `scripts/slides.py` |
+
+## 开发与验证
+
+核心构建链只依赖 Python 标准库。运行完整测试：
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+## English
+
+Liquid Glass Slides is a model-agnostic presentation production engine for AI agents. It turns a topic, article, notes, or local source files into a self-contained animated HTML deck, while keeping the brief, outline, media provenance, presenter notes, QA results, and pipeline state editable and traceable.
+
+Its visual system combines Swiss-grid discipline, constructivist asymmetry, editorial typography, real-world photography, and restrained Liquid Glass surfaces. Web imagery is discovered first and verified at its original source; each slide supports one full-bleed background or up to three content images. Decorative-image roles have been retired. Quantitative slides can use ECharts, and AI imagery fills only genuine visual gaps.
+
+Use `打开控制台.cmd` on Windows, install the Skill with `python scripts/install_plugin.py --target codex`, or connect an MCP client with `python scripts/mcp_server.py --workspace <project-directory>`.
 
 ## License
 

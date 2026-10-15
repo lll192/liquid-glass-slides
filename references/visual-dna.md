@@ -3,11 +3,14 @@
 This is the deck-level style-lock. Keep these constants identical across every slide; vary only the central content. The look is translated from Apple's native Liquid Glass design language (see the ECC `liquid-glass-design` skill, which targets SwiftUI/UIKit/WidgetKit) into pure CSS.
 
 ## The cardinal rule
-Glass must sit over a vivid, blurred, colorful backdrop. Flat or opaque backgrounds destroy the refraction. Build a colorful mesh + floating blurred blobs behind everything, then float frosted panels on top.
+Glass organizes information; photography carries atmosphere or evidence. Use Swiss-grid
+alignment, constructivist asymmetry, large near-black type, generous quiet space, and one
+accent color. The glass plane must never become a stack of decorative cards.
 
 ## Background
-- A light, premium mesh: soft pastel plus one or two vivid accent blobs (iOS blue, a warm magenta, a mint) at low opacity.
-- 2–3 blurred circles drifting slowly (subtle, ~20–30s loop) for life.
+- A light, premium mesh derived from the topic. When a background photograph is present,
+  let it fill the viewport and tune opacity/scrim for readable type.
+- Avoid decorative image cut-outs and ornamental photo bubbles. Motion stays subtle.
 - Keep overall light; do not go dark unless the user asks.
 
 ## Glass plane (apply selectively to organizing surfaces / nav chrome)
