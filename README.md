@@ -191,37 +191,76 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\start_windows
 
 ## 让 AI 使用这个工具
 
-### Codex
+你不需要先理解 Skill、CLI 或 MCP。选择自己正在使用的 AI，把对应的第一段指令完整复制到它的对话框即可。仓库已经打开时，AI 会自动跳过克隆步骤。
 
-```powershell
-git clone https://github.com/lll192/liquid-glass-slides.git
-cd liquid-glass-slides
-python scripts/install_plugin.py --target codex
-```
+> 这些方式要求 AI 能访问本地文件并运行命令。普通网页聊天如果没有本地工具，只能帮你写内容，不能真正生成和保存 HTML。
 
-重启 Codex 后直接说：
+### Codex：复制这段
 
 ```text
-使用 liquid-glass-slides，根据这份资料生成 12 页演示；真实图片优先，完成后运行检查。
+请执行下面的操作，不要只告诉我步骤：克隆或打开 https://github.com/lll192/liquid-glass-slides，完整读取 AGENTS.md 和 SKILL.md，然后运行 python scripts/install_plugin.py --target codex --update 安装 Skill。完成后只告诉我“安装完成，请重启 Codex”。
 ```
 
-### WorkBuddy 或支持 Skill 的 AI
+重启 Codex 后，再发送下方的“生成演示指令”。以后不需要重复安装。
 
-让 AI 克隆或打开本仓库，并明确要求它完整读取根目录的 `SKILL.md`，然后在你的演示项目目录中工作。若平台支持自定义 Skill 目录，可运行：
+### Claude Code：复制这段
 
-```powershell
-python scripts/install_plugin.py --target custom --destination "C:\你的AI工具\skills"
+```text
+请执行下面的操作，不要只告诉我步骤：克隆或打开 https://github.com/lll192/liquid-glass-slides，完整读取 CLAUDE.md 和 SKILL.md。确认你已经理解生成流程后，在这个仓库中使用该工具完成我接下来发送的演示任务。
 ```
 
-### MCP 客户端
+### Cursor：复制这段
 
-MCP 适合希望让 AI 在对话中直接调用“检查项目、构建、管理媒体、修改页面”等工具的用户：
+```text
+请执行下面的操作，不要只告诉我步骤：克隆或打开 https://github.com/lll192/liquid-glass-slides 作为 Cursor 项目，完整读取 .cursor/rules/liquid-glass-slides.mdc 和 SKILL.md，然后使用该工具完成我接下来发送的演示任务。
+```
+
+### Gemini CLI：复制这段
+
+```text
+请执行下面的操作，不要只告诉我步骤：克隆或打开 https://github.com/lll192/liquid-glass-slides，完整读取 GEMINI.md 和 SKILL.md，然后使用该工具完成我接下来发送的演示任务。
+```
+
+### WorkBuddy 或其他支持 Skill 的 AI：复制这段
+
+```text
+请执行下面的操作，不要只告诉我步骤：克隆或打开 https://github.com/lll192/liquid-glass-slides，完整读取根目录的 SKILL.md，并把它作为本次演示生成的工作规则。请在本地创建完整项目和最终 HTML，不要只返回大纲或 Markdown。
+```
+
+### 生成演示指令：安装或打开仓库后发送
+
+把方括号里的内容换成自己的需求；没有的项目可以删掉：
+
+```text
+请使用 liquid-glass-slides 生成一份完整演示。
+
+主题：[演示主题]
+观众：[谁会看]
+目的：[希望观众听完后理解或采取什么行动]
+页数：[例如 12 页]
+风格：[例如温暖人文、瑞士风格、商务科技]
+必须包含：[关键内容]
+参考资料：[附件名称或本地文件路径；没有就写“由 AI 策划”]
+输出目录：[本地项目目录]
+
+要求：先生成可继续编辑的项目文件，再生成自包含 HTML；真实图片优先，每个内容页至少有一张图片或有效图表；完成后运行检查，并告诉我最终 HTML 的完整路径。请直接执行，不要只给我方案或教程。
+```
+
+### 已有项目需要继续修改：复制这段
+
+```text
+请使用 liquid-glass-slides 继续修改这个演示项目：[项目文件夹完整路径]。先读取项目中的 outline.json、媒体清单和现有 HTML，再按照我的要求修改：[写明要改什么]。不要新建另一套项目；修改后重新生成 HTML、运行检查，并告诉我更新后的文件路径。
+```
+
+### MCP 是可选项
+
+普通用户不需要配置 MCP。只有希望 AI 在对话中直接看到“检查项目、构建、管理媒体、修改页面”等工具时才需要：
 
 ```powershell
 python scripts/mcp_server.py --workspace "C:\你的演示项目目录"
 ```
 
-客户端配置与安全边界见 [`references/mcp-server.md`](references/mcp-server.md)。不支持 MCP 也没关系：AI 仍可直接运行统一 CLI。
+具体配置见 [`references/mcp-server.md`](references/mcp-server.md)。不支持 MCP 也不影响使用，上面的对话指令已经足够。
 
 ## CLI 工作流
 
@@ -259,17 +298,6 @@ liquid-glass-slides/
 │   └── api_server.py         # 本地 API 与控制台服务
 └── tests/                    # 协议、构建、视觉规则与 API 测试
 ```
-
-## 面向其他平台的入口
-
-| 平台 | 入口 |
-|---|---|
-| WorkBuddy / Skill-compatible agents | `SKILL.md` |
-| OpenAI Codex | `AGENTS.md` 或安装后的 `SKILL.md` |
-| Claude Code | `CLAUDE.md` |
-| Gemini CLI | `GEMINI.md` |
-| Cursor | `.cursor/rules/liquid-glass-slides.mdc` |
-| 其他 AI Agent | `references/INSTRUCTIONS.md` + `scripts/slides.py` |
 
 ## 开发与验证
 

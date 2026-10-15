@@ -125,6 +125,13 @@ class VisualContractTests(unittest.TestCase):
         self.assertIn('<option value="background">背景图</option>', console)
         self.assertNotIn('<option value="decorative">', console)
 
+    def test_console_provides_platform_specific_ai_prompts(self):
+        console = (ROOT / 'console' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('data-platform="workbuddy"', console)
+        for marker in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md',
+                       '.cursor/rules/liquid-glass-slides.mdc', 'references/INSTRUCTIONS.md'):
+            self.assertIn(marker, CONSOLE_APP)
+
     def test_media_approval_rebuilds_and_refreshes_preview(self):
         approval = CONSOLE_APP[
             CONSOLE_APP.index('async function approveMedia()'):

@@ -266,7 +266,7 @@ pre { max-height: 230px; overflow: auto; white-space: pre-wrap; word-break: brea
   .report-section { margin-top: 0; }
   .upload-media-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .connect-layout { grid-template-columns:1fr; }
-  .platform-list { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .platform-list { grid-template-columns:repeat(3,minmax(0,1fr)); }
   .platform-card { min-height:60px; padding:10px; }
 }
 @media (max-width: 760px) {

@@ -173,11 +173,21 @@ function text(tag, className, value) {
 }
 
 function updateAiTask() {
-  if (ui.outline.value) {
-    ui.aiTask.value = `请使用 liquid-glass-slides 读取 ${ui.outline.value}，检查并完善逐页内容、视觉方案和演讲者提示，校验通过后生成自包含 HTML 演示。`;
+  const setup = {
+    codex: '请使用已安装的 liquid-glass-slides Skill；如果尚未安装，先克隆 https://github.com/lll192/liquid-glass-slides，读取 AGENTS.md 和 SKILL.md，并运行 python scripts/install_plugin.py --target codex --update。',
+    claude: '请克隆或打开 https://github.com/lll192/liquid-glass-slides，先完整读取 CLAUDE.md 和 SKILL.md。',
+    cursor: '请克隆或打开 https://github.com/lll192/liquid-glass-slides 作为 Cursor 项目，先完整读取 .cursor/rules/liquid-glass-slides.mdc 和 SKILL.md。',
+    gemini: '请克隆或打开 https://github.com/lll192/liquid-glass-slides，先完整读取 GEMINI.md 和 SKILL.md。',
+    workbuddy: '请克隆或打开 https://github.com/lll192/liquid-glass-slides，先完整读取根目录的 SKILL.md，并把它作为本次任务的工作规则。',
+    generic: '请克隆或打开 https://github.com/lll192/liquid-glass-slides，先完整读取 references/INSTRUCTIONS.md 和 SKILL.md。',
+  }[selectedPlatform];
+  if (!ui.outline.value) {
+    ui.aiTask.value = `${setup}\n\n完成后告诉我已经准备好接收演示主题。请直接执行，不要只说明步骤。`;
     return;
   }
-  ui.aiTask.value = '请先把由 AI 生成的演示项目放入工作目录，然后在左侧选择项目。';
+  const relative = ui.outline.value.replaceAll('/', '\\');
+  const outlinePath = integration?.workspace ? `${integration.workspace}\\${relative}` : ui.outline.value;
+  ui.aiTask.value = `${setup}\n\n请继续修改现有演示项目：${outlinePath}\n先读取 outline.json、媒体清单和现有 HTML，完善逐页内容、真实图片、视觉方案和演讲者笔记；不要新建另一套项目。修改后重新生成自包含 HTML、运行检查，并告诉我最终文件的完整路径。请直接执行，不要只给我方案。`;
 }
 
 function renderConnection() {
@@ -187,6 +197,7 @@ function renderConnection() {
     claude: ['连接 Claude', '使用 Claude Code 打开当前仓库即可读取 CLAUDE.md；也可以把下方配置加入 MCP 设置。'],
     cursor: ['连接 Cursor', '直接打开仓库即可加载项目规则；需要跨项目调用时可使用下方 MCP 配置。'],
     gemini: ['连接 Gemini', '使用 Gemini CLI 打开仓库即可读取 GEMINI.md；也可以配置本地 MCP。'],
+    workbuddy: ['连接 WorkBuddy', '让 WorkBuddy 打开仓库并完整读取 SKILL.md，即可按同一流程生成或修改演示。'],
     generic: ['连接其他 AI', '支持 MCP 的客户端复制下方配置；能操作本地文件的 AI 直接打开 GitHub 仓库即可。'],
   };
   [ui.connectionTitle.textContent, ui.connectionDescription.textContent] = labels[selectedPlatform];
