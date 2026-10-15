@@ -13,9 +13,13 @@
 ![Output](https://img.shields.io/badge/output-self--contained_HTML-d24b32.svg)
 ![Dependencies](https://img.shields.io/badge/core-zero_dependencies-f3c623.svg)
 
+[▶ 在线体验完整演示](https://lll192.github.io/liquid-glass-slides/) · [快速开始](#windows最快开始) · [连接 AI](#让-ai-使用这个工具)
+
 </div>
 
-![Engine Cockpit：真实项目控制台](assets/readme/engine-cockpit.png)
+[![Engine Cockpit：真实项目控制台](assets/readme/engine-cockpit.png)](https://lll192.github.io/liquid-glass-slides/)
+
+> 点击上图或“在线体验完整演示”，即可在浏览器中直接播放完整成品；支持键盘方向键、滚轮、触摸翻页以及 `F` 全屏。
 
 ## 这不是一套固定模板
 
@@ -47,6 +51,8 @@ flowchart LR
 ## 真实生成效果
 
 下面两张图来自同一个《一个叫欧维的男人决定去死》读书会项目，不是设计稿或界面模型。
+
+**[打开 12 页完整在线演示 →](https://lll192.github.io/liquid-glass-slides/)**
 
 | 封面：克制的玻璃层次与瑞典叙事气质 | 内容页：真实摄影、强层级与清晰比较 |
 |---|---|
